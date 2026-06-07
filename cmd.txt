@@ -1,10 +1,18 @@
+sudo apt update
+sudo apt install -y build-essential cmake git curl libcurl4-openssl-dev nvidia-cuda-toolkit
+
 git clone https://github.com/ggml-org/llama.cpp.git
 cd llama.cpp
 
-cmake -B build -DGGML_CUDA=ON -DCMAKE_BUILD_TYPE=Release
-cmake --build build -j --target llama-server llama-cli llama-mtmd-cli
+cmake -B build \
+  -DGGML_CUDA=ON \
+  -DLLAMA_CURL=ON \
+  -DCMAKE_BUILD_TYPE=Release
+
+cmake --build build -j"$(nproc)" --target llama-server llama-cli llama-mtmd-cli
 
 ./build/bin/llama-server --version
+./build/bin/llama-server --list-devices
 
 
 ./build/bin/llama-server \
