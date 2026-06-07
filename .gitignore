@@ -1,0 +1,6 @@
+.venv/
+.codex/
+.agents/
+
+# all __pycache__ folders
+__pycache__/
