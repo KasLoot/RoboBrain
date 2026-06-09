@@ -8,10 +8,7 @@ from openai import OpenAI
 MODEL = "gemma4-12b-q4"
 BASE_URL = "http://127.0.0.1:8080/v1"
 
-client = OpenAI(
-    base_url=BASE_URL,
-    api_key="sk-no-key-required",
-)
+
 
 
 def image_data_url(path: str | Path) -> str:
@@ -120,21 +117,27 @@ messages = [
     },
 ]
 
-response = client.chat.completions.create(
-    model=MODEL,
-    messages=messages,
-    max_tokens=128,
-    temperature=0.0,
-    extra_body={
-        "chat_template_kwargs": {
-            "enable_thinking": False,
-        }
-    },
-)
+if __name__ == "__main__":
+    client = OpenAI(
+    base_url=BASE_URL,
+    api_key="sk-no-key-required",
+    )
+    
+    response = client.chat.completions.create(
+        model=MODEL,
+        messages=messages,
+        max_tokens=128,
+        temperature=0.0,
+        extra_body={
+            "chat_template_kwargs": {
+                "enable_thinking": False,
+            }
+        },
+    )
 
-raw_text = response.choices[0].message.content
-print(raw_text)
+    raw_text = response.choices[0].message.content
+    print(raw_text)
 
-# Optionally, parse the structured response into a dictionary.
-# parsed = parse_bracket_response(raw_text)
-# print(parsed)
+    # Optionally, parse the structured response into a dictionary.
+    # parsed = parse_bracket_response(raw_text)
+    # print(parsed)
