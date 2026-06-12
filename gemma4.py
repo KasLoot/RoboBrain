@@ -10,9 +10,9 @@ import re
 BASE_DIR = Path(__file__).resolve().parent
 
 MODEL_NAME = "gemma-4-26b-a4b-it"
-SYSTEM_PROMPT_PATH = BASE_DIR / "assets/prompt/[V4.0] Prompt.md"
-USER_QUERY = "Current Task: Move the yellow block from the orange mat to the white mat with the right arm."
-IMAGE_DIR = BASE_DIR / "assets/dataset/pap_v3.1"
+SYSTEM_PROMPT_PATH = BASE_DIR / "assets/prompt/[V7.0] Prompt.md"
+USER_QUERY = "Current Task: Move the yellow block to the black table (not on the white mat) with the right arm."
+IMAGE_DIR = BASE_DIR / "assets/dataset/pap_v4"
 RESULTS_DIR = BASE_DIR / "results"
 
 client = genai.Client()
@@ -28,6 +28,10 @@ def natural_frame_key(path):
         (0, int(part)) if part.isdigit() else (1, part.lower())
         for part in re.split(r"(\d+)", path.stem)
     )
+
+def build_md_file_name(model_name, prompt_name, dataset_name):
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    return f"{model_name}_{prompt_name}_{dataset_name}_{timestamp}.md"
 
 
 all_frames = sorted(IMAGE_DIR.glob("*.png"), key=natural_frame_key)
@@ -63,8 +67,7 @@ for i in range(num_frames):
 
 RESULTS_DIR.mkdir(parents=True, exist_ok=True)
 
-timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-report_path = RESULTS_DIR / f"gma4_26ba4b_v4p_v3d_{timestamp}.md"
+report_path = RESULTS_DIR / build_md_file_name("gma4_26b_a4b", "v7p", "v4d")
 
 lines = [
     "# Gemma 4 Experiment Report",
