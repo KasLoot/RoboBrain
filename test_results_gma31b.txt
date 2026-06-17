@@ -1,0 +1,136 @@
+Run Configs:
+  Host: http://localhost:8000/v1
+  Endpoint: chat/completions
+  Model: google/gemma-4-31B-it
+  Dataset: assets/dataset/pap_v4
+
+All Frames: ['assets/dataset/pap_v4/1.png', 'assets/dataset/pap_v4/3.png', 'assets/dataset/pap_v4/5.png', 'assets/dataset/pap_v4/6.png', 'assets/dataset/pap_v4/7.png', 'assets/dataset/pap_v4/8.png', 'assets/dataset/pap_v4/9.png', 'assets/dataset/pap_v4/12.png']
+
+Total frames to process: 8
+--------------------------------------------------
+Processing frame 1/8: assets/dataset/pap_v4/1.png
+{"stage": 0, "progress": 0, "status": "ON_GOING", "confidence": 1.0, "anomaly": "none"}
+--------------------------------------------------
+Processing frame 2/8: assets/dataset/pap_v4/3.png
+{"stage": 1, "progress": 20, "status": "ON_GOING", "confidence": 1.0, "anomaly": "none"}
+--------------------------------------------------
+Processing frame 3/8: assets/dataset/pap_v4/5.png
+{"stage": 2, "progress": 40, "status": "ON_GOING", "confidence": 1.0, "anomaly": "none"}
+--------------------------------------------------
+Processing frame 4/8: assets/dataset/pap_v4/6.png
+{"stage": 3, "progress": 60, "status": "ON_GOING", "confidence": 1.0, "anomaly": "none"}
+--------------------------------------------------
+Processing frame 5/8: assets/dataset/pap_v4/7.png
+{"stage": 4, "progress": 80, "status": "ON_GOING", "confidence": 1.0, "anomaly": "none"}
+--------------------------------------------------
+Processing frame 6/8: assets/dataset/pap_v4/8.png
+{"stage": 5, "progress": 100, "status": "SUCCESS", "confidence": 1.0, "anomaly": "none"}
+--------------------------------------------------
+Processing frame 7/8: assets/dataset/pap_v4/9.png
+{"stage": 5, "progress": 100, "status": "SUCCESS", "confidence": 1.0, "anomaly": "none"}
+--------------------------------------------------
+Processing frame 8/8: assets/dataset/pap_v4/12.png
+{"stage": 5, "progress": 100, "status": "SUCCESS", "confidence": 1.0, "anomaly": "none"}
+--------------------------------------------------
+Average response time per request (exclude warm-up): 2.30 s
+Total generated tokens: 284
+   Request 1: 4.37 s, 35 tokens
+   Request 2: 2.21 s, 36 tokens
+   Request 3: 2.20 s, 36 tokens
+   Request 4: 2.22 s, 36 tokens
+   Request 5: 2.41 s, 36 tokens
+   Request 6: 2.36 s, 35 tokens
+   Request 7: 2.36 s, 35 tokens
+   Request 8: 2.36 s, 35 tokens
+
+
+
+
+
+
+
+
+Run Configs:
+  Host: http://localhost:8000/v1
+  Endpoint: chat/completions
+  Model: google/gemma-4-31B-it
+  Dataset: assets/dataset/pap_v5
+
+All Frames: ['assets/dataset/pap_v5/1.png', 'assets/dataset/pap_v5/2.png', 'assets/dataset/pap_v5/3.png', 'assets/dataset/pap_v5/4.png', 'assets/dataset/pap_v5/5.png', 'assets/dataset/pap_v5/6.png', 'assets/dataset/pap_v5/7.png']
+
+Total frames to process: 7
+--------------------------------------------------
+Processing frame 1/7: assets/dataset/pap_v5/1.png
+{"stage": 0, "progress": 0, "status": "ON_GOING", "confidence": 1.00, "anomaly": "none"}
+--------------------------------------------------
+Processing frame 2/7: assets/dataset/pap_v5/2.png
+{"stage": 1, "progress": 20, "status": "ON_GOING", "confidence": 1.00, "anomaly": "none"}
+--------------------------------------------------
+Processing frame 3/7: assets/dataset/pap_v5/3.png
+{"stage": 2, "progress": 40, "status": "ON_GOING", "confidence": 1.00, "anomaly": "none"}
+--------------------------------------------------
+Processing frame 4/7: assets/dataset/pap_v5/4.png
+{"stage": 1, "progress": 20, "status": "ANOMALY", "confidence": 0.95, "anomaly": "the right arm failed to grasp the yellow block and has retracted"}
+--------------------------------------------------
+Processing frame 5/7: assets/dataset/pap_v5/5.png
+{"stage": 1, "progress": 20, "status": "ON_GOING", "confidence": 0.95, "anomaly": "none"}
+--------------------------------------------------
+Processing frame 6/7: assets/dataset/pap_v5/6.png
+{"stage": 0, "progress": 0, "status": "ON_GOING", "confidence": 1.00, "anomaly": "none"}
+--------------------------------------------------
+Processing frame 7/7: assets/dataset/pap_v5/7.png
+{"stage": 0, "progress": 0, "status": "ON_GOING", "confidence": 1.00, "anomaly": "none"}
+--------------------------------------------------
+Average response time per request (exclude warm-up): 2.25 s
+Total generated tokens: 267
+   Request 1: 2.60 s, 36 tokens
+   Request 2: 1.92 s, 37 tokens
+   Request 3: 1.94 s, 37 tokens
+   Request 4: 2.45 s, 48 tokens
+   Request 5: 2.42 s, 37 tokens
+   Request 6: 2.37 s, 36 tokens
+   Request 7: 2.37 s, 36 tokens
+
+
+
+
+
+
+
+
+Run Configs:
+  Host: http://localhost:8000/v1
+  Endpoint: chat/completions
+  Model: google/gemma-4-31B-it
+  Dataset: assets/dataset/pap_v6
+
+All Frames: ['assets/dataset/pap_v6/1.png', 'assets/dataset/pap_v6/2.png', 'assets/dataset/pap_v6/3.png', 'assets/dataset/pap_v6/4.png', 'assets/dataset/pap_v6/5.png', 'assets/dataset/pap_v6/6.png']
+
+Total frames to process: 6
+--------------------------------------------------
+Processing frame 1/6: assets/dataset/pap_v6/1.png
+{"stage": 0, "progress": 0, "status": "ON_GOING", "confidence": 1.00, "anomaly": "none"}
+--------------------------------------------------
+Processing frame 2/6: assets/dataset/pap_v6/2.png
+{"stage": 1, "progress": 20, "status": "ON_GOING", "confidence": 1.00, "anomaly": "none"}
+--------------------------------------------------
+Processing frame 3/6: assets/dataset/pap_v6/3.png
+{"stage": 1, "progress": 20, "status": "FAIL", "confidence": 0.95, "anomaly": "The robot is interacting with the red block instead of the target yellow block."}
+--------------------------------------------------
+Processing frame 4/6: assets/dataset/pap_v6/4.png
+{"stage": 1, "progress": 20, "status": "FAIL", "confidence": 0.95, "anomaly": "The robot has grasped the red block instead of the target yellow block."}
+--------------------------------------------------
+Processing frame 5/6: assets/dataset/pap_v6/5.png
+{"stage": 1, "progress": 20, "status": "FAIL", "confidence": 0.95, "anomaly": "The robot is transporting the red block instead of the target yellow block."}
+--------------------------------------------------
+Processing frame 6/6: assets/dataset/pap_v6/6.png
+{"stage": 0, "progress": 0, "status": "FAIL", "confidence": 0.95, "anomaly": "The robot moved the red block instead of the target yellow block."}
+--------------------------------------------------
+Average response time per request (exclude warm-up): 2.52 s
+Total generated tokens: 264
+   Request 1: 2.49 s, 36 tokens
+   Request 2: 1.92 s, 37 tokens
+   Request 3: 2.48 s, 49 tokens
+   Request 4: 2.46 s, 48 tokens
+   Request 5: 2.92 s, 48 tokens
+   Request 6: 2.83 s, 46 tokens
