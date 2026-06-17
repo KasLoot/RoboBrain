@@ -54,7 +54,7 @@ from urllib.parse import urlparse
 import httpx
 from openai import OpenAI
 
-from gemma4_messages_loop import build_messages, discover_live_images
+from _old_1.gemma4_messages_loop import build_messages, discover_live_images
 
 
 DEFAULT_LOCAL_BASE_URL = "http://127.0.0.1:8080/v1"

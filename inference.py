@@ -4,6 +4,7 @@ import base64
 from tqdm import tqdm
 import os
 import re
+from types import SimpleNamespace
 
 def resolve_model(host, model_name):
     host = host.strip().lower()
@@ -32,6 +33,15 @@ def resolve_model(host, model_name):
                     return base_url, api_key, "gemma-4-26b-a4b-it", endpoint
                 case "gemma-4-31b-it":
                     return base_url, api_key, "gemma-4-31b-it", endpoint
+                case _:
+                    raise ValueError(f"Unknown model name: {model_name}")
+        case "nvidia":
+            base_url = "https://integrate.api.nvidia.com/v1"
+            api_key = os.environ.get("NVIDIA_API_KEY")
+            endpoint = "chat/completions"
+            match model_name:
+                case "diffusiongemma-26b-a4b-it":
+                    return base_url, api_key, "google/diffusiongemma-26b-a4b-it", endpoint
                 case _:
                     raise ValueError(f"Unknown model name: {model_name}")
         case _:
@@ -192,6 +202,8 @@ def get_response_text(end_point, response):
     raise ValueError(f"Unknown endpoint: {end_point}")
 
 
+
+
 def create_response(client: OpenAI, end_point, model, message):
     if end_point == "responses":
         return client.responses.create(
@@ -203,23 +215,37 @@ def create_response(client: OpenAI, end_point, model, message):
             top_p=0.95,
         )
     if end_point == "chat/completions":
-        return client.chat.completions.create(
-            model=model,
-            messages=message,
-            max_tokens=64,
-            temperature=1.0,
-            top_p=0.95,
-            reasoning_effort="minimal",
-        )
+        request_kwargs = {
+            "model": model,
+            "messages": message,
+            "max_tokens": 64,
+            "temperature": 1.0,
+            "top_p": 0.95,
+            }       
+
+        response = client.chat.completions.create(**request_kwargs)
+
+        return response
     raise ValueError(f"Unknown endpoint: {end_point}")
 
 
 def main():
-    base_url, api_key, model, endpoint = resolve_model("google", "gemma-4-26b-a4b-it")  # Change to "ollama" and the appropriate model name if using Ollama
+    base_url, api_key, model, endpoint = resolve_model("nvidia", "diffusiongemma-26b-a4b-it")  # Change host/model here to use Google or Ollama.
+    if not api_key:
+        raise ValueError("Missing API key for selected provider. Set NVIDIA_API_KEY, GEMINI_API_KEY, or OLLAMA_API_KEY.")
+    
+    dataset_path = "assets/dataset/pap_v4"
+    
+    print(f"Run Configs:")
+    print(f"  Host: {base_url}")
+    print(f"  Endpoint: {endpoint}")
+    print(f"  Model: {model}")
+    print(f"  Dataset: {dataset_path}")
+    
 
     client = OpenAI(
         base_url=base_url,
-        api_key=api_key,  # required but ignored
+        api_key=api_key,
     )
 
     with open("assets/prompt/[V8.0] Prompt.md", "r") as f:
@@ -229,7 +255,7 @@ def main():
 
     message = []
     response = None
-    frames = get_sorted_files_with_extension("assets/dataset/pap_v6", "png")
+    frames = get_sorted_files_with_extension(dataset_path, "png")
     print(f"All Frames: {frames}")
     frames_num = len(frames)
     with open(sketch_image_path, 'rb') as f:
