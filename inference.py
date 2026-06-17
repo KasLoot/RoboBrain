@@ -45,6 +45,21 @@ def resolve_model(host, model_name):
                     return base_url, api_key, "google/diffusiongemma-26b-a4b-it", endpoint
                 case _:
                     raise ValueError(f"Unknown model name: {model_name}")
+        
+        case "vllm":
+            base_url = "http://localhost:8000/v1"
+            api_key = "EMPTY"  # No API key needed for local vLLM server
+            endpoint = "chat/completions"
+            match model_name:
+                case "diffusiongemma-26b-a4b-it":
+                    return base_url, api_key, "google/diffusiongemma-26B-B4B-it", endpoint
+                case "gemma-4-26b-a4b-it":
+                    return base_url, api_key, "google/gemma-4-26B-A4B-it", endpoint
+                case "gemma-4-31b-it":
+                    return base_url, api_key, "google/gemma-4-31B-it", endpoint
+                case _:
+                    raise ValueError(f"Unknown model name: {model_name}")
+
         case _:
             raise ValueError(f"Unknown host: {host}")
 
@@ -203,6 +218,17 @@ def get_response_text(end_point, response):
     raise ValueError(f"Unknown endpoint: {end_point}")
 
 
+def get_completion_tokens(end_point, response):
+    usage = getattr(response, "usage", None)
+    if usage is None:
+        return 0
+    if end_point == "responses":
+        return getattr(usage, "output_tokens", 0) or 0
+    if end_point == "chat/completions":
+        return getattr(usage, "completion_tokens", 0) or 0
+    raise ValueError(f"Unknown endpoint: {end_point}")
+
+
 
 
 def create_response(client: OpenAI, end_point, model, message):
@@ -211,7 +237,7 @@ def create_response(client: OpenAI, end_point, model, message):
             model=model,
             reasoning={"effort": "none"},
             input=message,
-            max_output_tokens=64,
+            max_output_tokens=128,
             temperature=1.0,
             top_p=0.95,
         )
@@ -219,7 +245,7 @@ def create_response(client: OpenAI, end_point, model, message):
         request_kwargs = {
             "model": model,
             "messages": message,
-            "max_tokens": 64,
+            "max_tokens": 128,
             "temperature": 1.0,
             "top_p": 0.95,
             }       
@@ -231,11 +257,11 @@ def create_response(client: OpenAI, end_point, model, message):
 
 
 def main():
-    base_url, api_key, model, endpoint = resolve_model("nvidia", "diffusiongemma-26b-a4b-it")  # Change host/model here to use Google or Ollama.
+    base_url, api_key, model, endpoint = resolve_model("vllm", "gemma-4-26b-a4b-it")  # Change host/model here to use Google or Ollama.
     if not api_key:
         raise ValueError("Missing API key for selected provider. Set NVIDIA_API_KEY, GEMINI_API_KEY, or OLLAMA_API_KEY.")
     
-    dataset_path = "assets/dataset/pap_v4"
+    dataset_path = "assets/dataset/pap_v6"
     
     print(f"Run Configs:")
     print(f"  Host: {base_url}")
@@ -265,6 +291,7 @@ def main():
     print(f"Total frames to process: {frames_num}")
 
     all_requests_generation_time = []
+    all_requests_generated_tokens = []
     for i in range(frames_num):
         current_frame_path = frames[i]
         print("-"*50)
@@ -274,12 +301,16 @@ def main():
         response = create_response(client, endpoint, model, message)
         request_end_time = time.time()
         all_requests_generation_time.append(request_end_time - request_start_time)
+        all_requests_generated_tokens.append(get_completion_tokens(endpoint, response))
         print(get_response_text(endpoint, response))
 
+    total_time = sum(all_requests_generation_time)
+    total_tokens = sum(all_requests_generated_tokens)
     print("-"*50)
-    print(f"Average generation time per request: {sum(all_requests_generation_time) / len(all_requests_generation_time):.2f} s")
-    for i, gen_time in enumerate(all_requests_generation_time):
-        print(f"   Request {i + 1}: {gen_time:.2f} s")
+    print(f"Average response time per request (exclude warm-up): {sum(all_requests_generation_time[1:]) / len(all_requests_generation_time[1:]):.2f} s")
+    print(f"Total generated tokens: {total_tokens}")
+    for i, (gen_time, gen_tokens) in enumerate(zip(all_requests_generation_time, all_requests_generated_tokens)):
+        print(f"   Request {i + 1}: {gen_time:.2f} s, {gen_tokens} tokens")
 
 if __name__ == "__main__":
     main()
