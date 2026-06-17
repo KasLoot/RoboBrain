@@ -1,0 +1,20 @@
+All Frames: ['assets/dataset/pap_v6/1.png', 'assets/dataset/pap_v6/2.png', 'assets/dataset/pap_v6/3.png', 'assets/dataset/pap_v6/4.png', 'assets/dataset/pap_v6/5.png','assets/dataset/pap_v6/6.png']
+Total frames to process: 6
+--------------------------------------------------
+Processing frame 1/6: assets/dataset/pap_v6/1.png
+{"stage": 0, "progress": 0, "status": "ON_GOING", "confidence": 1.00, "anomaly": "none"}
+--------------------------------------------------
+Processing frame 2/6: assets/dataset/pap_v6/2.png
+{"stage": 1, "progress": 20, "status": "ON_GOING", "confidence": 1.00, "anomaly": "none"}
+--------------------------------------------------
+Processing frame 3/6: assets/dataset/pap_v6/3.png
+{"stage": 2, "progress": 40, "status": "FAIL", "confidence": 1.00, "anomaly": "The right arm is interacting with the red block instead of the target yellow block."}
+--------------------------------------------------
+Processing frame 4/6: assets/dataset/pap_v6/4.png
+{"stage": 1, "progress": 20, "status": "FAIL", "confidence": 1.00, "anomaly": "The right arm has grasped the red block instead of the target yellow block."}
+--------------------------------------------------
+Processing frame 5/6: assets/dataset/pap_v6/5.png
+{"stage": 1, "progress": 20, "status": "FAIL", "confidence": 1.00, "anomaly": "The right arm is transporting the red block instead of the yellow block."}
+--------------------------------------------------
+Processing frame 6/6: assets/dataset/pap_v6/6.png
+{"stage": 0, "progress": 0, "status": "FAIL", "confidence": 1.00, "anomaly": "The red block was placed on the white mat, violating the task to move the yellow block."}
