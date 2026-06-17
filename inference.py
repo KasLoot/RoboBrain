@@ -5,6 +5,7 @@ from tqdm import tqdm
 import os
 import re
 from types import SimpleNamespace
+import time
 
 def resolve_model(host, model_name):
     host = host.strip().lower()
@@ -256,21 +257,29 @@ def main():
     message = []
     response = None
     frames = get_sorted_files_with_extension(dataset_path, "png")
-    print(f"All Frames: {frames}")
+    print(f"\nAll Frames: {frames}\n")
     frames_num = len(frames)
     with open(sketch_image_path, 'rb') as f:
         sketch_image_data = f.read()
     sketch_image = {"type": "input_image", "image_url": f"data:image/png;base64,{base64.b64encode(sketch_image_data).decode('utf-8')}", "detail": "auto"}
     print(f"Total frames to process: {frames_num}")
 
+    all_requests_generation_time = []
     for i in range(frames_num):
         current_frame_path = frames[i]
         print("-"*50)
         print(f"Processing frame {i + 1}/{frames_num}: {current_frame_path}")
         message = build_openai_prompt_v2(end_point=endpoint, window_size=4, message=message, response=response, system_prompt=system_prompt, sketch_image=sketch_image, current_frame_path=current_frame_path, user_prompt=user_prompt)
+        request_start_time = time.time()
         response = create_response(client, endpoint, model, message)
+        request_end_time = time.time()
+        all_requests_generation_time.append(request_end_time - request_start_time)
         print(get_response_text(endpoint, response))
 
+    print("-"*50)
+    print(f"Average generation time per request: {sum(all_requests_generation_time) / len(all_requests_generation_time):.2f} s")
+    for i, gen_time in enumerate(all_requests_generation_time):
+        print(f"   Request {i + 1}: {gen_time:.2f} s")
 
 if __name__ == "__main__":
     main()
