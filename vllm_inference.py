@@ -16,8 +16,8 @@ SETUP_IMAGE_PATH = Path("bimanual_robot_setup_framework_v2.png")
 PROMPT_PATH = Path("[V8.0] Prompt.md")
 USER_QUERY = "Current Task: Move the yellow block to the white mat with the right arm."
 
-resp = requests.post(f"{SERVER_BASE_URL}/reset_prefix_cache")
-resp.raise_for_status()
+# resp = requests.post(f"{SERVER_BASE_URL}/reset_prefix_cache")
+# resp.raise_for_status()
 
 client = OpenAI(
     base_url=f"{SERVER_BASE_URL}/v1",
