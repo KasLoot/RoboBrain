@@ -5,9 +5,22 @@ import sys
 from pathlib import Path
 
 
-DEFAULT_INPUT = Path("assets/dataset/pap_v4/HEIC_images")
-DEFAULT_OUTPUT = Path("assets/dataset/pap_v4/PNG_images")
+DEFAULT_INPUT = Path("assets/dataset/pap_v6/HEIC_images")
+DEFAULT_OUTPUT = Path("assets/dataset/pap_v6")
+DEFAULT_SIZE = (640, 480)
 HEIC_EXTENSIONS = {".heic", ".heif"}
+
+
+def positive_int(value: str) -> int:
+	try:
+		number = int(value)
+	except ValueError as error:
+		raise argparse.ArgumentTypeError(f"invalid positive integer: {value}") from error
+
+	if number <= 0:
+		raise argparse.ArgumentTypeError(f"expected a positive integer: {value}")
+
+	return number
 
 
 def parse_args() -> argparse.Namespace:
@@ -37,6 +50,19 @@ def parse_args() -> argparse.Namespace:
 		"--overwrite",
 		action="store_true",
 		help="Overwrite existing PNG files instead of skipping them.",
+	)
+	parser.add_argument(
+		"--size",
+		nargs=2,
+		type=positive_int,
+		default=DEFAULT_SIZE,
+		metavar=("WIDTH", "HEIGHT"),
+		help=f"Resize output PNGs to WIDTH HEIGHT pixels (default: {DEFAULT_SIZE[0]} {DEFAULT_SIZE[1]}).",
+	)
+	parser.add_argument(
+		"--no-resize",
+		action="store_true",
+		help="Keep original dimensions instead of resizing.",
 	)
 	parser.add_argument(
 		"--compression",
@@ -102,11 +128,13 @@ def convert_image(
 	output_path: Path,
 	overwrite: bool,
 	compression: int,
+	size: tuple[int, int] | None,
 ) -> tuple[int, int]:
 	from PIL import Image, ImageSequence
 
 	converted = 0
 	skipped = 0
+	resample_filter = getattr(Image, "Resampling", Image).LANCZOS
 
 	with Image.open(image_path) as image:
 		frame_count = getattr(image, "n_frames", 1)
@@ -123,6 +151,8 @@ def convert_image(
 
 			destination.parent.mkdir(parents=True, exist_ok=True)
 			png_frame = frame.convert("RGBA") if "A" in frame.getbands() else frame.convert("RGB")
+			if size is not None and png_frame.size != size:
+				png_frame = png_frame.resize(size, resample_filter)
 			png_frame.save(destination, format="PNG", compress_level=compression)
 			converted += 1
 
@@ -143,6 +173,7 @@ def main() -> int:
 		print(f"No HEIC/HEIF images found in {args.input}")
 		return 0
 
+	size = None if args.no_resize else tuple(args.size)
 	total_converted = 0
 	total_skipped = 0
 	for image_path in images:
@@ -153,6 +184,7 @@ def main() -> int:
 				output_path=args.output,
 				overwrite=args.overwrite,
 				compression=args.compression,
+				size=size,
 			)
 		except Exception as error:  # PIL can raise several decoder-specific exceptions.
 			print(f"Failed: {image_path} ({error})", file=sys.stderr)
