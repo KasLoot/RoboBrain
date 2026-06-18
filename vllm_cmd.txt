@@ -21,3 +21,17 @@ TORCH_CUDA_ARCH_LIST=12.0 LLM_SERVER_DEV_MODE=1 vllm serve google/gemma-4-26B-A4
 
 # Bypass RuntimeError: FlashInfer requires GPUs with sm75 or higher
 VLLM_USE_FLASHINFER_SAMPLER=0 VLLM_SERVER_DEV_MODE=1 vllm serve google/gemma-4-26B-A4B-it --max-model-len 8192 --gpu-memory-utilization 0.9 --mm-processor-kwargs '{"max_soft_tokens": 560}'
+
+
+
+SITE="$VIRTUAL_ENV/lib/python3.12/site-packages"
+
+export LD_LIBRARY_PATH="$SITE/torch/lib:$SITE/nvidia/cu13/lib:$SITE/nvidia/cuda_runtime/lib:$SITE/nvidia/cuda_nvrtc/lib:${LD_LIBRARY_PATH:-}"
+export CPATH="$SITE/nvidia/cu13/include:${CPATH:-}"
+export LIBRARY_PATH="$SITE/nvidia/cu13/lib:${LIBRARY_PATH:-}"
+
+VLLM_SERVER_DEV_MODE=1 vllm serve Qwen/Qwen3.6-35B-A3B \
+    --max-model-len 8192 \
+    --gpu-memory-utilization 0.9 \
+    --reasoning-parser qwen3 \
+    --speculative-config '{"method": "mtp", "num_speculative_tokens": 2}'

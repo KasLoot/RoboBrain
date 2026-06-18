@@ -261,7 +261,7 @@ def main():
     if not api_key:
         raise ValueError("Missing API key for selected provider. Set NVIDIA_API_KEY, GEMINI_API_KEY, or OLLAMA_API_KEY.")
     
-    dataset_path = "assets/dataset/pap_v6"
+    dataset_path = "assets/dataset/pap_v5"
     
     print(f"Run Configs:")
     print(f"  Host: {base_url}")
