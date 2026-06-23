@@ -9,3 +9,5 @@ __pycache__/
 assets/dataset/
 
 .DS_Store
+
+*.zip

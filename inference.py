@@ -17,10 +17,10 @@ def resolve_model(host, model_name):
             api_key = os.environ.get("OLLAMA_API_KEY")
             endpoint = "responses"
             match model_name:
-                case "gemma-4-26b-a4b-it":
-                    return base_url, api_key, "gemma4:26b-a4b-it-bf16", endpoint
-                case "gemma-4-31b-it":
-                    return base_url, api_key, "gemma4:31b-it-bf16", endpoint
+                # case "gemma-4-26b-a4b-it":
+                #     return base_url, api_key, "gemma4:26b-a4b-it-bf16", endpoint
+                # case "gemma-4-31b-it":
+                #     return base_url, api_key, "gemma4:31b-it-bf16", endpoint
                 case "gemma-4-31b-it-bf16-cloud":
                     return base_url, api_key, "gemma4:31b-cloud", endpoint
                 case _:
@@ -248,6 +248,7 @@ def create_response(client: OpenAI, end_point, model, message):
             "max_tokens": 128,
             "temperature": 1.0,
             "top_p": 0.95,
+            "reasoning_effort": "minimal",
             }       
 
         response = client.chat.completions.create(**request_kwargs)
@@ -257,11 +258,11 @@ def create_response(client: OpenAI, end_point, model, message):
 
 
 def main():
-    base_url, api_key, model, endpoint = resolve_model("vllm", "gemma-4-26b-a4b-it")  # Change host/model here to use Google or Ollama.
+    base_url, api_key, model, endpoint = resolve_model("ollama", "gemma-4-31b-it-bf16-cloud")  # Change host/model here to use Google or Ollama.
     if not api_key:
         raise ValueError("Missing API key for selected provider. Set NVIDIA_API_KEY, GEMINI_API_KEY, or OLLAMA_API_KEY.")
     
-    dataset_path = "assets/dataset/pap_v5"
+    dataset_path = "assets/dataset/pap_v6"
     
     print(f"Run Configs:")
     print(f"  Host: {base_url}")
@@ -275,7 +276,7 @@ def main():
         api_key=api_key,
     )
 
-    with open("assets/prompt/[V8.0] Prompt.md", "r") as f:
+    with open("assets/prompt/[V11.0] Prompt.md", "r") as f:
         system_prompt = f.read()
     sketch_image_path = "assets/bimanual_robot_setup_framework_v2.png"
     user_prompt = "Current Task: Move the yellow block to the white mat with the right arm."
