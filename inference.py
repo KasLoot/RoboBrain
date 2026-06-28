@@ -258,7 +258,7 @@ def create_response(client: OpenAI, end_point, model, message):
 
 
 def main():
-    base_url, api_key, model, endpoint = resolve_model("google", "gemma-4-26b-a4b-it")  # Change host/model here to use Google or Ollama.
+    base_url, api_key, model, endpoint = resolve_model("ollama", "gemma-4-31b-it-bf16-cloud")  # Change host/model here to use Google or Ollama.
     if not api_key:
         raise ValueError("Missing API key for selected provider. Set NVIDIA_API_KEY, GEMINI_API_KEY, or OLLAMA_API_KEY.")
     
