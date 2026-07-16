@@ -24,6 +24,22 @@ Do not output explanations.
 Return exactly one JSON object."""
 
 
+VALIDATION_SYSTEM_PROMPT = """You are the final task validator for a tabletop manipulation episode.
+
+Independently verify the original long-horizon task after the monitor has reported every subtask complete.
+Use the initial scene image, ordered completion-evidence images, the final scene image, the ordered plan,
+and the monitor completion records.
+Treat monitor SUCCESS reports as claims to audit, not as proof.
+Check every planned target, destination, explicit order or arm constraint that the supplied evidence can verify,
+and whether the final scene satisfies the overall user intent.
+Do not fail a task solely because execution-history constraints cannot be established from still images;
+list those constraints under unverifiable_constraints instead.
+Return verdict SUCCESS only when every required final-state effect is visibly satisfied and no supplied evidence
+contradicts a required execution constraint. Otherwise return FAIL.
+Do not output explanations outside the JSON object.
+Return exactly one JSON object."""
+
+
 LONG_HORIZON_MEMORY_ADDENDUM = """
 
 Long-horizon memory addendum:
@@ -176,6 +192,7 @@ class EpisodeMemory:
     subtasks: list[SubTask]
     current_index: int = 0
     completed: list[dict[str, Any]] = field(default_factory=list)
+    validation: dict[str, Any] | None = None
 
     def __post_init__(self):
         self._activate_current()
@@ -219,6 +236,11 @@ class EpisodeMemory:
             "current_index": self.current_index,
             "completed": self.completed,
             "task_complete": self.is_done(),
+            "validation": self.validation,
+            "task_validated": self.validation is not None,
+            "task_success": (
+                self.validation is not None and self.validation.get("verdict") == "SUCCESS"
+            ),
         }
 
     def save(self, path: str):
@@ -614,6 +636,132 @@ def parse_supervisor_output(raw_text: str):
     return parsed
 
 
+def build_validation_prompt(memory: EpisodeMemory):
+    schema = {
+        "verdict": "SUCCESS or FAIL",
+        "confidence": "number from 0.00 to 1.00",
+        "summary": "one short sentence",
+        "verified_subtasks": ["subtask id"],
+        "failed_subtasks": [
+            {
+                "id": "subtask id",
+                "reason": "one short sentence",
+            }
+        ],
+        "unverifiable_constraints": ["one short description"],
+    }
+    validation_context = {
+        "long_task": memory.long_task,
+        "user_constraints": memory.user_constraints,
+        "ordered_subtasks": [asdict(subtask) for subtask in memory.subtasks],
+        "monitor_completion_records": memory.completed,
+    }
+    return "\n\n".join(
+        [
+            "Validate this completed long-horizon episode:",
+            json.dumps(validation_context, indent=2),
+            "Return exactly one JSON object matching this schema:",
+            json.dumps(schema, indent=2),
+        ]
+    )
+
+
+def parse_validation_output(raw_text: str):
+    try:
+        parsed = extract_json_object(raw_text)
+        parsed = _require_mapping(parsed, "validation result")
+        _require_fields(
+            parsed,
+            [
+                "verdict",
+                "confidence",
+                "summary",
+                "verified_subtasks",
+                "failed_subtasks",
+                "unverifiable_constraints",
+            ],
+            "validation result",
+        )
+
+        verdict = _require_nonempty_string(parsed, "verdict", "validation result").upper()
+        if verdict not in {"SUCCESS", "FAIL"}:
+            raise ValueError("Expected validation result.verdict to be SUCCESS or FAIL.")
+        parsed["verdict"] = verdict
+
+        confidence = parsed["confidence"]
+        if isinstance(confidence, bool) or not isinstance(confidence, (int, float)):
+            raise ValueError("Expected validation result.confidence to be a number.")
+        if not 0.0 <= confidence <= 1.0:
+            raise ValueError("Expected validation result.confidence to be between 0 and 1.")
+
+        _require_nonempty_string(parsed, "summary", "validation result")
+        for field_name in ("verified_subtasks", "failed_subtasks", "unverifiable_constraints"):
+            if not isinstance(parsed[field_name], list):
+                raise ValueError(f"Expected validation result.{field_name} to be a list.")
+
+        parsed["raw_text"] = raw_text
+        return parsed
+    except ValueError as exc:
+        return {
+            "verdict": "PARSE_ERROR",
+            "parse_error": str(exc),
+            "raw_text": raw_text,
+        }
+
+
+def validate_completed_task(
+    client,
+    endpoint: str,
+    model: str,
+    sketch_image: dict,
+    initial_frame_path: str,
+    final_frame_path: str,
+    memory: EpisodeMemory,
+    completion_frame_paths: list[tuple[str, str]] | None = None,
+    max_tokens: int = 512,
+):
+    content = [
+        normalize_image_part_for_endpoint(sketch_image, endpoint),
+        make_text_part("INITIAL SCENE IMAGE:", endpoint),
+        make_image_part_from_path(initial_frame_path, endpoint),
+    ]
+    for subtask_id, frame_path in completion_frame_paths or []:
+        if frame_path == final_frame_path:
+            continue
+        content.extend(
+            [
+                make_text_part(
+                    f"MONITOR COMPLETION EVIDENCE FOR {subtask_id}:",
+                    endpoint,
+                ),
+                make_image_part_from_path(frame_path, endpoint),
+            ]
+        )
+    content.extend(
+        [
+            make_text_part("FINAL SCENE IMAGE (LAST SUBTASK COMPLETION):", endpoint),
+            make_image_part_from_path(final_frame_path, endpoint),
+            make_text_part(build_validation_prompt(memory), endpoint),
+        ]
+    )
+    message = [
+        {"role": "system", "content": VALIDATION_SYSTEM_PROMPT},
+        {
+            "role": "user",
+            "content": content,
+        },
+    ]
+    response = create_response(
+        client=client,
+        end_point=endpoint,
+        model=model,
+        message=message,
+        max_tokens=max_tokens,
+    )
+    raw_text = get_response_text(endpoint, response)
+    return parse_validation_output(raw_text), response
+
+
 def supervisor_says_success(supervisor_output: dict):
     return str(supervisor_output.get("status", "")).strip().upper() == "SUCCESS"
 
@@ -648,7 +796,7 @@ def parse_args():
     )
     parser.add_argument("--host", default="ollama")
     parser.add_argument("--model-name", default="gemma-4-31b-it-bf16-cloud")
-    parser.add_argument("--dataset-path", default="assets/dataset/pap_v7")
+    parser.add_argument("--dataset-path", default="assets/dataset/pap_v6")
     parser.add_argument("--frame-extension", default="png")
     parser.add_argument("--sketch-image-path", default="assets/bimanual_robot_setup_framework_v2.png")
     parser.add_argument("--prompt-path", default="assets/prompt/[V11.0] Prompt.md")
@@ -657,9 +805,11 @@ def parse_args():
     parser.add_argument("--window-size", type=int, default=4)
     parser.add_argument("--monitor-max-tokens", type=int, default=192)
     parser.add_argument("--decomposition-max-tokens", type=int, default=1024)
+    parser.add_argument("--validation-max-tokens", type=int, default=512)
     parser.add_argument("--default-arm", default="right arm")
     parser.add_argument("--memory-path", default="mem_episode_memory.json")
     parser.add_argument("--output-jsonl-path", default="mem_agent_output.txt")
+    parser.add_argument("--validation-output-path", default="mem_validation_output.json")
     return parser.parse_args()
 
 
@@ -710,6 +860,7 @@ def main():
     response = None
     generation_times: list[float] = []
     generated_tokens: list[int] = []
+    last_processed_frame_path = None
 
     for frame_idx, current_frame_path in enumerate(frames, start=1):
         if memory.is_done():
@@ -739,6 +890,7 @@ def main():
         request_end_time = time.time()
 
         response_text = get_response_text(endpoint, response)
+        last_processed_frame_path = current_frame_path
         elapsed = request_end_time - request_start_time
         tokens = get_completion_tokens(endpoint, response)
         generation_times.append(elapsed)
@@ -770,7 +922,48 @@ def main():
                 publish_subtask(next_subtask)
 
     if memory.is_done():
-        print("All subtasks completed.", file=sys.stderr)
+        print("All subtasks completed. Running final task validation.", file=sys.stderr)
+        completion_frame_paths = [
+            (item["id"], frames[item["frame_idx"] - 1])
+            for item in memory.completed
+            if 1 <= item.get("frame_idx", 0) <= len(frames)
+        ]
+        validation_start_time = time.time()
+        validation_output, validation_response = validate_completed_task(
+            client=client,
+            endpoint=endpoint,
+            model=model,
+            sketch_image=sketch_image,
+            initial_frame_path=frames[0],
+            final_frame_path=last_processed_frame_path or frames[-1],
+            memory=memory,
+            completion_frame_paths=completion_frame_paths,
+            max_tokens=args.validation_max_tokens,
+        )
+        validation_elapsed = time.time() - validation_start_time
+        validation_record = {
+            "validation": validation_output,
+            "initial_frame_path": frames[0],
+            "completion_frame_paths": [
+                {"subtask_id": subtask_id, "frame_path": frame_path}
+                for subtask_id, frame_path in completion_frame_paths
+            ],
+            "final_frame_path": last_processed_frame_path or frames[-1],
+            "response_time_s": validation_elapsed,
+            "generated_tokens": get_completion_tokens(endpoint, validation_response),
+        }
+        memory.validation = validation_output
+        memory.save(args.memory_path)
+        validation_path = Path(args.validation_output_path)
+        validation_path.parent.mkdir(parents=True, exist_ok=True)
+        with validation_path.open("w", encoding="utf-8") as f:
+            json.dump(validation_record, f, indent=2, ensure_ascii=False)
+            f.write("\n")
+        print(json.dumps(validation_output, ensure_ascii=False), flush=True)
+        print(
+            f"Final validation verdict: {validation_output.get('verdict', 'PARSE_ERROR')}",
+            file=sys.stderr,
+        )
     else:
         print("Frame stream ended before all subtasks completed.", file=sys.stderr)
 

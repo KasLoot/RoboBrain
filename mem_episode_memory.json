@@ -1,113 +1,26 @@
 {
-  "long_task": "transport all blocks from right mat to the left mat with the right arm. Transport the red block and then the yellow block.",
+  "long_task": "place the purple block to the left mat",
   "user_constraints": {
-    "explicit_order": [
-      "red block",
-      "yellow block"
-    ],
-    "arm": "right arm",
-    "source": "right mat",
+    "explicit_order": [],
+    "arm": "unspecified",
+    "source": "source area",
     "destination": "left mat"
   },
   "subtasks": [
     {
       "id": "subtask_001",
-      "target": "red block",
-      "source": "right mat",
-      "destination": "left mat",
-      "arm": "right arm",
-      "instruction": "Pick the red block from the right mat and place it on the left mat.",
-      "status": "SUCCESS"
-    },
-    {
-      "id": "subtask_002",
-      "target": "yellow block",
-      "source": "right mat",
-      "destination": "left mat",
-      "arm": "right arm",
-      "instruction": "Pick the yellow block from the right mat and place it on the left mat.",
-      "status": "SUCCESS"
-    },
-    {
-      "id": "subtask_003",
       "target": "purple block",
-      "source": "right mat",
+      "source": "source area",
       "destination": "left mat",
       "arm": "right arm",
-      "instruction": "Pick the purple block from the right mat and place it on the left mat.",
+      "instruction": "pick up the purple block from the source area and place it on the left mat Use the right arm.",
       "status": "RUNNING"
-    },
-    {
-      "id": "subtask_004",
-      "target": "green block",
-      "source": "right mat",
-      "destination": "left mat",
-      "arm": "right arm",
-      "instruction": "Pick the green block from the right mat and place it on the left mat.",
-      "status": "PENDING"
-    },
-    {
-      "id": "subtask_005",
-      "target": "blue block",
-      "source": "right mat",
-      "destination": "left mat",
-      "arm": "right arm",
-      "instruction": "Pick the blue block from the right mat and place it on the left mat.",
-      "status": "PENDING"
-    },
-    {
-      "id": "subtask_006",
-      "target": "orange block",
-      "source": "right mat",
-      "destination": "left mat",
-      "arm": "right arm",
-      "instruction": "Pick the orange block from the right mat and place it on the left mat.",
-      "status": "PENDING"
-    },
-    {
-      "id": "subtask_007",
-      "target": "dark purple block",
-      "source": "right mat",
-      "destination": "left mat",
-      "arm": "right arm",
-      "instruction": "Pick the dark purple block from the right mat and place it on the left mat.",
-      "status": "PENDING"
     }
   ],
-  "current_index": 2,
-  "completed": [
-    {
-      "id": "subtask_001",
-      "target": "red block",
-      "instruction": "Pick the red block from the right mat and place it on the left mat.",
-      "frame_idx": 6,
-      "supervisor_output": {
-        "stage": 5,
-        "progress": 100,
-        "status": "SUCCESS",
-        "confidence": 1.0,
-        "anomaly": "none",
-        "command": "NONE",
-        "instruction": "none",
-        "raw_text": "{\"stage\": 5, \"progress\": 100, \"status\": \"SUCCESS\", \"confidence\": 1.00, \"anomaly\": \"none\", \"command\": \"NONE\", \"instruction\": \"none\"}"
-      }
-    },
-    {
-      "id": "subtask_002",
-      "target": "yellow block",
-      "instruction": "Pick the yellow block from the right mat and place it on the left mat.",
-      "frame_idx": 12,
-      "supervisor_output": {
-        "stage": 5,
-        "progress": 100,
-        "status": "SUCCESS",
-        "confidence": 1.0,
-        "anomaly": "none",
-        "command": "NONE",
-        "instruction": "none",
-        "raw_text": "{\"stage\": 5, \"progress\": 100, \"status\": \"SUCCESS\", \"confidence\": 1.0, \"anomaly\": \"none\", \"command\": \"NONE\", \"instruction\": \"none\"}"
-      }
-    }
-  ],
-  "task_complete": false
+  "current_index": 0,
+  "completed": [],
+  "task_complete": false,
+  "validation": null,
+  "task_validated": false,
+  "task_success": false
 }
