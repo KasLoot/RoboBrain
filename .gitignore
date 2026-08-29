@@ -1,13 +1,1 @@
-.venv/
-.codex/
-.agents/
-
-# all __pycache__ folders
-__pycache__/
-
-
-assets/dataset/
-
-.DS_Store
-
-*.zip
+video
