@@ -1,0 +1,39 @@
+Frame [29]  ```json
+{
+  "white_stand_state": "HOLDING_PLUG",
+  "gripper_control": "NOT_YET_GRASPED",
+  "pin_direction_vs_gripper": "NOT_VISIBLE",
+  "pin_alignment_with_socket": "NOT_AT_SOCKET",
+  "insertion_state": "NOT_INSERTED",
+  "grasp_history": "NOT_YET_GRASPED",
+  "status": "ON_GOING",
+  "failure_type": "NONE",
+  "failure_description": "none"
+}
+```
+Frame [237]  ```json
+{
+  "white_stand_state": "EMPTY",
+  "gripper_control": "CONTROLLED",
+  "pin_direction_vs_gripper": "SAME",
+  "pin_alignment_with_socket": "NOT_AT_SOCKET",
+  "insertion_state": "NOT_INSERTED",
+  "grasp_history": "GRASP_CONFIRMED",
+  "status": "ON_GOING",
+  "failure_type": "NONE",
+  "failure_description": "none"
+}
+```
+Frame [299]  ```json
+{
+  "white_stand_state": "EMPTY",
+  "gripper_control": "CONTROLLED",
+  "pin_direction_vs_gripper": "SAME",
+  "pin_alignment_with_socket": "NOT_AT_SOCKET",
+  "insertion_state": "NOT_INSERTED",
+  "grasp_history": "GRASP_CONFIRMED",
+  "status": "ON_GOING",
+  "failure_type": "NONE",
+  "failure_description": "none"
+}
+```

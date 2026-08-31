@@ -1,0 +1,134 @@
+[
+  {
+    "frame": 493,
+    "expected": [
+      "FAIL",
+      "ROTATED_OR_MISALIGNED"
+    ],
+    "rotation": {
+      "rotation_match": "ROTATED",
+      "matched_reference": "FAIL_DEMO_2",
+      "reason": "The plug is held at a significant angle relative to the gripper, matching the rotated pose seen in FAIL_DEMO_2."
+    },
+    "drop": {
+      "drop_match": "NO_DROP",
+      "matched_reference": "CONTROLLED_NORMAL_DEMO",
+      "reason": "The small white plug is not visible on the table; the white object in the foreground is a large stand, not the plug."
+    },
+    "actual": [
+      "FAIL",
+      "ROTATED_OR_MISALIGNED"
+    ],
+    "pass": true
+  },
+  {
+    "frame": 609,
+    "expected": [
+      "FAIL",
+      "ROTATED_OR_MISALIGNED"
+    ],
+    "rotation": {
+      "rotation_match": "ROTATED",
+      "matched_reference": "FAIL_DEMO_2",
+      "reason": "The plug is held at a significant angle relative to the gripper, matching the rotated pose seen in FAIL_DEMO_2."
+    },
+    "drop": {
+      "drop_match": "NO_DROP",
+      "matched_reference": "CONTROLLED_NORMAL_DEMO",
+      "reason": "The small white plug is being held by the gripper and is not visible on the table separately; the white object on the table is a large stand."
+    },
+    "actual": [
+      "FAIL",
+      "ROTATED_OR_MISALIGNED"
+    ],
+    "pass": true
+  },
+  {
+    "frame": 897,
+    "expected": [
+      "FAIL",
+      "ROTATED_OR_MISALIGNED"
+    ],
+    "rotation": {
+      "rotation_match": "ROTATED",
+      "matched_reference": "FAIL_DEMO_2",
+      "reason": "The plug is held in the gripper at a significant angle, matching the rotated pose seen in FAIL_DEMO_2."
+    },
+    "drop": {
+      "drop_match": "NO_DROP",
+      "matched_reference": "CONTROLLED_NORMAL_DEMO",
+      "reason": "The small white plug is not visible on the table; the white object in the foreground is a large stand/block, not the plug."
+    },
+    "actual": [
+      "FAIL",
+      "ROTATED_OR_MISALIGNED"
+    ],
+    "pass": true
+  },
+  {
+    "frame": 1000,
+    "expected": [
+      "FAIL",
+      "DROP_OR_CONTROL_LOSS"
+    ],
+    "rotation": {
+      "rotation_match": "UNCERTAIN",
+      "matched_reference": "NONE",
+      "reason": "The plug is lying on the table, not held in the gripper, so its rotation relative to the gripper cannot be determined."
+    },
+    "drop": {
+      "drop_match": "DROP",
+      "matched_reference": "FAIL_DEMO_1",
+      "reason": "The small white plug is clearly visible on the table, separated from the gripper and the power strips, matching the FAIL_DEMO_1 scenario."
+    },
+    "actual": [
+      "FAIL",
+      "DROP_OR_CONTROL_LOSS"
+    ],
+    "pass": true
+  },
+  {
+    "frame": 1316,
+    "expected": [
+      "ON_GOING",
+      "NONE"
+    ],
+    "rotation": {
+      "rotation_match": "NOT_ROTATED",
+      "matched_reference": "CONTROLLED_NORMAL_DEMO",
+      "reason": "The plug held in the gripper is in a vertical, upright orientation, which matches the normal pose in CONTROLLED_NORMAL_DEMO rather than the tilted/rotated failure poses."
+    },
+    "drop": {
+      "drop_match": "NO_DROP",
+      "matched_reference": "SAFE_OCCLUSION_DEMO",
+      "reason": "The small white object on the table is a large rectangular stand/block, not the small plug. The plug is not visible separately from the gripper."
+    },
+    "actual": [
+      "ON_GOING",
+      "NONE"
+    ],
+    "pass": true
+  },
+  {
+    "frame": 1377,
+    "expected": [
+      "ON_GOING",
+      "NONE"
+    ],
+    "rotation": {
+      "rotation_match": "NOT_ROTATED",
+      "matched_reference": "CONTROLLED_NORMAL_DEMO",
+      "reason": "The plug held in the gripper is in a normal, upright orientation, matching the CONTROLLED_NORMAL_DEMO reference rather than the rotated failure cases."
+    },
+    "drop": {
+      "drop_match": "NO_DROP",
+      "matched_reference": "SAFE_OCCLUSION_DEMO",
+      "reason": "The small white object on the table is a large white cube/stand, not the small plug. The plug is not visibly separated from the gripper."
+    },
+    "actual": [
+      "ON_GOING",
+      "NONE"
+    ],
+    "pass": true
+  }
+]
