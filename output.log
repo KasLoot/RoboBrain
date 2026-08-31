@@ -9,7 +9,7 @@ Frame [29]  {
   "failure_type": "NONE",
   "failure_description": "none"
 }
-Frame [122]  {
+Frame [113]  {
   "white_stand_state": "HOLDING_PLUG",
   "gripper_control": "NOT_YET_GRASPED",
   "pin_direction_vs_gripper": "NOT_VISIBLE",
@@ -20,7 +20,7 @@ Frame [122]  {
   "failure_type": "NONE",
   "failure_description": "none"
 }
-Frame [202]  {
+Frame [192]  {
   "white_stand_state": "HOLDING_PLUG",
   "gripper_control": "NOT_YET_GRASPED",
   "pin_direction_vs_gripper": "NOT_VISIBLE",
@@ -31,7 +31,18 @@ Frame [202]  {
   "failure_type": "NONE",
   "failure_description": "none"
 }
-Frame [282]  {
+Frame [270]  {
+  "white_stand_state": "EMPTY",
+  "gripper_control": "NOT_YET_GRASPED",
+  "pin_direction_vs_gripper": "NOT_VISIBLE",
+  "pin_alignment_with_socket": "NOT_AT_SOCKET",
+  "insertion_state": "NOT_INSERTED",
+  "grasp_history": "NOT_YET_GRASPED",
+  "status": "ON_GOING",
+  "failure_type": "NONE",
+  "failure_description": "none"
+}
+Frame [347]  {
   "white_stand_state": "EMPTY",
   "gripper_control": "CONTROLLED",
   "pin_direction_vs_gripper": "SAME",
@@ -42,29 +53,18 @@ Frame [282]  {
   "failure_type": "NONE",
   "failure_description": "none"
 }
-Frame [359]  {
+Frame [431]  {
   "white_stand_state": "EMPTY",
   "gripper_control": "CONTROLLED",
   "pin_direction_vs_gripper": "UNCERTAIN",
-  "pin_alignment_with_socket": "NOT_AT_SOCKET",
-  "insertion_state": "NOT_INSERTED",
+  "pin_alignment_with_socket": "ALIGNED",
+  "insertion_state": "PARTIAL",
   "grasp_history": "GRASP_CONFIRMED",
   "status": "ON_GOING",
   "failure_type": "NONE",
   "failure_description": "none"
 }
-Frame [435]  {
-  "white_stand_state": "EMPTY",
-  "gripper_control": "CONTROLLED",
-  "pin_direction_vs_gripper": "DIFFERENT",
-  "pin_alignment_with_socket": "MISALIGNED",
-  "insertion_state": "NOT_INSERTED",
-  "grasp_history": "GRASP_CONFIRMED",
-  "status": "FAIL",
-  "failure_type": "ROTATED_OR_MISALIGNED",
-  "failure_description": "the plug is rotated relative to the gripper"
-}
-Frame [512]  {
+Frame [506]  {
   "white_stand_state": "EMPTY",
   "gripper_control": "CONTROLLED",
   "pin_direction_vs_gripper": "DIFFERENT",
@@ -75,40 +75,40 @@ Frame [512]  {
   "failure_type": "ROTATED_OR_MISALIGNED",
   "failure_description": "the plug is rotated relative to the gripper"
 }
-Frame [587]  {
+Frame [581]  {
   "white_stand_state": "EMPTY",
   "gripper_control": "CONTROLLED",
   "pin_direction_vs_gripper": "DIFFERENT",
-  "pin_alignment_with_socket": "NOT_AT_SOCKET",
+  "pin_alignment_with_socket": "ALIGNED",
   "insertion_state": "NOT_INSERTED",
   "grasp_history": "GRASP_CONFIRMED",
   "status": "FAIL",
   "failure_type": "ROTATED_OR_MISALIGNED",
   "failure_description": "the plug is rotated relative to the gripper"
 }
-Frame [663]  {
+Frame [657]  {
   "white_stand_state": "EMPTY",
   "gripper_control": "UNCERTAIN",
-  "pin_direction_vs_gripper": "DIFFERENT",
+  "pin_direction_vs_gripper": "NOT_VISIBLE",
   "pin_alignment_with_socket": "NOT_AT_SOCKET",
   "insertion_state": "NOT_INSERTED",
   "grasp_history": "GRASP_CONFIRMED",
   "status": "FAIL",
   "failure_type": "ROTATED_OR_MISALIGNED",
-  "failure_description": "the plug is rotated relative to the gripper"
+  "failure_description": "plug rotation was confirmed earlier in the current attempt"
 }
-Frame [743]  {
+Frame [735]  {
   "white_stand_state": "EMPTY",
   "gripper_control": "CONTROLLED",
-  "pin_direction_vs_gripper": "DIFFERENT",
+  "pin_direction_vs_gripper": "NOT_VISIBLE",
   "pin_alignment_with_socket": "NOT_AT_SOCKET",
   "insertion_state": "NOT_INSERTED",
   "grasp_history": "GRASP_CONFIRMED",
   "status": "FAIL",
   "failure_type": "ROTATED_OR_MISALIGNED",
-  "failure_description": "the plug is rotated relative to the gripper"
+  "failure_description": "plug rotation was confirmed earlier in the current attempt"
 }
-Frame [817]  {
+Frame [814]  {
   "white_stand_state": "EMPTY",
   "gripper_control": "CONTROLLED",
   "pin_direction_vs_gripper": "DIFFERENT",
@@ -119,7 +119,7 @@ Frame [817]  {
   "failure_type": "ROTATED_OR_MISALIGNED",
   "failure_description": "the plug is rotated relative to the gripper"
 }
-Frame [891]  {
+Frame [890]  {
   "white_stand_state": "EMPTY",
   "gripper_control": "CONTROLLED",
   "pin_direction_vs_gripper": "DIFFERENT",
@@ -130,7 +130,7 @@ Frame [891]  {
   "failure_type": "ROTATED_OR_MISALIGNED",
   "failure_description": "the plug is rotated relative to the gripper"
 }
-Frame [970]  {
+Frame [968]  {
   "white_stand_state": "EMPTY",
   "gripper_control": "CONTROLLED",
   "pin_direction_vs_gripper": "DIFFERENT",
@@ -141,7 +141,7 @@ Frame [970]  {
   "failure_type": "ROTATED_OR_MISALIGNED",
   "failure_description": "the plug is rotated relative to the gripper"
 }
-Frame [1045]  {
+Frame [1044]  {
   "white_stand_state": "HOLDING_PLUG",
   "gripper_control": "NOT_YET_GRASPED",
   "pin_direction_vs_gripper": "NOT_VISIBLE",
@@ -151,114 +151,4 @@ Frame [1045]  {
   "status": "ON_GOING",
   "failure_type": "NONE",
   "failure_description": "none"
-}
-Frame [1124]  {
-  "white_stand_state": "HOLDING_PLUG",
-  "gripper_control": "NOT_YET_GRASPED",
-  "pin_direction_vs_gripper": "NOT_VISIBLE",
-  "pin_alignment_with_socket": "NOT_AT_SOCKET",
-  "insertion_state": "NOT_INSERTED",
-  "grasp_history": "NOT_YET_GRASPED",
-  "status": "ON_GOING",
-  "failure_type": "NONE",
-  "failure_description": "none"
-}
-Frame [1204]  {
-  "white_stand_state": "HOLDING_PLUG",
-  "gripper_control": "NOT_YET_GRASPED",
-  "pin_direction_vs_gripper": "NOT_VISIBLE",
-  "pin_alignment_with_socket": "NOT_AT_SOCKET",
-  "insertion_state": "NOT_INSERTED",
-  "grasp_history": "NOT_YET_GRASPED",
-  "status": "ON_GOING",
-  "failure_type": "NONE",
-  "failure_description": "none"
-}
-Frame [1282]  {
-  "white_stand_state": "EMPTY",
-  "gripper_control": "CONTROLLED",
-  "pin_direction_vs_gripper": "SAME",
-  "pin_alignment_with_socket": "NOT_AT_SOCKET",
-  "insertion_state": "NOT_INSERTED",
-  "grasp_history": "GRASP_CONFIRMED",
-  "status": "ON_GOING",
-  "failure_type": "NONE",
-  "failure_description": "none"
-}
-Frame [1358]  {
-  "white_stand_state": "EMPTY",
-  "gripper_control": "CONTROLLED",
-  "pin_direction_vs_gripper": "SAME",
-  "pin_alignment_with_socket": "NOT_AT_SOCKET",
-  "insertion_state": "NOT_INSERTED",
-  "grasp_history": "GRASP_CONFIRMED",
-  "status": "ON_GOING",
-  "failure_type": "NONE",
-  "failure_description": "none"
-}
-Frame [1435]  {
-  "white_stand_state": "EMPTY",
-  "gripper_control": "CONTROLLED",
-  "pin_direction_vs_gripper": "SAME",
-  "pin_alignment_with_socket": "NOT_AT_SOCKET",
-  "insertion_state": "NOT_INSERTED",
-  "grasp_history": "GRASP_CONFIRMED",
-  "status": "ON_GOING",
-  "failure_type": "NONE",
-  "failure_description": "none"
-}
-Frame [1517]  {
-  "white_stand_state": "EMPTY",
-  "gripper_control": "CONTROLLED",
-  "pin_direction_vs_gripper": "SAME",
-  "pin_alignment_with_socket": "NOT_AT_SOCKET",
-  "insertion_state": "NOT_INSERTED",
-  "grasp_history": "GRASP_CONFIRMED",
-  "status": "ON_GOING",
-  "failure_type": "NONE",
-  "failure_description": "none"
-}
-Frame [1594]  {
-  "white_stand_state": "EMPTY",
-  "gripper_control": "CONTROLLED",
-  "pin_direction_vs_gripper": "SAME",
-  "pin_alignment_with_socket": "NOT_AT_SOCKET",
-  "insertion_state": "NOT_INSERTED",
-  "grasp_history": "GRASP_CONFIRMED",
-  "status": "ON_GOING",
-  "failure_type": "NONE",
-  "failure_description": "none"
-}
-Frame [1671]  {
-  "white_stand_state": "EMPTY",
-  "gripper_control": "UNCERTAIN",
-  "pin_direction_vs_gripper": "NOT_VISIBLE",
-  "pin_alignment_with_socket": "NOT_AT_SOCKET",
-  "insertion_state": "NOT_INSERTED",
-  "grasp_history": "GRASP_CONFIRMED",
-  "status": "ON_GOING",
-  "failure_type": "NONE",
-  "failure_description": "none"
-}
-Frame [1751]  {
-  "white_stand_state": "EMPTY",
-  "gripper_control": "LOST",
-  "pin_direction_vs_gripper": "NOT_VISIBLE",
-  "pin_alignment_with_socket": "NOT_AT_SOCKET",
-  "insertion_state": "NOT_INSERTED",
-  "grasp_history": "GRASP_CONFIRMED",
-  "status": "FAIL",
-  "failure_type": "DROP_OR_CONTROL_LOSS",
-  "failure_description": "the plug is visibly separate from the gripper"
-}
-Frame [1771]  {
-  "white_stand_state": "EMPTY",
-  "gripper_control": "LOST",
-  "pin_direction_vs_gripper": "NOT_VISIBLE",
-  "pin_alignment_with_socket": "NOT_AT_SOCKET",
-  "insertion_state": "NOT_INSERTED",
-  "grasp_history": "GRASP_CONFIRMED",
-  "status": "FAIL",
-  "failure_type": "DROP_OR_CONTROL_LOSS",
-  "failure_description": "the plug is visibly separate from the gripper"
 }

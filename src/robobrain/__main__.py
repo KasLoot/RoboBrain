@@ -9,9 +9,9 @@ from pathlib import Path
 from langchain_openai import ChatOpenAI
 
 
-os.environ["LANGSMITH_TRACING"] = "true"
-os.environ["LANGSMITH_ENDPOINT"] = "https://eu.api.smith.langchain.com"
-os.environ["LANGSMITH_PROJECT"] = "RoboBrain"
+# os.environ["LANGSMITH_TRACING"] = "true"
+# os.environ["LANGSMITH_ENDPOINT"] = "https://eu.api.smith.langchain.com"
+# os.environ["LANGSMITH_PROJECT"] = "RoboBrain"
 
 
 from typing import Literal
