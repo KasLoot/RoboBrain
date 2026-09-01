@@ -6,7 +6,7 @@ from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 from pathlib import Path
 
-from langchain_openai import ChatOpenAI
+from robobrain.latency import VLLMTimingChatOpenAI, invoke_with_latency
 
 
 # os.environ["LANGSMITH_TRACING"] = "true"
@@ -25,6 +25,7 @@ from langchain.messages import SystemMessage
 
 
 import cv2
+import numpy as np
 import threading
 import time
 import base64
@@ -33,7 +34,9 @@ import base64
 VIDEO_WINDOW_NAME = "RoboBrain video stream"
 VIDEO_OUTPUT_PATH = "output.mp4"
 LOG_OUTPUT_PATH = "output.log"
+LATENCY_OUTPUT_PATH = "latency.jsonl"
 RUN_ARCHIVE_ROOT = Path("runs")
+VIDEO_INPUT_PATH = Path("video/insert_plug-full_model-aug-28-105trail-1x-w848h480.MOV")
 WINDOW_SIZE = 1
 CROP_TOP_LEFT = (350, 50)
 CROP_BOTTOM_RIGHT = (650, 300)
@@ -44,7 +47,16 @@ ROTATION_SPECIALIST_PROMPT_PATH = (
     PROMPT_DIRECTORY / "rotation_specialist.md"
 )
 DROP_SPECIALIST_PROMPT_PATH = PROMPT_DIRECTORY / "drop_specialist.md"
-ROTATION_CONFIRMATION_COUNT = 2
+ROTATION_GRID_PROMPT_PATH = (
+    PROMPT_DIRECTORY / "rotation_grid_compact.md"
+)
+STATE_DROP_GRID_PROMPT_PATH = (
+    PROMPT_DIRECTORY / "state_drop_grid_compact.md"
+)
+ROTATION_CONFIRMATION_SECONDS = 0.6
+SCENE_CHECK_INTERVAL_FRAMES = 120
+SCENE_RESULT_MAX_AGE_FRAMES = 120
+GRID_JPEG_QUALITY = 95
 DEMONSTRATION_IMAGE_PATHS = (
     ("SUCCESS_DEMO", PROMPT_DIRECTORY / "SUCCESS_DEMO_WITH_ARROW.png"),
     ("FAIL_DEMO_1", PROMPT_DIRECTORY / "FAIL_DEMO_1.jpg"),
@@ -75,6 +87,29 @@ DROP_REFERENCE_IMAGE_PATHS = (
         "CONTROLLED_NORMAL_DEMO",
         PROMPT_DIRECTORY / "CONTROLLED_NORMAL_DEMO.jpg",
     ),
+)
+ROTATION_GRID_REFERENCE_IMAGE_PATHS = (
+    (
+        "NORMAL",
+        PROMPT_DIRECTORY / "CONTROLLED_NORMAL_DEMO.jpg",
+    ),
+    ("ROTATED_A", PROMPT_DIRECTORY / "FAIL_DEMO_2.jpg"),
+    ("ROTATED_B", PROMPT_DIRECTORY / "FAIL_DEMO_3.jpg"),
+)
+STATE_GRID_STATIC_REFERENCE_IMAGE_PATHS = (
+    (
+        "CONTROLLED",
+        PROMPT_DIRECTORY / "CONTROLLED_NORMAL_DEMO.jpg",
+    ),
+    (
+        "SAFE_OCCLUDED",
+        PROMPT_DIRECTORY / "SAFE_OCCLUSION_DEMO.jpg",
+    ),
+    ("DROPPED", PROMPT_DIRECTORY / "FAIL_DEMO_1.jpg"),
+)
+STATE_GRID_RESET_REFERENCE_FRAMES = (
+    ("RESET_A", 29),
+    ("RESET_B", 1074),
 )
 IMAGE_LABEL_DESCRIPTIONS = {
     "SUCCESS_DEMO": "Reference example of a fully inserted plug",
@@ -112,6 +147,7 @@ VALID_DETECTION_STATUSES = {"ON_GOING", "COMPLETE", "FAIL"}
 VALID_GRASP_HISTORY = {"NOT_YET_GRASPED", "GRASP_CONFIRMED"}
 VALID_ROTATION_MATCHES = {"ROTATED", "NOT_ROTATED", "UNCERTAIN"}
 VALID_DROP_MATCHES = {"DROP", "NO_DROP", "UNCERTAIN"}
+VALID_STATE_MATCHES = {"S", "C", "D", "U"}
 
 
 class SimulatedCamera:
@@ -309,92 +345,147 @@ def response_choice(content, field_name, valid_choices, default="UNCERTAIN"):
     return choice if choice in valid_choices else default
 
 
-class AttemptFailureTracker:
-    """Fuse relation observations into stable, attempt-level failure state."""
+def compact_state_choice(content):
+    """Parse the compact stand/control/drop specialist response."""
+    if isinstance(content, str):
+        choice = content.strip().strip("`* .\n\r\t").upper()
+        if choice in VALID_STATE_MATCHES:
+            return choice
 
-    def __init__(self, rotation_confirmation_count=2):
-        if not isinstance(rotation_confirmation_count, int):
-            raise TypeError("rotation_confirmation_count must be an integer")
-        if rotation_confirmation_count < 1:
+    parsed_content = parse_response_content(content)
+    if isinstance(parsed_content, dict):
+        choice = str(parsed_content.get("state", "")).strip().upper()
+        if choice in VALID_STATE_MATCHES:
+            return choice
+    return "U"
+
+
+def compact_rotation_choice(content):
+    """Parse the compact rotation-grid response into the production enum."""
+    parsed_content = parse_response_content(content)
+    if not isinstance(parsed_content, dict):
+        return "UNCERTAIN"
+    choice = str(parsed_content.get("rotation", "")).strip().upper()
+    return {
+        "R": "ROTATED",
+        "N": "NOT_ROTATED",
+        "U": "UNCERTAIN",
+    }.get(choice, "UNCERTAIN")
+
+
+class AttemptFailureTracker:
+    """Fuse compact observations into stable, cadence-independent state."""
+
+    def __init__(
+        self,
+        fps,
+        rotation_confirmation_seconds=ROTATION_CONFIRMATION_SECONDS,
+    ):
+        if (
+            isinstance(fps, bool)
+            or not isinstance(fps, (int, float))
+            or fps <= 0
+        ):
+            raise ValueError("fps must be a positive number")
+        if (
+            isinstance(rotation_confirmation_seconds, bool)
+            or not isinstance(rotation_confirmation_seconds, (int, float))
+            or rotation_confirmation_seconds <= 0
+        ):
             raise ValueError(
-                "rotation_confirmation_count must be at least one"
+                "rotation_confirmation_seconds must be a positive number"
             )
-        self.rotation_confirmation_count = rotation_confirmation_count
+        self.fps = float(fps)
+        self.rotation_confirmation_seconds = float(
+            rotation_confirmation_seconds
+        )
+        self.rotation_confirmation_frames = max(
+            1,
+            round(self.fps * self.rotation_confirmation_seconds),
+        )
         self.reset()
 
     def reset(self):
         self.grasp_confirmed = False
-        self.rotation_streak = 0
+        self.rotation_started_frame = None
         self.latched_failure = None
 
-    def update(self, scene_content, rotation_content, drop_content):
-        scene = parse_response_content(scene_content)
-        if not isinstance(scene, dict):
-            scene = {}
+    def update(self, frame_index, state_content, rotation_content):
+        if not isinstance(frame_index, int) or isinstance(frame_index, bool):
+            raise TypeError("frame_index must be an integer")
+        if frame_index < 0:
+            raise ValueError("frame_index must be non-negative")
 
-        stand_state = str(
-            scene.get("white_stand_state", "")
-        ).strip().upper()
-        gripper_control = str(
-            scene.get("gripper_control", "")
-        ).strip().upper()
-        reported_grasp_history = str(
-            scene.get("grasp_history", "")
-        ).strip().upper()
-        reset_visible = (
-            stand_state == "HOLDING_PLUG"
-            and gripper_control == "NOT_YET_GRASPED"
-        )
+        state_match = compact_state_choice(state_content)
+        rotation_match = compact_rotation_choice(rotation_content)
+        reset_visible = state_match == "S"
 
         if reset_visible:
             self.reset()
-        elif (
-            gripper_control == "CONTROLLED"
-            or reported_grasp_history == "GRASP_CONFIRMED"
-        ):
+        elif state_match == "C":
             self.grasp_confirmed = True
-
-        rotation_match = response_choice(
-            rotation_content,
-            "rotation_match",
-            VALID_ROTATION_MATCHES,
-        )
-        drop_match = response_choice(
-            drop_content,
-            "drop_match",
-            VALID_DROP_MATCHES,
-        )
 
         if (
             not reset_visible
             and self.grasp_confirmed
+            and state_match != "D"
             and rotation_match == "ROTATED"
         ):
-            self.rotation_streak += 1
+            if (
+                self.rotation_started_frame is None
+                or frame_index < self.rotation_started_frame
+            ):
+                self.rotation_started_frame = frame_index
         else:
-            self.rotation_streak = 0
+            self.rotation_started_frame = None
+
+        rotation_evidence_frames = 0
+        if self.rotation_started_frame is not None:
+            rotation_evidence_frames = (
+                frame_index - self.rotation_started_frame
+            )
+
+        drop_match = (
+            "DROP"
+            if state_match == "D"
+            else "NO_DROP"
+            if state_match in {"S", "C"}
+            else "UNCERTAIN"
+        )
 
         if self.latched_failure is None:
-            if self.rotation_streak >= self.rotation_confirmation_count:
+            if (
+                rotation_evidence_frames
+                >= self.rotation_confirmation_frames
+            ):
                 self.latched_failure = "ROTATED_OR_MISALIGNED"
             elif (
                 not reset_visible
                 and self.grasp_confirmed
-                and drop_match == "DROP"
+                and state_match == "D"
             ):
                 self.latched_failure = "DROP_OR_CONTROL_LOSS"
 
         return {
             "reset_visible": reset_visible,
+            "state_match": state_match,
             "grasp_confirmed": self.grasp_confirmed,
             "rotation_match": rotation_match,
-            "rotation_streak": self.rotation_streak,
+            "rotation_evidence_frames": rotation_evidence_frames,
+            "rotation_evidence_seconds": round(
+                rotation_evidence_frames / self.fps,
+                3,
+            ),
             "drop_match": drop_match,
             "failure_type": self.latched_failure,
         }
 
 
-def fuse_detection_response(scene_content, failure_state):
+def fuse_detection_response(
+    scene_content,
+    failure_state,
+    completion_latched=False,
+):
     """Apply validated temporal failure state to the general scene result."""
     scene = parse_response_content(scene_content)
     if not isinstance(scene, dict):
@@ -417,6 +508,7 @@ def fuse_detection_response(scene_content, failure_state):
             fused[field_name] = field_value.strip()
 
     reset_visible = bool(failure_state.get("reset_visible"))
+    state_match = failure_state.get("state_match", "U")
     grasp_confirmed = bool(failure_state.get("grasp_confirmed"))
     rotation_match = failure_state.get("rotation_match", "UNCERTAIN")
     drop_match = failure_state.get("drop_match", "UNCERTAIN")
@@ -426,18 +518,49 @@ def fuse_detection_response(scene_content, failure_state):
         "GRASP_CONFIRMED" if grasp_confirmed else "NOT_YET_GRASPED"
     )
 
+    if state_match == "S":
+        fused.update(
+            {
+                "white_stand_state": "HOLDING_PLUG",
+                "gripper_control": "NOT_YET_GRASPED",
+                "pin_direction_vs_gripper": "NOT_VISIBLE",
+                "pin_alignment_with_socket": "NOT_AT_SOCKET",
+                "insertion_state": "NOT_INSERTED",
+            }
+        )
+    elif state_match == "C":
+        fused["white_stand_state"] = "EMPTY"
+        fused["gripper_control"] = "CONTROLLED"
+    elif state_match == "D":
+        fused.update(
+            {
+                "white_stand_state": "EMPTY",
+                "gripper_control": "LOST",
+                "pin_direction_vs_gripper": "NOT_VISIBLE",
+                "pin_alignment_with_socket": "NOT_AT_SOCKET",
+                "insertion_state": "NOT_INSERTED",
+            }
+        )
+
     if (
         str(fused["gripper_control"]).upper() == "LOST"
         and drop_match != "DROP"
     ):
         fused["gripper_control"] = "UNCERTAIN"
 
-    if rotation_match == "ROTATED":
+    if (
+        failure_type == "ROTATED_OR_MISALIGNED"
+        and state_match == "C"
+    ):
+        fused["pin_direction_vs_gripper"] = "DIFFERENT"
+    elif rotation_match == "ROTATED":
         fused["pin_direction_vs_gripper"] = (
             "DIFFERENT"
             if failure_type == "ROTATED_OR_MISALIGNED"
             else "UNCERTAIN"
         )
+    elif rotation_match == "NOT_ROTATED" and state_match == "C":
+        fused["pin_direction_vs_gripper"] = "SAME"
     elif (
         failure_type is None
         and str(fused["pin_direction_vs_gripper"]).upper() == "DIFFERENT"
@@ -464,7 +587,12 @@ def fuse_detection_response(scene_content, failure_state):
         scene_status = str(scene.get("status", "")).strip().upper()
         fused["status"] = (
             "COMPLETE"
-            if scene_status == "COMPLETE" and not reset_visible
+            if (
+                (scene_status == "COMPLETE" or completion_latched)
+                and not reset_visible
+                and state_match == "C"
+                and rotation_match != "ROTATED"
+            )
             else "ON_GOING"
         )
         fused["failure_type"] = "NONE"
@@ -670,6 +798,119 @@ def load_reference_images(reference_image_paths):
     return reference_images
 
 
+def load_video_crop_reference_images(video_path, labeled_frame_indices):
+    """Load labeled 300x250 reset references from the configured video."""
+    capture = cv2.VideoCapture(str(video_path))
+    if not capture.isOpened():
+        raise RuntimeError(f"Could not open reference video {video_path}")
+
+    reference_images = []
+    x1, y1 = CROP_TOP_LEFT
+    x2, y2 = CROP_BOTTOM_RIGHT
+    try:
+        for image_label, frame_index in labeled_frame_indices:
+            capture.set(cv2.CAP_PROP_POS_FRAMES, frame_index)
+            ok, frame = capture.read()
+            if not ok:
+                raise RuntimeError(
+                    f"Could not read {image_label} from frame {frame_index}"
+                )
+            reference_images.append(
+                (image_label, frame[y1:y2, x1:x2].copy())
+            )
+    finally:
+        capture.release()
+    return reference_images
+
+
+def make_comparison_grid(reference_images, current_image, columns=2):
+    """Combine labeled references and current view into one VLM image item."""
+    if not isinstance(columns, int) or isinstance(columns, bool):
+        raise TypeError("columns must be an integer")
+    if columns < 1:
+        raise ValueError("columns must be at least one")
+    panels = [*reference_images, ("CURRENT", current_image)]
+    if not panels:
+        raise ValueError("At least one grid panel is required")
+    for image_label, image in panels:
+        if not isinstance(image_label, str) or not image_label:
+            raise ValueError("Every grid panel needs a non-empty label")
+        if not isinstance(image, np.ndarray) or image.ndim != 3:
+            raise ValueError(f"Invalid image for grid panel {image_label}")
+
+    rows = (len(panels) + columns - 1) // columns
+    tile_width = max(image.shape[1] for _, image in panels)
+    tile_height = max(image.shape[0] for _, image in panels)
+    label_height = 34
+    grid = np.full(
+        (rows * (tile_height + label_height), columns * tile_width, 3),
+        245,
+        dtype=np.uint8,
+    )
+    for panel_index, (image_label, image) in enumerate(panels):
+        row, column = divmod(panel_index, columns)
+        x = column * tile_width
+        y = row * (tile_height + label_height)
+        grid[
+            y + label_height:y + label_height + image.shape[0],
+            x:x + image.shape[1],
+        ] = image
+        cv2.putText(
+            grid,
+            image_label,
+            (x + 6, y + 24),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            0.58,
+            (15, 15, 15),
+            2 if image_label == "CURRENT" else 1,
+            cv2.LINE_AA,
+        )
+    return grid
+
+
+def build_compact_grid_message(
+    system_prompt,
+    reference_images,
+    current_image,
+    current_frame_index,
+    grid_meaning,
+):
+    """Build a focused request containing one labeled comparison-grid image."""
+    comparison_grid = make_comparison_grid(
+        reference_images,
+        current_image,
+    )
+    ok, encoded_image = cv2.imencode(
+        ".jpg",
+        comparison_grid,
+        [cv2.IMWRITE_JPEG_QUALITY, GRID_JPEG_QUALITY],
+    )
+    if not ok:
+        raise ValueError("Could not encode compact comparison grid")
+    image_base64 = base64.b64encode(encoded_image.tobytes()).decode("ascii")
+    human_content = [
+        {
+            "type": "text",
+            "text": (
+                f"Image label: COMPARISON_GRID. Meaning: {grid_meaning}. "
+                f"Source frame: {current_frame_index}. Classify only CURRENT."
+            ),
+        },
+        {
+            "type": "image_url",
+            "image_url": {
+                "url": f"data:image/jpeg;base64,{image_base64}",
+            },
+        },
+    ]
+    return {
+        "messages": [
+            SystemMessage(content=system_prompt),
+            HumanMessage(content=human_content),
+        ]
+    }
+
+
 def build_message(
     system_prompt,
     query,
@@ -840,24 +1081,33 @@ def build_relation_specialist_message(
 
 
 def run_inference(
-    vlm,
+    scene_vlm,
+    state_vlm,
+    rotation_vlm,
     system_prompt,
+    state_specialist_prompt,
     rotation_specialist_prompt,
-    drop_specialist_prompt,
     task,
     demonstration_images,
+    state_reference_images,
     rotation_reference_images,
-    drop_reference_images,
     camera,
     stop_event,
     latest_inference_result,
 ):
-    """Send snapshots to the model without blocking the video canvas."""
+    """Run the fast failure path while scene/completion checks stay async."""
     last_frame_index = None
     previous_detection_context = None
     failure_tracker = AttemptFailureTracker(
-        rotation_confirmation_count=ROTATION_CONFIRMATION_COUNT
+        fps=camera.fps,
+        rotation_confirmation_seconds=ROTATION_CONFIRMATION_SECONDS,
     )
+    latest_scene_content = None
+    latest_scene_frame = None
+    last_scene_submitted_frame = None
+    scene_future = None
+    scene_future_frame = None
+    completion_latched = False
 
     with (
         open(
@@ -866,8 +1116,50 @@ def run_inference(
             encoding="utf-8",
             buffering=1,
         ) as output_log,
+        open(
+            LATENCY_OUTPUT_PATH,
+            "w",
+            encoding="utf-8",
+            buffering=1,
+        ) as latency_log,
         ThreadPoolExecutor(max_workers=3) as model_request_pool,
     ):
+        def collect_scene_result():
+            nonlocal scene_future
+            nonlocal scene_future_frame
+            nonlocal latest_scene_content
+            nonlocal latest_scene_frame
+            nonlocal completion_latched
+
+            if scene_future is None or not scene_future.done():
+                return None
+
+            completed_frame = scene_future_frame
+            try:
+                scene_response, scene_latency = scene_future.result()
+            except Exception as exc:
+                completed = {
+                    "source_frame": completed_frame,
+                    "error": f"{type(exc).__name__}: {exc}",
+                }
+            else:
+                latest_scene_content = scene_response.content
+                latest_scene_frame = completed_frame
+                parsed_scene = parse_response_content(scene_response.content)
+                if (
+                    isinstance(parsed_scene, dict)
+                    and str(parsed_scene.get("status", "")).strip().upper()
+                    == "COMPLETE"
+                ):
+                    completion_latched = True
+                completed = {
+                    "source_frame": completed_frame,
+                    **scene_latency,
+                }
+            scene_future = None
+            scene_future_frame = None
+            return completed
+
         while not stop_event.is_set():
             frame_chunk, current_frame_index = camera.get()
 
@@ -881,53 +1173,120 @@ def run_inference(
             ):
                 previous_detection_context = None
                 failure_tracker.reset()
+                latest_scene_content = None
+                latest_scene_frame = None
+                last_scene_submitted_frame = None
+                completion_latched = False
 
             last_frame_index = current_frame_index
-            scene_message = build_message(
-                system_prompt,
-                task,
-                demonstration_images,
-                frame_chunk,
+            completed_scene_request = collect_scene_result()
+            current_crop = frame_chunk[0][1]
+            state_message = build_compact_grid_message(
+                state_specialist_prompt,
+                state_reference_images,
+                current_crop,
                 current_frame_index=current_frame_index,
-                previous_detection_context=previous_detection_context,
+                grid_meaning=(
+                    "labeled reset, controlled, safe-occlusion, and dropped "
+                    "references plus the current close view"
+                ),
             )
-            rotation_message = build_relation_specialist_message(
+            rotation_message = build_compact_grid_message(
                 rotation_specialist_prompt,
                 rotation_reference_images,
-                frame_chunk,
+                current_crop,
                 current_frame_index=current_frame_index,
-            )
-            drop_message = build_relation_specialist_message(
-                drop_specialist_prompt,
-                drop_reference_images,
-                frame_chunk,
-                current_frame_index=current_frame_index,
+                grid_meaning=(
+                    "labeled normal and rotated references plus the current "
+                    "close view"
+                ),
             )
 
-            scene_future = model_request_pool.submit(
-                vlm.invoke,
-                scene_message["messages"],
+            scene_due = (
+                scene_future is None
+                and failure_tracker.latched_failure is None
+                and (
+                    last_scene_submitted_frame is None
+                    or current_frame_index - last_scene_submitted_frame
+                    >= SCENE_CHECK_INTERVAL_FRAMES
+                )
             )
-            rotation_future = model_request_pool.submit(
-                vlm.invoke,
-                rotation_message["messages"],
+            submitted_scene_frame = None
+            if scene_due:
+                scene_message = build_message(
+                    system_prompt,
+                    task,
+                    demonstration_images,
+                    frame_chunk,
+                    current_frame_index=current_frame_index,
+                    previous_detection_context=previous_detection_context,
+                )
+                scene_future = model_request_pool.submit(
+                    invoke_with_latency,
+                    scene_vlm,
+                    scene_message["messages"],
+                )
+                scene_future_frame = current_frame_index
+                last_scene_submitted_frame = current_frame_index
+                submitted_scene_frame = current_frame_index
+
+            fast_requests_started_at = time.perf_counter()
+            state_future = model_request_pool.submit(
+                invoke_with_latency,
+                state_vlm,
+                state_message["messages"],
             )
-            drop_future = model_request_pool.submit(
-                vlm.invoke,
-                drop_message["messages"],
-            )
-            scene_response = scene_future.result()
-            rotation_response = rotation_future.result()
-            drop_response = drop_future.result()
+            rotation_future = None
+            if failure_tracker.latched_failure is None:
+                rotation_future = model_request_pool.submit(
+                    invoke_with_latency,
+                    rotation_vlm,
+                    rotation_message["messages"],
+                )
+
+            state_response, state_latency = state_future.result()
+            rotation_content = None
+            rotation_latency = None
+            if rotation_future is not None:
+                rotation_response, rotation_latency = rotation_future.result()
+                rotation_content = rotation_response.content
+            fast_parallel_requests_ms = (
+                time.perf_counter() - fast_requests_started_at
+            ) * 1000
+
+            newly_completed_scene_request = collect_scene_result()
+            if newly_completed_scene_request is not None:
+                completed_scene_request = newly_completed_scene_request
 
             failure_state = failure_tracker.update(
-                scene_response.content,
-                rotation_response.content,
-                drop_response.content,
+                current_frame_index,
+                state_response.content,
+                rotation_content,
             )
+            if (
+                failure_state["reset_visible"]
+                or failure_state["state_match"] == "D"
+                or failure_state["failure_type"] is not None
+            ):
+                completion_latched = False
+            if failure_state["reset_visible"]:
+                latest_scene_content = None
+                latest_scene_frame = None
+            scene_age_frames = None
+            scene_content_for_fusion = None
+            if (
+                latest_scene_content is not None
+                and latest_scene_frame is not None
+                and current_frame_index >= latest_scene_frame
+            ):
+                scene_age_frames = current_frame_index - latest_scene_frame
+                if scene_age_frames <= SCENE_RESULT_MAX_AGE_FRAMES:
+                    scene_content_for_fusion = latest_scene_content
+
             fused_response = fuse_detection_response(
-                scene_response.content,
+                scene_content_for_fusion,
                 failure_state,
+                completion_latched=completion_latched,
             )
             response_content = json.dumps(fused_response, indent=2)
             previous_detection_context = detection_context_from_response(
@@ -939,6 +1298,49 @@ def run_inference(
                 current_frame_index,
                 response_content,
             )
+
+            latency_record = {
+                "frame_index": current_frame_index,
+                "video_timestamp_s": round(
+                    current_frame_index / camera.fps,
+                    3,
+                ),
+                "completed_at_utc": datetime.now(timezone.utc).isoformat(),
+                # Retain this key for existing log consumers. It now measures
+                # only the latency-critical compact failure path.
+                "parallel_requests_ms": round(
+                    fast_parallel_requests_ms,
+                    3,
+                ),
+                "fast_parallel_requests_ms": round(
+                    fast_parallel_requests_ms,
+                    3,
+                ),
+                "scene_submitted_frame": submitted_scene_frame,
+                "scene_in_flight": scene_future is not None,
+                "scene_result_frame": latest_scene_frame,
+                "scene_age_frames": scene_age_frames,
+                "completion_latched": completion_latched,
+                "requests": {
+                    "state": state_latency,
+                    "rotation": rotation_latency,
+                    "scene_completed": completed_scene_request,
+                },
+                "observations": {
+                    "state": failure_state["state_match"],
+                    "rotation": failure_state["rotation_match"],
+                    "rotation_evidence_frames": failure_state[
+                        "rotation_evidence_frames"
+                    ],
+                    "rotation_evidence_seconds": failure_state[
+                        "rotation_evidence_seconds"
+                    ],
+                    "failure_type": failure_state["failure_type"],
+                },
+            }
+            latency_line = json.dumps(latency_record, separators=(",", ":"))
+            print(f"Latency {latency_line}")
+            print(latency_line, file=latency_log, flush=True)
 
             print(f"Frame [{current_frame_index}] ", response_content)
             print(
@@ -954,7 +1356,11 @@ def archive_run_outputs(run_id):
     run_directory = RUN_ARCHIVE_ROOT / run_id
     run_directory.mkdir(parents=True, exist_ok=False)
     archived_paths = {}
-    for output_path in (Path(LOG_OUTPUT_PATH), Path(VIDEO_OUTPUT_PATH)):
+    for output_path in (
+        Path(LOG_OUTPUT_PATH),
+        Path(LATENCY_OUTPUT_PATH),
+        Path(VIDEO_OUTPUT_PATH),
+    ):
         if output_path.is_file():
             destination = run_directory / output_path.name
             shutil.copy2(output_path, destination)
@@ -1058,32 +1464,38 @@ def main():
     #     temperature=0,
     # )
 
-    vlm = ChatOpenAI(
-            model="/workspace/models/gemma-4-26B-A4B-it",
-            base_url="http://127.0.0.1:8000/v1",
-            api_key="EMPTY",
-            temperature=0,
-        )
+    scene_vlm = VLLMTimingChatOpenAI(
+        model="/workspace/models/gemma-4-26B-A4B-it",
+        base_url="http://127.0.0.1:8000/v1",
+        api_key="EMPTY",
+        temperature=0,
+    )
+    state_vlm = scene_vlm.bind(max_tokens=8)
+    rotation_vlm = scene_vlm.bind(max_tokens=32)
 
     system_prompt = BRAIN_PROMPT_PATH.read_text(encoding="utf-8")
-    rotation_specialist_prompt = (
-        ROTATION_SPECIALIST_PROMPT_PATH.read_text(encoding="utf-8")
-    )
-    drop_specialist_prompt = DROP_SPECIALIST_PROMPT_PATH.read_text(
+    state_specialist_prompt = STATE_DROP_GRID_PROMPT_PATH.read_text(
         encoding="utf-8"
+    )
+    rotation_specialist_prompt = (
+        ROTATION_GRID_PROMPT_PATH.read_text(encoding="utf-8")
     )
     TASK = TASK_PROMPT_PATH.read_text(encoding="utf-8")
     demonstration_images = load_demonstration_images()
+    state_reference_images = [
+        *load_video_crop_reference_images(
+            VIDEO_INPUT_PATH,
+            STATE_GRID_RESET_REFERENCE_FRAMES,
+        ),
+        *load_reference_images(STATE_GRID_STATIC_REFERENCE_IMAGE_PATHS),
+    ]
     rotation_reference_images = load_reference_images(
-        ROTATION_REFERENCE_IMAGE_PATHS
-    )
-    drop_reference_images = load_reference_images(
-        DROP_REFERENCE_IMAGE_PATHS
+        ROTATION_GRID_REFERENCE_IMAGE_PATHS
     )
 
     # camera = SimulatedCamera("video/insert_plug-aug-28-105trail.MOV", loop=False)
     camera = SimulatedCamera(
-        "video/failure_part.mp4",
+        VIDEO_INPUT_PATH,
         loop=False,
         window_size=WINDOW_SIZE,
     )
@@ -1093,14 +1505,16 @@ def main():
     inference_thread = threading.Thread(
         target=run_inference,
         args=(
-            vlm,
+            scene_vlm,
+            state_vlm,
+            rotation_vlm,
             system_prompt,
+            state_specialist_prompt,
             rotation_specialist_prompt,
-            drop_specialist_prompt,
             TASK,
             demonstration_images,
+            state_reference_images,
             rotation_reference_images,
-            drop_reference_images,
             camera,
             stop_event,
             latest_inference_result,

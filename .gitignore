@@ -1,4 +1,9 @@
 video
 
 test
-output.mp4
+output*
+latency.jsonl
+__pycache__/
+*.py[cod]
+
+runs
