@@ -32,11 +32,11 @@ import base64
 
 
 VIDEO_WINDOW_NAME = "RoboBrain video stream"
-VIDEO_OUTPUT_PATH = "output.mp4"
-LOG_OUTPUT_PATH = "output.log"
-LATENCY_OUTPUT_PATH = "latency.jsonl"
+VIDEO_OUTPUT_PATH = "output-insert_plug-full_model-aug-28-105trail-1x-w848h480.mp4"
+LOG_OUTPUT_PATH = "output-insert_plug-full_model-aug-28-105trail-1x-w848h480.log"
+LATENCY_OUTPUT_PATH = "output-insert_plug-full_model-aug-28-105trail-1x-w848h480-latency.jsonl"
 RUN_ARCHIVE_ROOT = Path("runs")
-VIDEO_INPUT_PATH = Path("video/failure_part.mp4")
+VIDEO_INPUT_PATH = Path("video/insert_plug-full_model-aug-28-105trail-1x-w848h480.MOV")
 WINDOW_SIZE = 1
 CROP_TOP_LEFT = (350, 50)
 CROP_BOTTOM_RIGHT = (650, 300)
