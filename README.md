@@ -1,31 +1,59 @@
 # RoboBrain
 
-## Failure monitoring and latency
+## Attempt-scoped terminal monitoring
 
-The latency-critical path now sends two compact one-image requests per sampled
-timestamp:
+Each robot attempt is monitored by focused terminal specialists:
 
-- `state`: stand/reset, controlled, dropped, or uncertain;
-- `rotation`: normal, rotated, or uncertain.
+- two inserted/seated reference-bank votes;
+- one loose-on-table drop specialist;
+- two tight-view rotation verification votes.
 
-They run concurrently. The larger general `scene` request remains available for
-completion detection, but runs asynchronously every 120 source frames and does
-not block failure monitoring. After failure is latched, rotation requests stop
-until the state specialist sees the plug back on its stand.
+The five compact one-image requests run concurrently while an attempt is active.
+The deterministic attempt manager emits exactly one terminal `COMPLETE` or
+`FAIL`, then stops terminal inference. During simulated continuous-video replay,
+the state/reset specialist provides a one-observation reset fallback and starts a
+fresh attempt after the robot leaves that scene. Real deployment should instead
+create the fresh manager from the external reset-complete handshake.
+
+Terminal rules:
+
+- inserted requires both inserted banks to vote positive on the same frame;
+- drop requires two consecutive loose-on-table positives;
+- rotation requires both tight-view verifiers and the configured source-frame
+  duration of continuous evidence; it is logged in shadow mode by default;
+- contradictory inserted and drop votes abstain and continue monitoring.
+
+Rotation terminal events remain disabled until an independent positive failure
+attempt is available. Set `ROBOBRAIN_ENABLE_ROTATION_TERMINAL=1` only for
+explicit experimental runs; shadow evidence remains present in `latency.jsonl`.
+
+Specialist demonstrations are packaged as lossless crops under
+`src/robobrain/prompt/reference_frames`. They are independent of
+`VIDEO_INPUT_PATH`; changing the monitored video changes only the live
+`CURRENT` panel. To intentionally rebuild those assets from the canonical
+videos, run:
+
+```powershell
+uv run python test/vlm_latency_experiments/materialize_production_reference_assets.py
+```
 
 Start the SSH port forward, then run the application as usual:
 
 ```powershell
-ssh -N -L 8000:127.0.0.1:8000 -p 13316 -i ~/.ssh/id_ed25519 root@216.243.220.242
+ssh -N -L 8000:127.0.0.1:8000 -p 25521 -i ~/.ssh/id_ed25519 root@82.221.170.234
+
+# Enable Rotation detection
+$env:ROBOBRAIN_ENABLE_ROTATION_TERMINAL = "1"
+
 uv run robobrain
 ```
 
-Each completed fast-path timestamp writes one JSON object to `latency.jsonl`.
-The file is also copied into the timestamped `runs/` archive at shutdown.
-`parallel_requests_ms` and `fast_parallel_requests_ms` both measure the compact
-failure path; `requests.scene_completed` is populated only on the cycle that an
-asynchronous scene request finishes. Every completed request has these main
-values:
+Each sampled timestamp writes one JSON object to `latency.jsonl`. The file is
+also copied into the timestamped `runs/` archive at shutdown.
+`parallel_requests_ms` and `fast_parallel_requests_ms` measure the active phase
+for that frame. `requests` contains per-specialist timing and `attempt` contains
+the attempt ID, lifecycle phase, terminal result, and temporal evidence. Every
+completed request has these main values:
 
 - `round_trip_ms`: client-observed duration of the complete call.
 - `generation_latency_ms`: remote vLLM queue + prefill/first-token + decode.
@@ -45,6 +73,5 @@ vLLM engine timer (for example some request or image preprocessing). This is
 the finest per-request split available from the server's existing timing
 response without adding HTTP-boundary instrumentation to the remote server.
 
-Rotation confirmation is measured in source-video time, not request count. A
-rotation must remain observed for 0.6 seconds before it is latched. This keeps
-the threshold stable when faster inference causes more frames to be sampled.
+Rotation confirmation is measured in source-video frames, not request count, so
+faster inference does not silently weaken the threshold.

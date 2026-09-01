@@ -36,11 +36,12 @@ VIDEO_OUTPUT_PATH = "output.mp4"
 LOG_OUTPUT_PATH = "output.log"
 LATENCY_OUTPUT_PATH = "latency.jsonl"
 RUN_ARCHIVE_ROOT = Path("runs")
-VIDEO_INPUT_PATH = Path("video/insert_plug-full_model-aug-28-105trail-1x-w848h480.MOV")
+VIDEO_INPUT_PATH = Path("video/failure_part.mp4")
 WINDOW_SIZE = 1
 CROP_TOP_LEFT = (350, 50)
 CROP_BOTTOM_RIGHT = (650, 300)
 PROMPT_DIRECTORY = Path(__file__).resolve().parent / "prompt"
+REFERENCE_FRAME_DIRECTORY = PROMPT_DIRECTORY / "reference_frames"
 BRAIN_PROMPT_PATH = PROMPT_DIRECTORY / "brain_prompt.md"
 TASK_PROMPT_PATH = PROMPT_DIRECTORY / "TASK.md"
 ROTATION_SPECIALIST_PROMPT_PATH = (
@@ -53,7 +54,21 @@ ROTATION_GRID_PROMPT_PATH = (
 STATE_DROP_GRID_PROMPT_PATH = (
     PROMPT_DIRECTORY / "state_drop_grid_compact.md"
 )
+INSERTED_BINARY_PROMPT_PATH = PROMPT_DIRECTORY / "inserted_binary.md"
+DROP_BINARY_PROMPT_PATH = PROMPT_DIRECTORY / "drop_binary.md"
+ROTATION_VERIFY_PROMPT_PATH = (
+    PROMPT_DIRECTORY / "rotation_hard_negatives.md"
+)
 ROTATION_CONFIRMATION_SECONDS = 0.6
+TERMINAL_ROTATION_CONFIRMATION_FRAMES = 25
+ROTATION_TERMINAL_ENABLED = (
+    os.environ.get("ROBOBRAIN_ENABLE_ROTATION_TERMINAL", "0") == "1"
+)
+TERMINAL_DROP_CONFIRMATION_COUNT = 2
+# Visual reset is only a continuous-video simulation fallback. Real deployment
+# should create a fresh manager from the external reset-complete handshake.
+INITIAL_STATE_CONFIRMATION_COUNT = 1
+TIGHT_CROP = (420, 90, 600, 260)
 SCENE_CHECK_INTERVAL_FRAMES = 120
 SCENE_RESULT_MAX_AGE_FRAMES = 120
 GRID_JPEG_QUALITY = 95
@@ -110,6 +125,72 @@ STATE_GRID_STATIC_REFERENCE_IMAGE_PATHS = (
 STATE_GRID_RESET_REFERENCE_FRAMES = (
     ("RESET_A", 29),
     ("RESET_B", 1074),
+)
+INSERTED_BANK_A_POSITIVE_FRAMES = (
+    ("INSERTED_A", 4073),
+    ("INSERTED_B", 10176),
+)
+INSERTED_BANK_B_POSITIVE_FRAMES = (
+    ("INSERTED_A", 9612),
+    ("INSERTED_B", 17125),
+)
+INSERTED_NEGATIVE_FRAMES = (
+    ("NOT_INSERTED_TRANSPORT", 4600),
+    ("NOT_INSERTED_APPROACH", 15850),
+)
+DROP_HUMAN_REFERENCE_FRAME = (("HUMAN", 15950),)
+ROTATION_BANK_A_NORMAL_FRAMES = (
+    ("NORMAL_B", 7569),
+    ("NORMAL_C", 9447),
+)
+ROTATION_BANK_B_NORMAL_FRAMES = (
+    ("NORMAL_B", 7301),
+    ("NORMAL_C", 17074),
+)
+# Frame-number tuples above are retained for offline experiment compatibility.
+# Production loads the materialized crops below and never seeks into the input
+# video for reference images.
+STATE_GRID_RESET_REFERENCE_IMAGE_PATHS = (
+    ("RESET_A", REFERENCE_FRAME_DIRECTORY / "full_f000029_crop.png"),
+    ("RESET_B", REFERENCE_FRAME_DIRECTORY / "full_f001074_crop.png"),
+)
+INSERTED_BANK_A_POSITIVE_IMAGE_PATHS = (
+    ("INSERTED_A", REFERENCE_FRAME_DIRECTORY / "full_f004073_crop.png"),
+    ("INSERTED_B", REFERENCE_FRAME_DIRECTORY / "full_f010176_crop.png"),
+)
+INSERTED_BANK_B_POSITIVE_IMAGE_PATHS = (
+    ("INSERTED_A", REFERENCE_FRAME_DIRECTORY / "full_f009612_crop.png"),
+    ("INSERTED_B", REFERENCE_FRAME_DIRECTORY / "full_f017125_crop.png"),
+)
+INSERTED_NEGATIVE_IMAGE_PATHS = (
+    (
+        "NOT_INSERTED_TRANSPORT",
+        REFERENCE_FRAME_DIRECTORY / "full_f004600_crop.png",
+    ),
+    (
+        "NOT_INSERTED_APPROACH",
+        REFERENCE_FRAME_DIRECTORY / "full_f015850_crop.png",
+    ),
+)
+STAND_RESET_REFERENCE_IMAGE_PATHS = (
+    (
+        "STAND_RESET",
+        REFERENCE_FRAME_DIRECTORY / "failure_part_f001074_crop.png",
+    ),
+)
+DROPPED_REFERENCE_IMAGE_PATHS = (
+    ("DROPPED", REFERENCE_FRAME_DIRECTORY / "full_f006040_crop.png"),
+)
+DROP_HUMAN_REFERENCE_IMAGE_PATHS = (
+    ("HUMAN", REFERENCE_FRAME_DIRECTORY / "full_f015950_crop.png"),
+)
+ROTATION_BANK_A_NORMAL_IMAGE_PATHS = (
+    ("NORMAL_B", REFERENCE_FRAME_DIRECTORY / "full_f007569_crop.png"),
+    ("NORMAL_C", REFERENCE_FRAME_DIRECTORY / "full_f009447_crop.png"),
+)
+ROTATION_BANK_B_NORMAL_IMAGE_PATHS = (
+    ("NORMAL_B", REFERENCE_FRAME_DIRECTORY / "full_f007301_crop.png"),
+    ("NORMAL_C", REFERENCE_FRAME_DIRECTORY / "full_f017074_crop.png"),
 )
 IMAGE_LABEL_DESCRIPTIONS = {
     "SUCCESS_DEMO": "Reference example of a fully inserted plug",
@@ -481,6 +562,233 @@ class AttemptFailureTracker:
         }
 
 
+class TerminalAttemptManager:
+    """Deterministically fuse terminal specialists for one attempt at a time."""
+
+    def __init__(
+        self,
+        rotation_confirmation_frames=TERMINAL_ROTATION_CONFIRMATION_FRAMES,
+        drop_confirmation_count=TERMINAL_DROP_CONFIRMATION_COUNT,
+        initial_confirmation_count=INITIAL_STATE_CONFIRMATION_COUNT,
+        rotation_terminal_enabled=ROTATION_TERMINAL_ENABLED,
+    ):
+        self.rotation_confirmation_frames = rotation_confirmation_frames
+        self.drop_confirmation_count = drop_confirmation_count
+        self.initial_confirmation_count = initial_confirmation_count
+        self.rotation_terminal_enabled = rotation_terminal_enabled
+        self.attempt_id = 0
+        self.hard_reset()
+
+    def hard_reset(self):
+        self.phase = "WAIT_INITIAL"
+        self.initial_streak = 0
+        self.departure_streak = 0
+        self.terminal_status = None
+        self.failure_type = None
+        self.terminal_frame = None
+        self.terminal_event_emitted = False
+        self._clear_evidence()
+
+    def _clear_evidence(self):
+        self.drop_streak = 0
+        self.rotation_started_frame = None
+        self.inserted_consensus = False
+
+    def observe_initial_state(self, state_choice):
+        """Advance WAIT_INITIAL/READY/TERMINAL using the reset specialist."""
+        reset_completed = False
+        monitoring_started = False
+        if self.phase in {"WAIT_INITIAL", "TERMINAL"}:
+            if state_choice == "S":
+                self.initial_streak += 1
+            else:
+                self.initial_streak = 0
+            if self.initial_streak >= self.initial_confirmation_count:
+                self.phase = "READY"
+                self.attempt_id += 1
+                self.initial_streak = 0
+                self.departure_streak = 0
+                self.terminal_status = None
+                self.failure_type = None
+                self.terminal_frame = None
+                self.terminal_event_emitted = False
+                self._clear_evidence()
+                reset_completed = True
+        elif self.phase == "READY":
+            if state_choice == "S":
+                self.departure_streak = 0
+            elif state_choice in {"C", "D"}:
+                self.departure_streak += 1
+            else:
+                self.departure_streak = 0
+            if self.departure_streak >= self.initial_confirmation_count:
+                self.phase = "MONITORING"
+                self.departure_streak = 0
+                self._clear_evidence()
+                monitoring_started = True
+        return {
+            "reset_completed": reset_completed,
+            "monitoring_started": monitoring_started,
+        }
+
+    def update_terminal_specialists(
+        self,
+        frame_index,
+        inserted_a,
+        inserted_b,
+        drop_choice,
+        rotation_a,
+        rotation_b,
+    ):
+        if self.phase != "MONITORING":
+            return {"terminal_emitted": False, **self.snapshot()}
+
+        inserted_positive = inserted_a == "I" and inserted_b == "I"
+        drop_positive = drop_choice == "D"
+        rotation_positive = rotation_a == "R" and rotation_b == "R"
+        self.inserted_consensus = inserted_positive
+
+        # Contradictory terminal observations abstain instead of guessing.
+        if inserted_positive and drop_positive:
+            self.drop_streak = 0
+            self.rotation_started_frame = None
+            return {"terminal_emitted": False, "conflict": True, **self.snapshot()}
+
+        if drop_positive:
+            self.drop_streak += 1
+        else:
+            self.drop_streak = 0
+
+        if rotation_positive:
+            if self.rotation_started_frame is None:
+                self.rotation_started_frame = frame_index
+        else:
+            self.rotation_started_frame = None
+
+        rotation_evidence_frames = self.rotation_evidence_frames(frame_index)
+        terminal_status = None
+        failure_type = None
+        if inserted_positive:
+            terminal_status = "COMPLETE"
+        elif self.drop_streak >= self.drop_confirmation_count:
+            terminal_status = "FAIL"
+            failure_type = "DROP_OR_CONTROL_LOSS"
+        elif (
+            self.rotation_terminal_enabled
+            and rotation_evidence_frames >= self.rotation_confirmation_frames
+        ):
+            terminal_status = "FAIL"
+            failure_type = "ROTATED_OR_MISALIGNED"
+
+        terminal_emitted = False
+        if terminal_status is not None:
+            self.phase = "TERMINAL"
+            self.terminal_status = terminal_status
+            self.failure_type = failure_type
+            self.terminal_frame = frame_index
+            self.terminal_event_emitted = True
+            terminal_emitted = True
+
+        return {"terminal_emitted": terminal_emitted, **self.snapshot(frame_index)}
+
+    def rotation_evidence_frames(self, current_frame=None):
+        if self.rotation_started_frame is None or current_frame is None:
+            return 0
+        return max(0, current_frame - self.rotation_started_frame)
+
+    def snapshot(self, current_frame=None):
+        return {
+            "attempt_id": self.attempt_id,
+            "phase": self.phase,
+            "terminal_status": self.terminal_status,
+            "failure_type": self.failure_type,
+            "terminal_frame": self.terminal_frame,
+            "drop_streak": self.drop_streak,
+            "rotation_evidence_frames": self.rotation_evidence_frames(
+                current_frame
+            ),
+            "rotation_shadow_alert": bool(
+                not self.rotation_terminal_enabled
+                and self.rotation_evidence_frames(current_frame)
+                >= self.rotation_confirmation_frames
+            ),
+            "inserted_consensus": self.inserted_consensus,
+        }
+
+
+def terminal_response(manager_state, observations, initial_state=None):
+    """Map attempt-manager state back to the established production schema."""
+    phase = manager_state["phase"]
+    status = manager_state.get("terminal_status") or "ON_GOING"
+    failure_type = manager_state.get("failure_type") or "NONE"
+    response = {
+        "white_stand_state": "UNCERTAIN",
+        "gripper_control": "UNCERTAIN",
+        "pin_direction_vs_gripper": "UNCERTAIN",
+        "pin_alignment_with_socket": "UNCERTAIN",
+        "insertion_state": "UNCERTAIN",
+        "grasp_history": "NOT_YET_GRASPED"
+        if phase in {"WAIT_INITIAL", "READY"}
+        else "GRASP_CONFIRMED",
+        "status": status,
+        "failure_type": failure_type,
+        "failure_description": "none",
+    }
+
+    if initial_state == "S" or phase == "READY":
+        response.update(
+            {
+                "white_stand_state": "HOLDING_PLUG",
+                "gripper_control": "NOT_YET_GRASPED",
+                "pin_direction_vs_gripper": "NOT_VISIBLE",
+                "pin_alignment_with_socket": "NOT_AT_SOCKET",
+                "insertion_state": "NOT_INSERTED",
+                "grasp_history": "NOT_YET_GRASPED",
+            }
+        )
+
+    if status == "COMPLETE":
+        response.update(
+            {
+                "white_stand_state": "EMPTY",
+                "gripper_control": "UNCERTAIN",
+                "pin_direction_vs_gripper": "SAME",
+                "pin_alignment_with_socket": "ALIGNED",
+                "insertion_state": "FULLY_SEATED",
+                "grasp_history": "GRASP_CONFIRMED",
+                "failure_description": "none",
+            }
+        )
+    elif failure_type == "DROP_OR_CONTROL_LOSS":
+        response.update(
+            {
+                "white_stand_state": "EMPTY",
+                "gripper_control": "LOST",
+                "pin_direction_vs_gripper": "NOT_VISIBLE",
+                "pin_alignment_with_socket": "NOT_AT_SOCKET",
+                "insertion_state": "NOT_INSERTED",
+                "failure_description": "the plug is visibly loose on the table",
+            }
+        )
+    elif failure_type == "ROTATED_OR_MISALIGNED":
+        response.update(
+            {
+                "white_stand_state": "EMPTY",
+                "gripper_control": "CONTROLLED",
+                "pin_direction_vs_gripper": "DIFFERENT",
+                "insertion_state": "NOT_INSERTED",
+                "failure_description": (
+                    "the plug pin direction differs from the gripper direction"
+                ),
+            }
+        )
+    elif phase == "MONITORING":
+        response["gripper_control"] = "CONTROLLED"
+        if observations.get("rotation_a") == observations.get("rotation_b") == "N":
+            response["pin_direction_vs_gripper"] = "SAME"
+    return response
+
+
 def fuse_detection_response(
     scene_content,
     failure_state,
@@ -799,7 +1107,7 @@ def load_reference_images(reference_image_paths):
 
 
 def load_video_crop_reference_images(video_path, labeled_frame_indices):
-    """Load labeled 300x250 reset references from the configured video."""
+    """Offline experiment helper; production startup uses packaged assets."""
     capture = cv2.VideoCapture(str(video_path))
     if not capture.isOpened():
         raise RuntimeError(f"Could not open reference video {video_path}")
@@ -909,6 +1217,131 @@ def build_compact_grid_message(
             HumanMessage(content=human_content),
         ]
     }
+
+
+def tight_current_crop(frame):
+    """Return the tested tight plug/gripper view in the grid panel size."""
+    x1, y1, x2, y2 = TIGHT_CROP
+    region = frame[y1:y2, x1:x2]
+    return cv2.resize(
+        region,
+        (300, 250),
+        interpolation=cv2.INTER_CUBIC,
+    )
+
+
+def tight_reference_crop(image):
+    """Convert a production 300x250 crop into the tested tight view."""
+    x1 = TIGHT_CROP[0] - CROP_TOP_LEFT[0]
+    y1 = TIGHT_CROP[1] - CROP_TOP_LEFT[1]
+    x2 = TIGHT_CROP[2] - CROP_TOP_LEFT[0]
+    y2 = TIGHT_CROP[3] - CROP_TOP_LEFT[1]
+    region = image[y1:y2, x1:x2]
+    return cv2.resize(
+        region,
+        (300, 250),
+        interpolation=cv2.INTER_CUBIC,
+    )
+
+
+def load_terminal_reference_banks():
+    """Load fixed specialist references without reading the monitored video."""
+    state_references = [
+        *load_reference_images(STATE_GRID_RESET_REFERENCE_IMAGE_PATHS),
+        *load_reference_images(STATE_GRID_STATIC_REFERENCE_IMAGE_PATHS),
+    ]
+
+    inserted_negatives = [
+        *load_reference_images(INSERTED_NEGATIVE_IMAGE_PATHS),
+        *load_reference_images(STAND_RESET_REFERENCE_IMAGE_PATHS),
+        *load_reference_images(DROPPED_REFERENCE_IMAGE_PATHS),
+    ]
+    inserted_references_a = [
+        *load_reference_images(INSERTED_BANK_A_POSITIVE_IMAGE_PATHS),
+        *inserted_negatives,
+    ]
+    inserted_references_b = [
+        *load_reference_images(INSERTED_BANK_B_POSITIVE_IMAGE_PATHS),
+        *inserted_negatives,
+    ]
+
+    success_demo = cv2.imread(str(PROMPT_DIRECTORY / "SUCCESS_DEMO.png"))
+    if success_demo is None:
+        raise RuntimeError("Could not load SUCCESS_DEMO.png")
+    success_demo = cv2.resize(
+        success_demo,
+        (300, 250),
+        interpolation=cv2.INTER_AREA,
+    )
+    drop_references = [
+        *load_reference_images(
+            (
+                ("DROPPED", PROMPT_DIRECTORY / "FAIL_DEMO_1.jpg"),
+                (
+                    "CONTROLLED",
+                    PROMPT_DIRECTORY / "CONTROLLED_NORMAL_DEMO.jpg",
+                ),
+            )
+        ),
+        ("INSERTED", success_demo),
+        *load_reference_images(STAND_RESET_REFERENCE_IMAGE_PATHS),
+        *load_reference_images(DROP_HUMAN_REFERENCE_IMAGE_PATHS),
+    ]
+
+    normal_reference = cv2.imread(
+        str(PROMPT_DIRECTORY / "CONTROLLED_NORMAL_DEMO.jpg")
+    )
+    rotated_a = cv2.imread(str(PROMPT_DIRECTORY / "FAIL_DEMO_2.jpg"))
+    rotated_b = cv2.imread(str(PROMPT_DIRECTORY / "FAIL_DEMO_3.jpg"))
+    if normal_reference is None or rotated_a is None or rotated_b is None:
+        raise RuntimeError("Could not load rotation reference assets")
+    rotation_static_references = [
+        ("NORMAL_A", tight_reference_crop(normal_reference)),
+        ("ROTATED_A", tight_reference_crop(rotated_a)),
+        ("ROTATED_B", tight_reference_crop(rotated_b)),
+    ]
+
+    def rotation_reference_bank(reference_image_paths):
+        normal_references = [
+            (label, tight_reference_crop(image))
+            for label, image in load_reference_images(reference_image_paths)
+        ]
+        return [
+            rotation_static_references[0],
+            *normal_references,
+            *rotation_static_references[1:],
+        ]
+
+    return {
+        "state": state_references,
+        "inserted_a": inserted_references_a,
+        "inserted_b": inserted_references_b,
+        "drop": drop_references,
+        "rotation_a": rotation_reference_bank(
+            ROTATION_BANK_A_NORMAL_IMAGE_PATHS
+        ),
+        "rotation_b": rotation_reference_bank(
+            ROTATION_BANK_B_NORMAL_IMAGE_PATHS
+        ),
+    }
+
+
+def compact_enum_choice(content, valid_choices, default="U"):
+    """Parse and validate a one-character specialist response."""
+    if isinstance(content, str):
+        value = content.strip().strip("`* .\n\r\t").upper()
+        if value in valid_choices:
+            return value
+    return default
+
+
+def compact_rotation_vote(content):
+    """Parse an R/N/U rotation verifier response."""
+    parsed = parse_response_content(content)
+    if not isinstance(parsed, dict):
+        return "U"
+    value = str(parsed.get("rotation", "")).strip().upper()
+    return value if value in {"R", "N", "U"} else "U"
 
 
 def build_message(
@@ -1081,33 +1514,27 @@ def build_relation_specialist_message(
 
 
 def run_inference(
-    scene_vlm,
     state_vlm,
+    inserted_vlm,
+    drop_vlm,
     rotation_vlm,
-    system_prompt,
-    state_specialist_prompt,
-    rotation_specialist_prompt,
-    task,
-    demonstration_images,
-    state_reference_images,
-    rotation_reference_images,
+    state_prompt,
+    inserted_prompt,
+    drop_prompt,
+    rotation_prompt,
+    state_references,
+    inserted_references_a,
+    inserted_references_b,
+    drop_references,
+    rotation_references_a,
+    rotation_references_b,
     camera,
     stop_event,
     latest_inference_result,
 ):
-    """Run the fast failure path while scene/completion checks stay async."""
+    """Run attempt-scoped terminal specialists and simulated visual reset."""
     last_frame_index = None
-    previous_detection_context = None
-    failure_tracker = AttemptFailureTracker(
-        fps=camera.fps,
-        rotation_confirmation_seconds=ROTATION_CONFIRMATION_SECONDS,
-    )
-    latest_scene_content = None
-    latest_scene_frame = None
-    last_scene_submitted_frame = None
-    scene_future = None
-    scene_future_frame = None
-    completion_latched = False
+    attempt_manager = TerminalAttemptManager()
 
     with (
         open(
@@ -1122,44 +1549,8 @@ def run_inference(
             encoding="utf-8",
             buffering=1,
         ) as latency_log,
-        ThreadPoolExecutor(max_workers=3) as model_request_pool,
+        ThreadPoolExecutor(max_workers=5) as model_request_pool,
     ):
-        def collect_scene_result():
-            nonlocal scene_future
-            nonlocal scene_future_frame
-            nonlocal latest_scene_content
-            nonlocal latest_scene_frame
-            nonlocal completion_latched
-
-            if scene_future is None or not scene_future.done():
-                return None
-
-            completed_frame = scene_future_frame
-            try:
-                scene_response, scene_latency = scene_future.result()
-            except Exception as exc:
-                completed = {
-                    "source_frame": completed_frame,
-                    "error": f"{type(exc).__name__}: {exc}",
-                }
-            else:
-                latest_scene_content = scene_response.content
-                latest_scene_frame = completed_frame
-                parsed_scene = parse_response_content(scene_response.content)
-                if (
-                    isinstance(parsed_scene, dict)
-                    and str(parsed_scene.get("status", "")).strip().upper()
-                    == "COMPLETE"
-                ):
-                    completion_latched = True
-                completed = {
-                    "source_frame": completed_frame,
-                    **scene_latency,
-                }
-            scene_future = None
-            scene_future_frame = None
-            return completed
-
         while not stop_event.is_set():
             frame_chunk, current_frame_index = camera.get()
 
@@ -1171,129 +1562,179 @@ def run_inference(
                 last_frame_index is not None
                 and current_frame_index < last_frame_index
             ):
-                previous_detection_context = None
-                failure_tracker.reset()
-                latest_scene_content = None
-                latest_scene_frame = None
-                last_scene_submitted_frame = None
-                completion_latched = False
+                attempt_manager.hard_reset()
 
             last_frame_index = current_frame_index
-            completed_scene_request = collect_scene_result()
+            full_frame = frame_chunk[0][0]
             current_crop = frame_chunk[0][1]
-            state_message = build_compact_grid_message(
-                state_specialist_prompt,
-                state_reference_images,
-                current_crop,
-                current_frame_index=current_frame_index,
-                grid_meaning=(
-                    "labeled reset, controlled, safe-occlusion, and dropped "
-                    "references plus the current close view"
-                ),
-            )
-            rotation_message = build_compact_grid_message(
-                rotation_specialist_prompt,
-                rotation_reference_images,
-                current_crop,
-                current_frame_index=current_frame_index,
-                grid_meaning=(
-                    "labeled normal and rotated references plus the current "
-                    "close view"
-                ),
-            )
-
-            scene_due = (
-                scene_future is None
-                and failure_tracker.latched_failure is None
-                and (
-                    last_scene_submitted_frame is None
-                    or current_frame_index - last_scene_submitted_frame
-                    >= SCENE_CHECK_INTERVAL_FRAMES
-                )
-            )
-            submitted_scene_frame = None
-            if scene_due:
-                scene_message = build_message(
-                    system_prompt,
-                    task,
-                    demonstration_images,
-                    frame_chunk,
-                    current_frame_index=current_frame_index,
-                    previous_detection_context=previous_detection_context,
-                )
-                scene_future = model_request_pool.submit(
-                    invoke_with_latency,
-                    scene_vlm,
-                    scene_message["messages"],
-                )
-                scene_future_frame = current_frame_index
-                last_scene_submitted_frame = current_frame_index
-                submitted_scene_frame = current_frame_index
-
             fast_requests_started_at = time.perf_counter()
-            state_future = model_request_pool.submit(
-                invoke_with_latency,
-                state_vlm,
-                state_message["messages"],
-            )
-            rotation_future = None
-            if failure_tracker.latched_failure is None:
-                rotation_future = model_request_pool.submit(
-                    invoke_with_latency,
-                    rotation_vlm,
-                    rotation_message["messages"],
-                )
+            request_latencies = {
+                "state": None,
+                "inserted_a": None,
+                "inserted_b": None,
+                "drop": None,
+                "rotation_a": None,
+                "rotation_b": None,
+            }
+            observations = {
+                "state": None,
+                "inserted_a": None,
+                "inserted_b": None,
+                "drop": None,
+                "rotation_a": None,
+                "rotation_b": None,
+            }
 
-            state_response, state_latency = state_future.result()
-            rotation_content = None
-            rotation_latency = None
-            if rotation_future is not None:
-                rotation_response, rotation_latency = rotation_future.result()
-                rotation_content = rotation_response.content
+            if attempt_manager.phase == "MONITORING":
+                inserted_message_a = build_compact_grid_message(
+                    inserted_prompt,
+                    inserted_references_a,
+                    current_crop,
+                    current_frame_index=current_frame_index,
+                    grid_meaning=(
+                        "inserted positives, not-inserted hard negatives, and CURRENT"
+                    ),
+                )
+                inserted_message_b = build_compact_grid_message(
+                    inserted_prompt,
+                    inserted_references_b,
+                    current_crop,
+                    current_frame_index=current_frame_index,
+                    grid_meaning=(
+                        "alternate inserted positives, hard negatives, and CURRENT"
+                    ),
+                )
+                drop_message = build_compact_grid_message(
+                    drop_prompt,
+                    drop_references,
+                    current_crop,
+                    current_frame_index=current_frame_index,
+                    grid_meaning=(
+                        "dropped positive and controlled, inserted, stand, human "
+                        "hard negatives plus CURRENT"
+                    ),
+                )
+                tight_crop = tight_current_crop(full_frame)
+                rotation_message_a = build_compact_grid_message(
+                    rotation_prompt,
+                    rotation_references_a,
+                    tight_crop,
+                    current_frame_index=current_frame_index,
+                    grid_meaning=(
+                        "tight normal hard negatives, rotation positives, and CURRENT"
+                    ),
+                )
+                rotation_message_b = build_compact_grid_message(
+                    rotation_prompt,
+                    rotation_references_b,
+                    tight_crop,
+                    current_frame_index=current_frame_index,
+                    grid_meaning=(
+                        "alternate tight normal hard negatives, rotation positives, "
+                        "and CURRENT"
+                    ),
+                )
+                futures = {
+                    "inserted_a": model_request_pool.submit(
+                        invoke_with_latency,
+                        inserted_vlm,
+                        inserted_message_a["messages"],
+                    ),
+                    "inserted_b": model_request_pool.submit(
+                        invoke_with_latency,
+                        inserted_vlm,
+                        inserted_message_b["messages"],
+                    ),
+                    "drop": model_request_pool.submit(
+                        invoke_with_latency,
+                        drop_vlm,
+                        drop_message["messages"],
+                    ),
+                    "rotation_a": model_request_pool.submit(
+                        invoke_with_latency,
+                        rotation_vlm,
+                        rotation_message_a["messages"],
+                    ),
+                    "rotation_b": model_request_pool.submit(
+                        invoke_with_latency,
+                        rotation_vlm,
+                        rotation_message_b["messages"],
+                    ),
+                }
+                contents = {}
+                for name, future in futures.items():
+                    response, latency = future.result()
+                    contents[name] = response.content
+                    request_latencies[name] = latency
+                observations.update(
+                    {
+                        "inserted_a": compact_enum_choice(
+                            contents["inserted_a"],
+                            {"I", "N", "U"},
+                        ),
+                        "inserted_b": compact_enum_choice(
+                            contents["inserted_b"],
+                            {"I", "N", "U"},
+                        ),
+                        "drop": compact_enum_choice(
+                            contents["drop"],
+                            {"D", "N", "U"},
+                        ),
+                        "rotation_a": compact_rotation_vote(
+                            contents["rotation_a"]
+                        ),
+                        "rotation_b": compact_rotation_vote(
+                            contents["rotation_b"]
+                        ),
+                    }
+                )
+                manager_update = attempt_manager.update_terminal_specialists(
+                    current_frame_index,
+                    observations["inserted_a"],
+                    observations["inserted_b"],
+                    observations["drop"],
+                    observations["rotation_a"],
+                    observations["rotation_b"],
+                )
+                if manager_update["terminal_emitted"]:
+                    terminal_event = {
+                        "attempt_id": manager_update["attempt_id"],
+                        "source_frame": current_frame_index,
+                        "status": manager_update["terminal_status"],
+                        "failure_type": manager_update["failure_type"] or "NONE",
+                    }
+                    print(f"Terminal {json.dumps(terminal_event)}")
+            else:
+                state_message = build_compact_grid_message(
+                    state_prompt,
+                    state_references,
+                    current_crop,
+                    current_frame_index=current_frame_index,
+                    grid_meaning=(
+                        "labeled initial/reset, controlled, safe, and dropped "
+                        "references plus CURRENT"
+                    ),
+                )
+                state_response, state_latency = invoke_with_latency(
+                    state_vlm,
+                    state_message["messages"],
+                )
+                request_latencies["state"] = state_latency
+                observations["state"] = compact_state_choice(
+                    state_response.content
+                )
+                attempt_manager.observe_initial_state(observations["state"])
+
             fast_parallel_requests_ms = (
                 time.perf_counter() - fast_requests_started_at
             ) * 1000
-
-            newly_completed_scene_request = collect_scene_result()
-            if newly_completed_scene_request is not None:
-                completed_scene_request = newly_completed_scene_request
-
-            failure_state = failure_tracker.update(
-                current_frame_index,
-                state_response.content,
-                rotation_content,
-            )
-            if (
-                failure_state["reset_visible"]
-                or failure_state["state_match"] == "D"
-                or failure_state["failure_type"] is not None
-            ):
-                completion_latched = False
-            if failure_state["reset_visible"]:
-                latest_scene_content = None
-                latest_scene_frame = None
-            scene_age_frames = None
-            scene_content_for_fusion = None
-            if (
-                latest_scene_content is not None
-                and latest_scene_frame is not None
-                and current_frame_index >= latest_scene_frame
-            ):
-                scene_age_frames = current_frame_index - latest_scene_frame
-                if scene_age_frames <= SCENE_RESULT_MAX_AGE_FRAMES:
-                    scene_content_for_fusion = latest_scene_content
-
-            fused_response = fuse_detection_response(
-                scene_content_for_fusion,
-                failure_state,
-                completion_latched=completion_latched,
+            manager_state = attempt_manager.snapshot(current_frame_index)
+            fused_response = terminal_response(
+                manager_state,
+                observations,
+                initial_state=observations["state"],
             )
             response_content = json.dumps(fused_response, indent=2)
-            previous_detection_context = detection_context_from_response(
-                current_frame_index,
-                response_content,
-                previous_detection_context=previous_detection_context,
-            )
             latest_inference_result.update(
                 current_frame_index,
                 response_content,
@@ -1306,8 +1747,6 @@ def run_inference(
                     3,
                 ),
                 "completed_at_utc": datetime.now(timezone.utc).isoformat(),
-                # Retain this key for existing log consumers. It now measures
-                # only the latency-critical compact failure path.
                 "parallel_requests_ms": round(
                     fast_parallel_requests_ms,
                     3,
@@ -1316,27 +1755,9 @@ def run_inference(
                     fast_parallel_requests_ms,
                     3,
                 ),
-                "scene_submitted_frame": submitted_scene_frame,
-                "scene_in_flight": scene_future is not None,
-                "scene_result_frame": latest_scene_frame,
-                "scene_age_frames": scene_age_frames,
-                "completion_latched": completion_latched,
-                "requests": {
-                    "state": state_latency,
-                    "rotation": rotation_latency,
-                    "scene_completed": completed_scene_request,
-                },
-                "observations": {
-                    "state": failure_state["state_match"],
-                    "rotation": failure_state["rotation_match"],
-                    "rotation_evidence_frames": failure_state[
-                        "rotation_evidence_frames"
-                    ],
-                    "rotation_evidence_seconds": failure_state[
-                        "rotation_evidence_seconds"
-                    ],
-                    "failure_type": failure_state["failure_type"],
-                },
+                "requests": request_latencies,
+                "observations": observations,
+                "attempt": manager_state,
             }
             latency_line = json.dumps(latency_record, separators=(",", ":"))
             print(f"Latency {latency_line}")
@@ -1464,34 +1885,31 @@ def main():
     #     temperature=0,
     # )
 
-    scene_vlm = VLLMTimingChatOpenAI(
+    base_vlm = VLLMTimingChatOpenAI(
         model="/workspace/models/gemma-4-26B-A4B-it",
         base_url="http://127.0.0.1:8000/v1",
         api_key="EMPTY",
         temperature=0,
     )
-    state_vlm = scene_vlm.bind(max_tokens=8)
-    rotation_vlm = scene_vlm.bind(max_tokens=32)
+    state_vlm = base_vlm.bind(max_tokens=8)
+    inserted_vlm = base_vlm.bind(max_tokens=8)
+    drop_vlm = base_vlm.bind(max_tokens=8)
+    rotation_vlm = base_vlm.bind(max_tokens=24)
 
-    system_prompt = BRAIN_PROMPT_PATH.read_text(encoding="utf-8")
-    state_specialist_prompt = STATE_DROP_GRID_PROMPT_PATH.read_text(
+    state_prompt = STATE_DROP_GRID_PROMPT_PATH.read_text(
         encoding="utf-8"
     )
-    rotation_specialist_prompt = (
-        ROTATION_GRID_PROMPT_PATH.read_text(encoding="utf-8")
-    )
-    TASK = TASK_PROMPT_PATH.read_text(encoding="utf-8")
-    demonstration_images = load_demonstration_images()
-    state_reference_images = [
-        *load_video_crop_reference_images(
-            VIDEO_INPUT_PATH,
-            STATE_GRID_RESET_REFERENCE_FRAMES,
-        ),
-        *load_reference_images(STATE_GRID_STATIC_REFERENCE_IMAGE_PATHS),
-    ]
-    rotation_reference_images = load_reference_images(
-        ROTATION_GRID_REFERENCE_IMAGE_PATHS
-    )
+    inserted_prompt = INSERTED_BINARY_PROMPT_PATH.read_text(encoding="utf-8")
+    drop_prompt = DROP_BINARY_PROMPT_PATH.read_text(encoding="utf-8")
+    rotation_prompt = ROTATION_VERIFY_PROMPT_PATH.read_text(encoding="utf-8")
+
+    reference_banks = load_terminal_reference_banks()
+    state_references = reference_banks["state"]
+    inserted_references_a = reference_banks["inserted_a"]
+    inserted_references_b = reference_banks["inserted_b"]
+    drop_references = reference_banks["drop"]
+    rotation_references_a = reference_banks["rotation_a"]
+    rotation_references_b = reference_banks["rotation_b"]
 
     # camera = SimulatedCamera("video/insert_plug-aug-28-105trail.MOV", loop=False)
     camera = SimulatedCamera(
@@ -1505,16 +1923,20 @@ def main():
     inference_thread = threading.Thread(
         target=run_inference,
         args=(
-            scene_vlm,
             state_vlm,
+            inserted_vlm,
+            drop_vlm,
             rotation_vlm,
-            system_prompt,
-            state_specialist_prompt,
-            rotation_specialist_prompt,
-            TASK,
-            demonstration_images,
-            state_reference_images,
-            rotation_reference_images,
+            state_prompt,
+            inserted_prompt,
+            drop_prompt,
+            rotation_prompt,
+            state_references,
+            inserted_references_a,
+            inserted_references_b,
+            drop_references,
+            rotation_references_a,
+            rotation_references_b,
             camera,
             stop_event,
             latest_inference_result,
