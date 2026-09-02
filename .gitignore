@@ -1,6 +1,6 @@
 video
 
-test
+test/*
 output*
 latency.jsonl
 __pycache__/
