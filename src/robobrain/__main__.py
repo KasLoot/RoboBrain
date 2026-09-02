@@ -3,6 +3,7 @@ import json
 import shutil
 from collections import deque
 from concurrent.futures import ThreadPoolExecutor
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -32,14 +33,12 @@ import base64
 
 
 VIDEO_WINDOW_NAME = "RoboBrain video stream"
-VIDEO_OUTPUT_PATH = "output-insert_plug-full_model-aug-28-105trail-1x-w848h480.mp4"
-LOG_OUTPUT_PATH = "output-insert_plug-full_model-aug-28-105trail-1x-w848h480.log"
-LATENCY_OUTPUT_PATH = "output-insert_plug-full_model-aug-28-105trail-1x-w848h480-latency.jsonl"
+VIDEO_INPUT_PATH = Path("video/insert_plug-full_model-aug-28-105trail-1x.MOV")
+VIDEO_OUTPUT_PATH = f"output-{VIDEO_INPUT_PATH.stem}.mp4"
+LOG_OUTPUT_PATH = f"output-{VIDEO_INPUT_PATH.stem}.log"
+LATENCY_OUTPUT_PATH = f"output-{VIDEO_INPUT_PATH.stem}-latency.jsonl"
 RUN_ARCHIVE_ROOT = Path("runs")
-VIDEO_INPUT_PATH = Path("video/insert_plug-full_model-aug-28-105trail-1x-w848h480.MOV")
 WINDOW_SIZE = 1
-CROP_TOP_LEFT = (350, 50)
-CROP_BOTTOM_RIGHT = (650, 300)
 PROMPT_DIRECTORY = Path(__file__).resolve().parent / "prompt"
 REFERENCE_FRAME_DIRECTORY = PROMPT_DIRECTORY / "reference_frames"
 BRAIN_PROMPT_PATH = PROMPT_DIRECTORY / "brain_prompt.md"
@@ -59,19 +58,25 @@ DROP_BINARY_PROMPT_PATH = PROMPT_DIRECTORY / "drop_binary.md"
 ROTATION_VERIFY_PROMPT_PATH = (
     PROMPT_DIRECTORY / "rotation_hard_negatives.md"
 )
+# Legacy tracker compatibility; the active terminal manager below uses the
+# observation count instead of elapsed source frames.
 ROTATION_CONFIRMATION_SECONDS = 0.6
-TERMINAL_ROTATION_CONFIRMATION_FRAMES = 25
+# Production fusion is observation-based: skipped source frames are never
+# counted as unseen positive evidence.
+TERMINAL_ROTATION_CONFIRMATION_COUNT = 3
 ROTATION_TERMINAL_ENABLED = (
-    os.environ.get("ROBOBRAIN_ENABLE_ROTATION_TERMINAL", "0") == "1"
+    os.environ.get("ROBOBRAIN_ENABLE_ROTATION_TERMINAL", "1") == "1"
 )
-TERMINAL_DROP_CONFIRMATION_COUNT = 2
+VALIDATED_PRODUCTION_SOURCE_SIZE = (1920, 1080)
 # Visual reset is only a continuous-video simulation fallback. Real deployment
 # should create a fresh manager from the external reset-complete handshake.
 INITIAL_STATE_CONFIRMATION_COUNT = 1
-TIGHT_CROP = (420, 90, 600, 260)
 SCENE_CHECK_INTERVAL_FRAMES = 120
 SCENE_RESULT_MAX_AGE_FRAMES = 120
 GRID_JPEG_QUALITY = 95
+# Legacy build_message() assets. The active compact-grid pipeline does not load
+# these arrow-annotated images; load_terminal_reference_banks() uses the
+# unannotated references declared below.
 DEMONSTRATION_IMAGE_PATHS = (
     ("SUCCESS_DEMO", PROMPT_DIRECTORY / "SUCCESS_DEMO_WITH_ARROW.png"),
     ("FAIL_DEMO_1", PROMPT_DIRECTORY / "FAIL_DEMO_1.jpg"),
@@ -111,17 +116,6 @@ ROTATION_GRID_REFERENCE_IMAGE_PATHS = (
     ("ROTATED_A", PROMPT_DIRECTORY / "FAIL_DEMO_2.jpg"),
     ("ROTATED_B", PROMPT_DIRECTORY / "FAIL_DEMO_3.jpg"),
 )
-STATE_GRID_STATIC_REFERENCE_IMAGE_PATHS = (
-    (
-        "CONTROLLED",
-        PROMPT_DIRECTORY / "CONTROLLED_NORMAL_DEMO.jpg",
-    ),
-    (
-        "SAFE_OCCLUDED",
-        PROMPT_DIRECTORY / "SAFE_OCCLUSION_DEMO.jpg",
-    ),
-    ("DROPPED", PROMPT_DIRECTORY / "FAIL_DEMO_1.jpg"),
-)
 STATE_GRID_RESET_REFERENCE_FRAMES = (
     ("RESET_A", 29),
     ("RESET_B", 1074),
@@ -148,49 +142,54 @@ ROTATION_BANK_B_NORMAL_FRAMES = (
     ("NORMAL_C", 17074),
 )
 # Frame-number tuples above are retained for offline experiment compatibility.
-# Production loads the materialized crops below and never seeks into the input
-# video for reference images.
-STATE_GRID_RESET_REFERENCE_IMAGE_PATHS = (
-    ("RESET_A", REFERENCE_FRAME_DIRECTORY / "full_f000029_crop.png"),
-    ("RESET_B", REFERENCE_FRAME_DIRECTORY / "full_f001074_crop.png"),
+# Production resolves these filenames inside the detected resolution's
+# pre-materialized reference directory and never resizes or seeks at runtime.
+STATE_GRID_RESET_REFERENCE_FILES = (
+    ("RESET_A", "full_f000029_crop.png"),
+    ("RESET_B", "full_f001074_crop.png"),
 )
-INSERTED_BANK_A_POSITIVE_IMAGE_PATHS = (
-    ("INSERTED_A", REFERENCE_FRAME_DIRECTORY / "full_f004073_crop.png"),
-    ("INSERTED_B", REFERENCE_FRAME_DIRECTORY / "full_f010176_crop.png"),
+STATE_GRID_STATIC_REFERENCE_FILES = (
+    ("CONTROLLED", "full_f004600_crop.png"),
+    ("SAFE_OCCLUDED", "full_f009447_crop.png"),
+    ("DROPPED", "full_f006040_crop.png"),
 )
-INSERTED_BANK_B_POSITIVE_IMAGE_PATHS = (
-    ("INSERTED_A", REFERENCE_FRAME_DIRECTORY / "full_f009612_crop.png"),
-    ("INSERTED_B", REFERENCE_FRAME_DIRECTORY / "full_f017125_crop.png"),
+INSERTED_BANK_A_POSITIVE_FILES = (
+    ("INSERTED_A", "full_f004073_crop.png"),
+    ("INSERTED_B", "full_f010176_crop.png"),
 )
-INSERTED_NEGATIVE_IMAGE_PATHS = (
-    (
-        "NOT_INSERTED_TRANSPORT",
-        REFERENCE_FRAME_DIRECTORY / "full_f004600_crop.png",
-    ),
-    (
-        "NOT_INSERTED_APPROACH",
-        REFERENCE_FRAME_DIRECTORY / "full_f015850_crop.png",
-    ),
+INSERTED_BANK_B_POSITIVE_FILES = (
+    ("INSERTED_A", "full_f009612_crop.png"),
+    ("INSERTED_B", "full_f017125_crop.png"),
 )
-STAND_RESET_REFERENCE_IMAGE_PATHS = (
-    (
-        "STAND_RESET",
-        REFERENCE_FRAME_DIRECTORY / "failure_part_f001074_crop.png",
-    ),
+INSERTED_NEGATIVE_FILES = (
+    ("NOT_INSERTED_TRANSPORT", "full_f004600_crop.png"),
+    ("NOT_INSERTED_APPROACH", "full_f015850_crop.png"),
 )
-DROPPED_REFERENCE_IMAGE_PATHS = (
-    ("DROPPED", REFERENCE_FRAME_DIRECTORY / "full_f006040_crop.png"),
+STAND_RESET_REFERENCE_FILES = (
+    ("STAND_RESET", "full_f000029_crop.png"),
 )
-DROP_HUMAN_REFERENCE_IMAGE_PATHS = (
-    ("HUMAN", REFERENCE_FRAME_DIRECTORY / "full_f015950_crop.png"),
+DROPPED_REFERENCE_FILES = (
+    ("DROPPED", "full_f006040_crop.png"),
 )
-ROTATION_BANK_A_NORMAL_IMAGE_PATHS = (
-    ("NORMAL_B", REFERENCE_FRAME_DIRECTORY / "full_f007569_crop.png"),
-    ("NORMAL_C", REFERENCE_FRAME_DIRECTORY / "full_f009447_crop.png"),
+DROP_REFERENCE_FILES = (
+    ("DROPPED", "full_f006040_crop.png"),
+    ("CONTROLLED", "full_f004600_crop.png"),
+    ("INSERTED", "full_f004073_crop.png"),
+    ("STAND_RESET", "full_f000029_crop.png"),
+    ("HUMAN", "full_f015950_crop.png"),
 )
-ROTATION_BANK_B_NORMAL_IMAGE_PATHS = (
-    ("NORMAL_B", REFERENCE_FRAME_DIRECTORY / "full_f007301_crop.png"),
-    ("NORMAL_C", REFERENCE_FRAME_DIRECTORY / "full_f017074_crop.png"),
+ROTATION_STATIC_REFERENCE_FILES = (
+    ("NORMAL_A", "full_f004600_tight.png"),
+    ("ROTATED_A", "rotated_a_tight.png"),
+    ("ROTATED_B", "rotated_b_tight.png"),
+)
+ROTATION_BANK_A_NORMAL_FILES = (
+    ("NORMAL_B", "full_f007569_tight.png"),
+    ("NORMAL_C", "full_f009447_tight.png"),
+)
+ROTATION_BANK_B_NORMAL_FILES = (
+    ("NORMAL_B", "full_f007301_tight.png"),
+    ("NORMAL_C", "full_f017074_tight.png"),
 )
 IMAGE_LABEL_DESCRIPTIONS = {
     "SUCCESS_DEMO": "Reference example of a fully inserted plug",
@@ -231,6 +230,134 @@ VALID_DROP_MATCHES = {"DROP", "NO_DROP", "UNCERTAIN"}
 VALID_STATE_MATCHES = {"S", "C", "D", "U"}
 
 
+class UnsupportedResolutionError(ValueError):
+    """Raised when no calibrated crop configuration exists for a source."""
+
+
+@dataclass(frozen=True)
+class ResolutionConfig:
+    """Native crop calibration and references for one source resolution."""
+
+    source_size: tuple[int, int]
+    crop_top_left: tuple[int, int]
+    crop_bottom_right: tuple[int, int]
+    tight_crop_top_left: tuple[int, int]
+    tight_crop_bottom_right: tuple[int, int]
+    reference_directory: Path
+
+    def __post_init__(self):
+        source_width, source_height = self.source_size
+        crop_x1, crop_y1 = self.crop_top_left
+        crop_x2, crop_y2 = self.crop_bottom_right
+        tight_x1, tight_y1 = self.tight_crop_top_left
+        tight_x2, tight_y2 = self.tight_crop_bottom_right
+
+        if not (
+            0 <= crop_x1 < crop_x2 <= source_width
+            and 0 <= crop_y1 < crop_y2 <= source_height
+        ):
+            raise ValueError("Configured crop must be inside the source frame")
+        if not (
+            crop_x1 <= tight_x1 < tight_x2 <= crop_x2
+            and crop_y1 <= tight_y1 < tight_y2 <= crop_y2
+        ):
+            raise ValueError("Configured tight crop must be inside the main crop")
+
+    @property
+    def crop_size(self):
+        return (
+            self.crop_bottom_right[0] - self.crop_top_left[0],
+            self.crop_bottom_right[1] - self.crop_top_left[1],
+        )
+
+    @property
+    def crop_box(self):
+        return (*self.crop_top_left, *self.crop_bottom_right)
+
+    @property
+    def tight_crop_box(self):
+        return (*self.tight_crop_top_left, *self.tight_crop_bottom_right)
+
+    @property
+    def tight_crop_size(self):
+        return (
+            self.tight_crop_bottom_right[0] - self.tight_crop_top_left[0],
+            self.tight_crop_bottom_right[1] - self.tight_crop_top_left[1],
+        )
+
+
+# The 1920x1080 boxes map the calibrated 848x480 field of view back onto the
+# original video before it was resized by resize_video.sh. Keeping these values
+# explicit makes each camera/source calibration independently adjustable.
+RESOLUTION_CONFIGS = {
+    (848, 480): ResolutionConfig(
+        source_size=(848, 480),
+        crop_top_left=(350, 50),
+        crop_bottom_right=(650, 300),
+        tight_crop_top_left=(420, 90),
+        tight_crop_bottom_right=(600, 260),
+        reference_directory=REFERENCE_FRAME_DIRECTORY / "848x480",
+    ),
+    (1920, 1080): ResolutionConfig(
+        source_size=(1920, 1080),
+        crop_top_left=(792, 112),
+        crop_bottom_right=(1472, 675),
+        tight_crop_top_left=(951, 202),
+        tight_crop_bottom_right=(1358, 585),
+        reference_directory=REFERENCE_FRAME_DIRECTORY / "1920x1080",
+    ),
+}
+
+
+def resolution_config_for(width, height):
+    """Return the calibrated configuration or reject the source resolution."""
+    resolution = (int(width), int(height))
+    try:
+        return RESOLUTION_CONFIGS[resolution]
+    except KeyError as error:
+        supported = ", ".join(
+            f"{supported_width}x{supported_height}"
+            for supported_width, supported_height in RESOLUTION_CONFIGS
+        )
+        raise UnsupportedResolutionError(
+            f"Unsupported resolution: {resolution[0]}x{resolution[1]}. "
+            f"Supported resolutions: {supported}."
+        ) from error
+
+
+def detect_resolution(capture):
+    """Detect a capture's dimensions and return its calibrated configuration."""
+    width = round(capture.get(cv2.CAP_PROP_FRAME_WIDTH))
+    height = round(capture.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    return resolution_config_for(width, height)
+
+
+def crop_frame(frame, crop_box, expected_source_size=None):
+    """Crop a frame after optionally enforcing its configured source size."""
+    if not isinstance(frame, np.ndarray) or frame.ndim != 3:
+        raise ValueError("Expected a three-channel video frame")
+
+    frame_height, frame_width = frame.shape[:2]
+    if (
+        expected_source_size is not None
+        and (frame_width, frame_height) != expected_source_size
+    ):
+        resolution_config_for(frame_width, frame_height)
+        raise RuntimeError(
+            "Video resolution changed during capture: expected "
+            f"{expected_source_size[0]}x{expected_source_size[1]}, got "
+            f"{frame_width}x{frame_height}."
+        )
+
+    x1, y1, x2, y2 = crop_box
+    if not (0 <= x1 < x2 <= frame_width and 0 <= y1 < y2 <= frame_height):
+        raise ValueError(
+            f"Crop box {(x1, y1, x2, y2)} is outside "
+            f"{frame_width}x{frame_height}."
+        )
+    return frame[y1:y2, x1:x2].copy()
+
+
 class SimulatedCamera:
     def __init__(self, video_path, loop=True, window_size=1):
         if not isinstance(window_size, int) or isinstance(window_size, bool):
@@ -238,9 +365,23 @@ class SimulatedCamera:
         if window_size < 0:
             raise ValueError("window_size must be non-negative")
 
-        self.cap = cv2.VideoCapture(video_path)
+        self.video_path = Path(video_path)
+        self.cap = cv2.VideoCapture(str(self.video_path))
+        if not self.cap.isOpened():
+            raise RuntimeError(f"Could not open video: {self.video_path}")
+
+        try:
+            self.resolution_config = detect_resolution(self.cap)
+        except Exception:
+            self.cap.release()
+            raise
 
         self.fps = self.cap.get(cv2.CAP_PROP_FPS)
+        if not np.isfinite(self.fps) or self.fps <= 0:
+            self.cap.release()
+            raise RuntimeError(
+                f"Could not detect a valid frame rate for {self.video_path}"
+            )
         self.frame_interval = 1.0 / self.fps
 
         self.loop = loop
@@ -298,13 +439,15 @@ class SimulatedCamera:
                 return None, None
 
             current_frame_index = self.frame_buffer[-1][0]
-            x1, y1 = CROP_TOP_LEFT
-            x2, y2 = CROP_BOTTOM_RIGHT
             frame_chunk = []
 
             for _, frame in self.frame_buffer:
                 full_frame = frame.copy()
-                cropped_frame = full_frame[y1:y2, x1:x2].copy()
+                cropped_frame = crop_frame(
+                    full_frame,
+                    self.resolution_config.crop_box,
+                    expected_source_size=self.resolution_config.source_size,
+                )
                 frame_chunk.append([full_frame, cropped_frame])
 
             return frame_chunk, current_frame_index
@@ -567,13 +710,17 @@ class TerminalAttemptManager:
 
     def __init__(
         self,
-        rotation_confirmation_frames=TERMINAL_ROTATION_CONFIRMATION_FRAMES,
-        drop_confirmation_count=TERMINAL_DROP_CONFIRMATION_COUNT,
+        rotation_confirmation_count=TERMINAL_ROTATION_CONFIRMATION_COUNT,
         initial_confirmation_count=INITIAL_STATE_CONFIRMATION_COUNT,
         rotation_terminal_enabled=ROTATION_TERMINAL_ENABLED,
     ):
-        self.rotation_confirmation_frames = rotation_confirmation_frames
-        self.drop_confirmation_count = drop_confirmation_count
+        if (
+            not isinstance(rotation_confirmation_count, int)
+            or isinstance(rotation_confirmation_count, bool)
+            or rotation_confirmation_count < 1
+        ):
+            raise ValueError("rotation_confirmation_count must be positive")
+        self.rotation_confirmation_count = rotation_confirmation_count
         self.initial_confirmation_count = initial_confirmation_count
         self.rotation_terminal_enabled = rotation_terminal_enabled
         self.attempt_id = 0
@@ -590,7 +737,8 @@ class TerminalAttemptManager:
         self._clear_evidence()
 
     def _clear_evidence(self):
-        self.drop_streak = 0
+        self.drop_consensus = False
+        self.rotation_consensus_streak = 0
         self.rotation_started_frame = None
         self.inserted_consensus = False
 
@@ -631,65 +779,89 @@ class TerminalAttemptManager:
             "monitoring_started": monitoring_started,
         }
 
+    def _emit_terminal(self, frame_index, terminal_status, failure_type=None):
+        self.phase = "TERMINAL"
+        self.terminal_status = terminal_status
+        self.failure_type = failure_type
+        self.terminal_frame = frame_index
+        self.terminal_event_emitted = True
+
+    def update_safety_specialists(
+        self,
+        frame_index,
+        drop_a,
+        drop_b,
+        rotation_a,
+        rotation_b,
+    ):
+        """Fuse one primary safety observation and same-frame drop verification."""
+        if self.phase != "MONITORING":
+            return {"terminal_emitted": False, **self.snapshot()}
+
+        self.drop_consensus = drop_a == "D" and drop_b == "D"
+        rotation_positive = rotation_a == "R" and rotation_b == "R"
+
+        if rotation_positive:
+            if self.rotation_started_frame is None:
+                self.rotation_started_frame = frame_index
+            self.rotation_consensus_streak += 1
+        else:
+            self.rotation_started_frame = None
+            self.rotation_consensus_streak = 0
+
+        failure_type = None
+        if self.drop_consensus:
+            failure_type = "DROP_OR_CONTROL_LOSS"
+        elif (
+            self.rotation_terminal_enabled
+            and self.rotation_consensus_streak
+            >= self.rotation_confirmation_count
+        ):
+            failure_type = "ROTATED_OR_MISALIGNED"
+
+        if failure_type is not None:
+            self._emit_terminal(frame_index, "FAIL", failure_type)
+            return {"terminal_emitted": True, **self.snapshot(frame_index)}
+
+        return {"terminal_emitted": False, **self.snapshot(frame_index)}
+
+    def update_completion_specialists(self, frame_index, inserted_a, inserted_b):
+        """Accept completion only after the current frame's safety decision."""
+        if self.phase != "MONITORING":
+            return {"terminal_emitted": False, **self.snapshot(frame_index)}
+
+        self.inserted_consensus = inserted_a == "I" and inserted_b == "I"
+        if self.inserted_consensus:
+            self._emit_terminal(frame_index, "COMPLETE")
+            return {"terminal_emitted": True, **self.snapshot(frame_index)}
+
+        return {"terminal_emitted": False, **self.snapshot(frame_index)}
+
     def update_terminal_specialists(
         self,
         frame_index,
         inserted_a,
         inserted_b,
-        drop_choice,
+        drop_a,
         rotation_a,
         rotation_b,
+        drop_b=None,
     ):
-        if self.phase != "MONITORING":
-            return {"terminal_emitted": False, **self.snapshot()}
-
-        inserted_positive = inserted_a == "I" and inserted_b == "I"
-        drop_positive = drop_choice == "D"
-        rotation_positive = rotation_a == "R" and rotation_b == "R"
-        self.inserted_consensus = inserted_positive
-
-        # Contradictory terminal observations abstain instead of guessing.
-        if inserted_positive and drop_positive:
-            self.drop_streak = 0
-            self.rotation_started_frame = None
-            return {"terminal_emitted": False, "conflict": True, **self.snapshot()}
-
-        if drop_positive:
-            self.drop_streak += 1
-        else:
-            self.drop_streak = 0
-
-        if rotation_positive:
-            if self.rotation_started_frame is None:
-                self.rotation_started_frame = frame_index
-        else:
-            self.rotation_started_frame = None
-
-        rotation_evidence_frames = self.rotation_evidence_frames(frame_index)
-        terminal_status = None
-        failure_type = None
-        if inserted_positive:
-            terminal_status = "COMPLETE"
-        elif self.drop_streak >= self.drop_confirmation_count:
-            terminal_status = "FAIL"
-            failure_type = "DROP_OR_CONTROL_LOSS"
-        elif (
-            self.rotation_terminal_enabled
-            and rotation_evidence_frames >= self.rotation_confirmation_frames
-        ):
-            terminal_status = "FAIL"
-            failure_type = "ROTATED_OR_MISALIGNED"
-
-        terminal_emitted = False
-        if terminal_status is not None:
-            self.phase = "TERMINAL"
-            self.terminal_status = terminal_status
-            self.failure_type = failure_type
-            self.terminal_frame = frame_index
-            self.terminal_event_emitted = True
-            terminal_emitted = True
-
-        return {"terminal_emitted": terminal_emitted, **self.snapshot(frame_index)}
+        """Compatibility wrapper that always evaluates safety before success."""
+        safety_update = self.update_safety_specialists(
+            frame_index,
+            drop_a,
+            drop_b,
+            rotation_a,
+            rotation_b,
+        )
+        if safety_update["terminal_emitted"]:
+            return safety_update
+        return self.update_completion_specialists(
+            frame_index,
+            inserted_a,
+            inserted_b,
+        )
 
     def rotation_evidence_frames(self, current_frame=None):
         if self.rotation_started_frame is None or current_frame is None:
@@ -703,14 +875,18 @@ class TerminalAttemptManager:
             "terminal_status": self.terminal_status,
             "failure_type": self.failure_type,
             "terminal_frame": self.terminal_frame,
-            "drop_streak": self.drop_streak,
+            "drop_consensus": self.drop_consensus,
+            # Kept for log consumers; temporal drop streaks are no longer used.
+            "drop_streak": 1 if self.drop_consensus else 0,
+            "rotation_consensus_streak": self.rotation_consensus_streak,
+            "rotation_confirmation_count": self.rotation_confirmation_count,
             "rotation_evidence_frames": self.rotation_evidence_frames(
                 current_frame
             ),
             "rotation_shadow_alert": bool(
                 not self.rotation_terminal_enabled
-                and self.rotation_evidence_frames(current_frame)
-                >= self.rotation_confirmation_frames
+                and self.rotation_consensus_streak
+                >= self.rotation_confirmation_count
             ),
             "inserted_consensus": self.inserted_consensus,
         }
@@ -1093,8 +1269,8 @@ def load_demonstration_images():
     return demonstration_images
 
 
-def load_reference_images(reference_image_paths):
-    """Load a labeled image set used by one visual relation specialist."""
+def load_reference_images(reference_image_paths, expected_size=None):
+    """Load pre-cropped references and enforce their native pixel size."""
     reference_images = []
     for image_label, image_path in reference_image_paths:
         image = cv2.imread(str(image_path))
@@ -1102,20 +1278,39 @@ def load_reference_images(reference_image_paths):
             raise RuntimeError(
                 f"Could not load {image_label} from {image_path}"
             )
+        actual_size = image.shape[1], image.shape[0]
+        if expected_size is not None and actual_size != expected_size:
+            raise RuntimeError(
+                f"Reference {image_label} from {image_path} is "
+                f"{actual_size[0]}x{actual_size[1]}, expected the pre-cropped "
+                f"size {expected_size[0]}x{expected_size[1]}."
+            )
         reference_images.append((image_label, image))
     return reference_images
 
 
-def load_video_crop_reference_images(video_path, labeled_frame_indices):
+def reference_paths(resolution_config, labeled_filenames):
+    """Resolve labeled assets within one resolution-specific directory."""
+    return tuple(
+        (label, resolution_config.reference_directory / filename)
+        for label, filename in labeled_filenames
+    )
+
+
+def load_video_crop_reference_images(
+    video_path,
+    labeled_frame_indices,
+    resolution_config=None,
+):
     """Offline experiment helper; production startup uses packaged assets."""
     capture = cv2.VideoCapture(str(video_path))
     if not capture.isOpened():
         raise RuntimeError(f"Could not open reference video {video_path}")
 
     reference_images = []
-    x1, y1 = CROP_TOP_LEFT
-    x2, y2 = CROP_BOTTOM_RIGHT
     try:
+        if resolution_config is None:
+            resolution_config = detect_resolution(capture)
         for image_label, frame_index in labeled_frame_indices:
             capture.set(cv2.CAP_PROP_POS_FRAMES, frame_index)
             ok, frame = capture.read()
@@ -1124,7 +1319,14 @@ def load_video_crop_reference_images(video_path, labeled_frame_indices):
                     f"Could not read {image_label} from frame {frame_index}"
                 )
             reference_images.append(
-                (image_label, frame[y1:y2, x1:x2].copy())
+                (
+                    image_label,
+                    crop_frame(
+                        frame,
+                        resolution_config.crop_box,
+                        expected_source_size=resolution_config.source_size,
+                    ),
+                )
             )
     finally:
         capture.release()
@@ -1140,15 +1342,24 @@ def make_comparison_grid(reference_images, current_image, columns=2):
     panels = [*reference_images, ("CURRENT", current_image)]
     if not panels:
         raise ValueError("At least one grid panel is required")
+    expected_shape = None
     for image_label, image in panels:
         if not isinstance(image_label, str) or not image_label:
             raise ValueError("Every grid panel needs a non-empty label")
         if not isinstance(image, np.ndarray) or image.ndim != 3:
             raise ValueError(f"Invalid image for grid panel {image_label}")
+        if expected_shape is None:
+            expected_shape = image.shape
+        elif image.shape != expected_shape:
+            raise ValueError(
+                "Comparison-grid panel resolution mismatch: "
+                f"expected {expected_shape[1]}x{expected_shape[0]}, got "
+                f"{image.shape[1]}x{image.shape[0]} for {image_label}."
+            )
 
     rows = (len(panels) + columns - 1) // columns
-    tile_width = max(image.shape[1] for _, image in panels)
-    tile_height = max(image.shape[0] for _, image in panels)
+    tile_width = expected_shape[1]
+    tile_height = expected_shape[0]
     label_height = 34
     grid = np.full(
         (rows * (tile_height + label_height), columns * tile_width, 3),
@@ -1173,6 +1384,86 @@ def make_comparison_grid(reference_images, current_image, columns=2):
             2 if image_label == "CURRENT" else 1,
             cv2.LINE_AA,
         )
+    return grid
+
+
+def select_reference_images(reference_images, labels):
+    """Select one image per label while preserving the requested order."""
+    reference_by_label = {}
+    for label, image in reference_images:
+        if label in reference_by_label:
+            raise ValueError(f"Duplicate reference label: {label}")
+        reference_by_label[label] = image
+
+    missing_labels = [label for label in labels if label not in reference_by_label]
+    if missing_labels:
+        raise ValueError(
+            "Missing reference labels: " + ", ".join(missing_labels)
+        )
+    return [(label, reference_by_label[label]) for label in labels]
+
+
+def make_current_focused_grid(reference_images, current_image):
+    """Place three reference thumbnails above one native-size CURRENT panel."""
+    if len(reference_images) != 3:
+        raise ValueError("Current-focused grids require exactly three references")
+    if not isinstance(current_image, np.ndarray) or current_image.ndim != 3:
+        raise ValueError("Invalid CURRENT image")
+
+    current_height, current_width = current_image.shape[:2]
+    for image_label, image in reference_images:
+        if not isinstance(image_label, str) or not image_label:
+            raise ValueError("Every grid panel needs a non-empty label")
+        if not isinstance(image, np.ndarray) or image.shape != current_image.shape:
+            raise ValueError(
+                "Current-focused reference resolution mismatch for "
+                f"{image_label}: expected {current_width}x{current_height}."
+            )
+
+    label_height = max(22, round(current_height * 0.08))
+    reference_width = current_width // 3
+    reference_height = max(
+        1,
+        round(current_height * reference_width / current_width),
+    )
+    current_y = label_height + reference_height + label_height
+    grid = np.full(
+        (current_y + current_height, current_width, 3),
+        245,
+        dtype=np.uint8,
+    )
+
+    for index, (image_label, image) in enumerate(reference_images):
+        x1 = index * reference_width
+        x2 = current_width if index == 2 else (index + 1) * reference_width
+        resized = cv2.resize(
+            image,
+            (x2 - x1, reference_height),
+            interpolation=cv2.INTER_AREA,
+        )
+        grid[label_height:label_height + reference_height, x1:x2] = resized
+        cv2.putText(
+            grid,
+            image_label,
+            (x1 + 3, max(16, label_height - 5)),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            0.42,
+            (15, 15, 15),
+            1,
+            cv2.LINE_AA,
+        )
+
+    grid[current_y:current_y + current_height, :current_width] = current_image
+    cv2.putText(
+        grid,
+        "CURRENT",
+        (4, current_y - 5),
+        cv2.FONT_HERSHEY_SIMPLEX,
+        0.55,
+        (15, 15, 15),
+        2,
+        cv2.LINE_AA,
+    )
     return grid
 
 
@@ -1219,109 +1510,170 @@ def build_compact_grid_message(
     }
 
 
-def tight_current_crop(frame):
-    """Return the tested tight plug/gripper view in the grid panel size."""
-    x1, y1, x2, y2 = TIGHT_CROP
-    region = frame[y1:y2, x1:x2]
-    return cv2.resize(
-        region,
-        (300, 250),
-        interpolation=cv2.INTER_CUBIC,
+def build_current_focused_grid_message(
+    system_prompt,
+    reference_images,
+    current_image,
+    current_frame_index,
+    grid_meaning,
+):
+    """Build the validated safety request with an enlarged CURRENT panel."""
+    comparison_grid = make_current_focused_grid(
+        reference_images,
+        current_image,
+    )
+    ok, encoded_image = cv2.imencode(
+        ".jpg",
+        comparison_grid,
+        [cv2.IMWRITE_JPEG_QUALITY, GRID_JPEG_QUALITY],
+    )
+    if not ok:
+        raise ValueError("Could not encode current-focused comparison grid")
+    image_base64 = base64.b64encode(encoded_image.tobytes()).decode("ascii")
+    return {
+        "messages": [
+            SystemMessage(content=system_prompt),
+            HumanMessage(
+                content=[
+                    {
+                        "type": "text",
+                        "text": (
+                            "Image label: COMPARISON_GRID. Meaning: "
+                            f"{grid_meaning}. Source frame: "
+                            f"{current_frame_index}. Classify only CURRENT."
+                        ),
+                    },
+                    {
+                        "type": "image_url",
+                        "image_url": {
+                            "url": f"data:image/jpeg;base64,{image_base64}",
+                        },
+                    },
+                ]
+            ),
+        ]
+    }
+
+
+def tight_current_crop(frame, resolution_config):
+    """Return the native tight plug/gripper crop without interpolation."""
+    return crop_frame(
+        frame,
+        resolution_config.tight_crop_box,
+        expected_source_size=resolution_config.source_size,
     )
 
 
-def tight_reference_crop(image):
-    """Convert a production 300x250 crop into the tested tight view."""
-    x1 = TIGHT_CROP[0] - CROP_TOP_LEFT[0]
-    y1 = TIGHT_CROP[1] - CROP_TOP_LEFT[1]
-    x2 = TIGHT_CROP[2] - CROP_TOP_LEFT[0]
-    y2 = TIGHT_CROP[3] - CROP_TOP_LEFT[1]
-    region = image[y1:y2, x1:x2]
-    return cv2.resize(
-        region,
-        (300, 250),
-        interpolation=cv2.INTER_CUBIC,
-    )
-
-
-def load_terminal_reference_banks():
-    """Load fixed specialist references without reading the monitored video."""
+def load_terminal_reference_banks(resolution_config):
+    """Load exact-size pre-cropped assets for the detected resolution."""
+    standard_size = resolution_config.crop_size
+    tight_size = resolution_config.tight_crop_size
     state_references = [
-        *load_reference_images(STATE_GRID_RESET_REFERENCE_IMAGE_PATHS),
-        *load_reference_images(STATE_GRID_STATIC_REFERENCE_IMAGE_PATHS),
+        *load_reference_images(
+            reference_paths(
+                resolution_config,
+                STATE_GRID_RESET_REFERENCE_FILES,
+            ),
+            expected_size=standard_size,
+        ),
+        *load_reference_images(
+            reference_paths(
+                resolution_config,
+                STATE_GRID_STATIC_REFERENCE_FILES,
+            ),
+            expected_size=standard_size,
+        ),
     ]
 
     inserted_negatives = [
-        *load_reference_images(INSERTED_NEGATIVE_IMAGE_PATHS),
-        *load_reference_images(STAND_RESET_REFERENCE_IMAGE_PATHS),
-        *load_reference_images(DROPPED_REFERENCE_IMAGE_PATHS),
+        *load_reference_images(
+            reference_paths(resolution_config, INSERTED_NEGATIVE_FILES),
+            expected_size=standard_size,
+        ),
+        *load_reference_images(
+            reference_paths(
+                resolution_config,
+                STAND_RESET_REFERENCE_FILES,
+            ),
+            expected_size=standard_size,
+        ),
+        *load_reference_images(
+            reference_paths(resolution_config, DROPPED_REFERENCE_FILES),
+            expected_size=standard_size,
+        ),
     ]
     inserted_references_a = [
-        *load_reference_images(INSERTED_BANK_A_POSITIVE_IMAGE_PATHS),
+        *load_reference_images(
+            reference_paths(
+                resolution_config,
+                INSERTED_BANK_A_POSITIVE_FILES,
+            ),
+            expected_size=standard_size,
+        ),
         *inserted_negatives,
     ]
     inserted_references_b = [
-        *load_reference_images(INSERTED_BANK_B_POSITIVE_IMAGE_PATHS),
+        *load_reference_images(
+            reference_paths(
+                resolution_config,
+                INSERTED_BANK_B_POSITIVE_FILES,
+            ),
+            expected_size=standard_size,
+        ),
         *inserted_negatives,
     ]
 
-    success_demo = cv2.imread(str(PROMPT_DIRECTORY / "SUCCESS_DEMO.png"))
-    if success_demo is None:
-        raise RuntimeError("Could not load SUCCESS_DEMO.png")
-    success_demo = cv2.resize(
-        success_demo,
-        (300, 250),
-        interpolation=cv2.INTER_AREA,
+    drop_references = load_reference_images(
+        reference_paths(resolution_config, DROP_REFERENCE_FILES),
+        expected_size=standard_size,
     )
-    drop_references = [
-        *load_reference_images(
-            (
-                ("DROPPED", PROMPT_DIRECTORY / "FAIL_DEMO_1.jpg"),
-                (
-                    "CONTROLLED",
-                    PROMPT_DIRECTORY / "CONTROLLED_NORMAL_DEMO.jpg",
-                ),
-            )
+    rotation_static_references = load_reference_images(
+        reference_paths(
+            resolution_config,
+            ROTATION_STATIC_REFERENCE_FILES,
         ),
-        ("INSERTED", success_demo),
-        *load_reference_images(STAND_RESET_REFERENCE_IMAGE_PATHS),
-        *load_reference_images(DROP_HUMAN_REFERENCE_IMAGE_PATHS),
-    ]
-
-    normal_reference = cv2.imread(
-        str(PROMPT_DIRECTORY / "CONTROLLED_NORMAL_DEMO.jpg")
+        expected_size=tight_size,
     )
-    rotated_a = cv2.imread(str(PROMPT_DIRECTORY / "FAIL_DEMO_2.jpg"))
-    rotated_b = cv2.imread(str(PROMPT_DIRECTORY / "FAIL_DEMO_3.jpg"))
-    if normal_reference is None or rotated_a is None or rotated_b is None:
-        raise RuntimeError("Could not load rotation reference assets")
-    rotation_static_references = [
-        ("NORMAL_A", tight_reference_crop(normal_reference)),
-        ("ROTATED_A", tight_reference_crop(rotated_a)),
-        ("ROTATED_B", tight_reference_crop(rotated_b)),
-    ]
 
-    def rotation_reference_bank(reference_image_paths):
-        normal_references = [
-            (label, tight_reference_crop(image))
-            for label, image in load_reference_images(reference_image_paths)
-        ]
+    def rotation_reference_bank(reference_files):
+        normal_references = load_reference_images(
+            reference_paths(resolution_config, reference_files),
+            expected_size=tight_size,
+        )
         return [
             rotation_static_references[0],
             *normal_references,
             *rotation_static_references[1:],
         ]
 
+    rotation_references_a = rotation_reference_bank(
+        ROTATION_BANK_A_NORMAL_FILES
+    )
+    rotation_references_b = rotation_reference_bank(
+        ROTATION_BANK_B_NORMAL_FILES
+    )
     return {
         "state": state_references,
         "inserted_a": inserted_references_a,
         "inserted_b": inserted_references_b,
         "drop": drop_references,
-        "rotation_a": rotation_reference_bank(
-            ROTATION_BANK_A_NORMAL_IMAGE_PATHS
+        "drop_primary": select_reference_images(
+            drop_references,
+            ("DROPPED", "CONTROLLED", "INSERTED"),
         ),
-        "rotation_b": rotation_reference_bank(
-            ROTATION_BANK_B_NORMAL_IMAGE_PATHS
+        "drop_confirmation": select_reference_images(
+            drop_references,
+            ("DROPPED", "STAND_RESET", "HUMAN"),
+        ),
+        "rotation_a": rotation_references_a,
+        "rotation_b": rotation_references_b,
+        "rotation_primary_a": select_reference_images(
+            rotation_references_a,
+            ("NORMAL_A", "NORMAL_B", "ROTATED_A"),
+        ),
+        "rotation_primary_b": select_reference_images(
+            rotation_references_b,
+            ("NORMAL_A", "NORMAL_C", "ROTATED_B"),
         ),
     }
 
@@ -1525,14 +1877,15 @@ def run_inference(
     state_references,
     inserted_references_a,
     inserted_references_b,
-    drop_references,
-    rotation_references_a,
-    rotation_references_b,
+    drop_primary_references,
+    drop_confirmation_references,
+    rotation_primary_references_a,
+    rotation_primary_references_b,
     camera,
     stop_event,
     latest_inference_result,
 ):
-    """Run attempt-scoped terminal specialists and simulated visual reset."""
+    """Run primary safety checks with retained-frame terminal verification."""
     last_frame_index = None
     attempt_manager = TerminalAttemptManager()
 
@@ -1549,7 +1902,7 @@ def run_inference(
             encoding="utf-8",
             buffering=1,
         ) as latency_log,
-        ThreadPoolExecutor(max_workers=5) as model_request_pool,
+        ThreadPoolExecutor(max_workers=4) as model_request_pool,
     ):
         while not stop_event.is_set():
             frame_chunk, current_frame_index = camera.get()
@@ -1567,12 +1920,15 @@ def run_inference(
             last_frame_index = current_frame_index
             full_frame = frame_chunk[0][0]
             current_crop = frame_chunk[0][1]
-            fast_requests_started_at = time.perf_counter()
+            cycle_started_at = time.perf_counter()
             request_latencies = {
                 "state": None,
                 "inserted_a": None,
                 "inserted_b": None,
+                # "drop" remains as an alias for older latency consumers.
                 "drop": None,
+                "drop_a": None,
+                "drop_b": None,
                 "rotation_a": None,
                 "rotation_b": None,
             }
@@ -1581,11 +1937,16 @@ def run_inference(
                 "inserted_a": None,
                 "inserted_b": None,
                 "drop": None,
+                "drop_a": None,
+                "drop_b": None,
                 "rotation_a": None,
                 "rotation_b": None,
             }
+            primary_requests_ms = None
+            verification_requests_ms = 0.0
 
             if attempt_manager.phase == "MONITORING":
+                primary_requests_started_at = time.perf_counter()
                 inserted_message_a = build_compact_grid_message(
                     inserted_prompt,
                     inserted_references_a,
@@ -1595,43 +1956,37 @@ def run_inference(
                         "inserted positives, not-inserted hard negatives, and CURRENT"
                     ),
                 )
-                inserted_message_b = build_compact_grid_message(
-                    inserted_prompt,
-                    inserted_references_b,
-                    current_crop,
-                    current_frame_index=current_frame_index,
-                    grid_meaning=(
-                        "alternate inserted positives, hard negatives, and CURRENT"
-                    ),
-                )
-                drop_message = build_compact_grid_message(
+                drop_message_a = build_current_focused_grid_message(
                     drop_prompt,
-                    drop_references,
+                    drop_primary_references,
                     current_crop,
                     current_frame_index=current_frame_index,
                     grid_meaning=(
-                        "dropped positive and controlled, inserted, stand, human "
-                        "hard negatives plus CURRENT"
+                        "one dropped positive, controlled and inserted hard "
+                        "negatives, and an enlarged CURRENT"
                     ),
                 )
-                tight_crop = tight_current_crop(full_frame)
-                rotation_message_a = build_compact_grid_message(
+                tight_crop = tight_current_crop(
+                    full_frame,
+                    camera.resolution_config,
+                )
+                rotation_message_a = build_current_focused_grid_message(
                     rotation_prompt,
-                    rotation_references_a,
+                    rotation_primary_references_a,
                     tight_crop,
                     current_frame_index=current_frame_index,
                     grid_meaning=(
-                        "tight normal hard negatives, rotation positives, and CURRENT"
+                        "normal and rotated references with an enlarged CURRENT"
                     ),
                 )
-                rotation_message_b = build_compact_grid_message(
+                rotation_message_b = build_current_focused_grid_message(
                     rotation_prompt,
-                    rotation_references_b,
+                    rotation_primary_references_b,
                     tight_crop,
                     current_frame_index=current_frame_index,
                     grid_meaning=(
-                        "alternate tight normal hard negatives, rotation positives, "
-                        "and CURRENT"
+                        "an alternate normal and rotated bank with an enlarged "
+                        "CURRENT"
                     ),
                 )
                 futures = {
@@ -1640,15 +1995,10 @@ def run_inference(
                         inserted_vlm,
                         inserted_message_a["messages"],
                     ),
-                    "inserted_b": model_request_pool.submit(
-                        invoke_with_latency,
-                        inserted_vlm,
-                        inserted_message_b["messages"],
-                    ),
-                    "drop": model_request_pool.submit(
+                    "drop_a": model_request_pool.submit(
                         invoke_with_latency,
                         drop_vlm,
-                        drop_message["messages"],
+                        drop_message_a["messages"],
                     ),
                     "rotation_a": model_request_pool.submit(
                         invoke_with_latency,
@@ -1666,18 +2016,17 @@ def run_inference(
                     response, latency = future.result()
                     contents[name] = response.content
                     request_latencies[name] = latency
+                primary_requests_ms = (
+                    time.perf_counter() - primary_requests_started_at
+                ) * 1000
                 observations.update(
                     {
                         "inserted_a": compact_enum_choice(
                             contents["inserted_a"],
                             {"I", "N", "U"},
                         ),
-                        "inserted_b": compact_enum_choice(
-                            contents["inserted_b"],
-                            {"I", "N", "U"},
-                        ),
-                        "drop": compact_enum_choice(
-                            contents["drop"],
+                        "drop_a": compact_enum_choice(
+                            contents["drop_a"],
                             {"D", "N", "U"},
                         ),
                         "rotation_a": compact_rotation_vote(
@@ -1688,14 +2037,77 @@ def run_inference(
                         ),
                     }
                 )
-                manager_update = attempt_manager.update_terminal_specialists(
+                observations["drop"] = observations["drop_a"]
+                request_latencies["drop"] = request_latencies["drop_a"]
+
+                if observations["drop_a"] == "D":
+                    verification_started_at = time.perf_counter()
+                    drop_message_b = build_current_focused_grid_message(
+                        drop_prompt,
+                        drop_confirmation_references,
+                        current_crop,
+                        current_frame_index=current_frame_index,
+                        grid_meaning=(
+                            "an independent dropped comparison with stand and "
+                            "human hard negatives and an enlarged CURRENT"
+                        ),
+                    )
+                    drop_response_b, drop_latency_b = invoke_with_latency(
+                        drop_vlm,
+                        drop_message_b["messages"],
+                    )
+                    request_latencies["drop_b"] = drop_latency_b
+                    observations["drop_b"] = compact_enum_choice(
+                        drop_response_b.content,
+                        {"D", "N", "U"},
+                    )
+                    verification_requests_ms += (
+                        time.perf_counter() - verification_started_at
+                    ) * 1000
+
+                manager_update = attempt_manager.update_safety_specialists(
                     current_frame_index,
-                    observations["inserted_a"],
-                    observations["inserted_b"],
-                    observations["drop"],
+                    observations["drop_a"],
+                    observations["drop_b"],
                     observations["rotation_a"],
                     observations["rotation_b"],
                 )
+
+                if (
+                    not manager_update["terminal_emitted"]
+                    and observations["inserted_a"] == "I"
+                ):
+                    verification_started_at = time.perf_counter()
+                    inserted_message_b = build_compact_grid_message(
+                        inserted_prompt,
+                        inserted_references_b,
+                        current_crop,
+                        current_frame_index=current_frame_index,
+                        grid_meaning=(
+                            "alternate inserted positives, hard negatives, and "
+                            "CURRENT"
+                        ),
+                    )
+                    inserted_response_b, inserted_latency_b = invoke_with_latency(
+                        inserted_vlm,
+                        inserted_message_b["messages"],
+                    )
+                    request_latencies["inserted_b"] = inserted_latency_b
+                    observations["inserted_b"] = compact_enum_choice(
+                        inserted_response_b.content,
+                        {"I", "N", "U"},
+                    )
+                    verification_requests_ms += (
+                        time.perf_counter() - verification_started_at
+                    ) * 1000
+                    manager_update = (
+                        attempt_manager.update_completion_specialists(
+                            current_frame_index,
+                            observations["inserted_a"],
+                            observations["inserted_b"],
+                        )
+                    )
+
                 if manager_update["terminal_emitted"]:
                     terminal_event = {
                         "attempt_id": manager_update["attempt_id"],
@@ -1724,10 +2136,11 @@ def run_inference(
                     state_response.content
                 )
                 attempt_manager.observe_initial_state(observations["state"])
+                primary_requests_ms = (
+                    time.perf_counter() - cycle_started_at
+                ) * 1000
 
-            fast_parallel_requests_ms = (
-                time.perf_counter() - fast_requests_started_at
-            ) * 1000
+            cycle_requests_ms = (time.perf_counter() - cycle_started_at) * 1000
             manager_state = attempt_manager.snapshot(current_frame_index)
             fused_response = terminal_response(
                 manager_state,
@@ -1747,12 +2160,11 @@ def run_inference(
                     3,
                 ),
                 "completed_at_utc": datetime.now(timezone.utc).isoformat(),
-                "parallel_requests_ms": round(
-                    fast_parallel_requests_ms,
-                    3,
-                ),
-                "fast_parallel_requests_ms": round(
-                    fast_parallel_requests_ms,
+                "parallel_requests_ms": round(cycle_requests_ms, 3),
+                "fast_parallel_requests_ms": round(primary_requests_ms, 3),
+                "primary_requests_ms": round(primary_requests_ms, 3),
+                "verification_requests_ms": round(
+                    verification_requests_ms,
                     3,
                 ),
                 "requests": request_latencies,
@@ -1879,6 +2291,42 @@ def main():
             "brain_prompt.md currently requires WINDOW_SIZE to be 1"
         )
 
+    try:
+        camera = SimulatedCamera(
+            VIDEO_INPUT_PATH,
+            loop=False,
+            window_size=WINDOW_SIZE,
+        )
+    except UnsupportedResolutionError as error:
+        print(error)
+        return 1
+
+    resolution_config = camera.resolution_config
+    if resolution_config.source_size != VALIDATED_PRODUCTION_SOURCE_SIZE:
+        print(
+            "The production safety policy is validated only for "
+            f"{VALIDATED_PRODUCTION_SOURCE_SIZE[0]}x"
+            f"{VALIDATED_PRODUCTION_SOURCE_SIZE[1]}; got "
+            f"{resolution_config.source_size[0]}x"
+            f"{resolution_config.source_size[1]}."
+        )
+        camera.stop()
+        return 1
+    print(
+        "Using resolution configuration "
+        f"{resolution_config.source_size[0]}x"
+        f"{resolution_config.source_size[1]}: crop "
+        f"{resolution_config.crop_top_left} -> "
+        f"{resolution_config.crop_bottom_right} "
+        f"({resolution_config.crop_size[0]}x"
+        f"{resolution_config.crop_size[1]} main panels), tight crop "
+        f"{resolution_config.tight_crop_top_left} -> "
+        f"{resolution_config.tight_crop_bottom_right} "
+        f"({resolution_config.tight_crop_size[0]}x"
+        f"{resolution_config.tight_crop_size[1]} rotation panels), "
+        f"references {resolution_config.reference_directory}."
+    )
+
     # vlm = ChatOllama(
     #     model="gemma4:31b-cloud",
     #     base_url="https://ollama.com",
@@ -1903,20 +2351,15 @@ def main():
     drop_prompt = DROP_BINARY_PROMPT_PATH.read_text(encoding="utf-8")
     rotation_prompt = ROTATION_VERIFY_PROMPT_PATH.read_text(encoding="utf-8")
 
-    reference_banks = load_terminal_reference_banks()
+    reference_banks = load_terminal_reference_banks(resolution_config)
     state_references = reference_banks["state"]
     inserted_references_a = reference_banks["inserted_a"]
     inserted_references_b = reference_banks["inserted_b"]
-    drop_references = reference_banks["drop"]
-    rotation_references_a = reference_banks["rotation_a"]
-    rotation_references_b = reference_banks["rotation_b"]
+    drop_primary_references = reference_banks["drop_primary"]
+    drop_confirmation_references = reference_banks["drop_confirmation"]
+    rotation_primary_references_a = reference_banks["rotation_primary_a"]
+    rotation_primary_references_b = reference_banks["rotation_primary_b"]
 
-    # camera = SimulatedCamera("video/insert_plug-aug-28-105trail.MOV", loop=False)
-    camera = SimulatedCamera(
-        VIDEO_INPUT_PATH,
-        loop=False,
-        window_size=WINDOW_SIZE,
-    )
     camera.start()
     stop_event = threading.Event()
     latest_inference_result = LatestInferenceResult()
@@ -1934,9 +2377,10 @@ def main():
             state_references,
             inserted_references_a,
             inserted_references_b,
-            drop_references,
-            rotation_references_a,
-            rotation_references_b,
+            drop_primary_references,
+            drop_confirmation_references,
+            rotation_primary_references_a,
+            rotation_primary_references_b,
             camera,
             stop_event,
             latest_inference_result,
@@ -1964,3 +2408,4 @@ def main():
                 "Archived run outputs: "
                 + ", ".join(str(path) for path in archived_paths.values())
             )
+    return 0

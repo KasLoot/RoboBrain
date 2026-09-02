@@ -1,0 +1,177 @@
+{
+  "input": "tests/experiments/results/1920x1080_tokens-1120_rotation-only_current-focused_r3.jsonl",
+  "policy_results": [
+    {
+      "rotation_required": 1,
+      "normal_sequences_without_false_event": 0,
+      "failure_sequences_detected": 3,
+      "repeat_results": [
+        {
+          "repeat": 0,
+          "normal_false_event": {
+            "frame": 1978,
+            "failure_type": "ROTATED_OR_MISALIGNED",
+            "rotation_streak": 1
+          },
+          "failure_event": {
+            "frame": 5457,
+            "failure_type": "ROTATED_OR_MISALIGNED",
+            "rotation_streak": 1
+          },
+          "rotation_evidence_delay_frames": -36
+        },
+        {
+          "repeat": 1,
+          "normal_false_event": {
+            "frame": 1978,
+            "failure_type": "ROTATED_OR_MISALIGNED",
+            "rotation_streak": 1
+          },
+          "failure_event": {
+            "frame": 5457,
+            "failure_type": "ROTATED_OR_MISALIGNED",
+            "rotation_streak": 1
+          },
+          "rotation_evidence_delay_frames": -36
+        },
+        {
+          "repeat": 2,
+          "normal_false_event": {
+            "frame": 1978,
+            "failure_type": "ROTATED_OR_MISALIGNED",
+            "rotation_streak": 1
+          },
+          "failure_event": {
+            "frame": 5457,
+            "failure_type": "ROTATED_OR_MISALIGNED",
+            "rotation_streak": 1
+          },
+          "rotation_evidence_delay_frames": -36
+        }
+      ]
+    },
+    {
+      "rotation_required": 2,
+      "normal_sequences_without_false_event": 0,
+      "failure_sequences_detected": 3,
+      "repeat_results": [
+        {
+          "repeat": 0,
+          "normal_false_event": {
+            "frame": 1988,
+            "failure_type": "ROTATED_OR_MISALIGNED",
+            "rotation_streak": 2
+          },
+          "failure_event": {
+            "frame": 5493,
+            "failure_type": "ROTATED_OR_MISALIGNED",
+            "rotation_streak": 2
+          },
+          "rotation_evidence_delay_frames": 0
+        },
+        {
+          "repeat": 1,
+          "normal_false_event": {
+            "frame": 1988,
+            "failure_type": "ROTATED_OR_MISALIGNED",
+            "rotation_streak": 2
+          },
+          "failure_event": {
+            "frame": 5493,
+            "failure_type": "ROTATED_OR_MISALIGNED",
+            "rotation_streak": 2
+          },
+          "rotation_evidence_delay_frames": 0
+        },
+        {
+          "repeat": 2,
+          "normal_false_event": {
+            "frame": 1988,
+            "failure_type": "ROTATED_OR_MISALIGNED",
+            "rotation_streak": 2
+          },
+          "failure_event": {
+            "frame": 5493,
+            "failure_type": "ROTATED_OR_MISALIGNED",
+            "rotation_streak": 2
+          },
+          "rotation_evidence_delay_frames": 0
+        }
+      ]
+    },
+    {
+      "rotation_required": 3,
+      "normal_sequences_without_false_event": 3,
+      "failure_sequences_detected": 3,
+      "repeat_results": [
+        {
+          "repeat": 0,
+          "normal_false_event": null,
+          "failure_event": {
+            "frame": 5516,
+            "failure_type": "ROTATED_OR_MISALIGNED",
+            "rotation_streak": 3
+          },
+          "rotation_evidence_delay_frames": 23
+        },
+        {
+          "repeat": 1,
+          "normal_false_event": null,
+          "failure_event": {
+            "frame": 5516,
+            "failure_type": "ROTATED_OR_MISALIGNED",
+            "rotation_streak": 3
+          },
+          "rotation_evidence_delay_frames": 23
+        },
+        {
+          "repeat": 2,
+          "normal_false_event": null,
+          "failure_event": {
+            "frame": 5516,
+            "failure_type": "ROTATED_OR_MISALIGNED",
+            "rotation_streak": 3
+          },
+          "rotation_evidence_delay_frames": 23
+        }
+      ]
+    },
+    {
+      "rotation_required": 4,
+      "normal_sequences_without_false_event": 3,
+      "failure_sequences_detected": 3,
+      "repeat_results": [
+        {
+          "repeat": 0,
+          "normal_false_event": null,
+          "failure_event": {
+            "frame": 5546,
+            "failure_type": "ROTATED_OR_MISALIGNED",
+            "rotation_streak": 4
+          },
+          "rotation_evidence_delay_frames": 53
+        },
+        {
+          "repeat": 1,
+          "normal_false_event": null,
+          "failure_event": {
+            "frame": 5546,
+            "failure_type": "ROTATED_OR_MISALIGNED",
+            "rotation_streak": 4
+          },
+          "rotation_evidence_delay_frames": 53
+        },
+        {
+          "repeat": 2,
+          "normal_false_event": null,
+          "failure_event": {
+            "frame": 5546,
+            "failure_type": "ROTATED_OR_MISALIGNED",
+            "rotation_streak": 4
+          },
+          "rotation_evidence_delay_frames": 53
+        }
+      ]
+    }
+  ]
+}

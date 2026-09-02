@@ -1,0 +1,144 @@
+[
+  {
+    "path": "tests/experiments/results/1920x1080_tokens-1120_production_r3.jsonl",
+    "configuration": {
+      "source": "1920x1080",
+      "port": 8000,
+      "visual_token_label": 1120,
+      "variant": "production"
+    },
+    "records": 189,
+    "completed": 189,
+    "errors": 0,
+    "latency_ms": {
+      "mean": 2609.817,
+      "p50": 2350.776,
+      "p95": 3997.594
+    },
+    "rotation": {
+      "tp": 39,
+      "fn": 30,
+      "fp": 13,
+      "tn": 77,
+      "recall": 0.5652,
+      "precision": 0.75,
+      "false_positive_rate": 0.1444
+    },
+    "drop_with_reference_frame": {
+      "tp": 15,
+      "fn": 0,
+      "fp": 3,
+      "tn": 171,
+      "recall": 1.0,
+      "precision": 0.8333,
+      "false_positive_rate": 0.0172
+    },
+    "drop_without_reference_frame": {
+      "tp": 12,
+      "fn": 0,
+      "fp": 3,
+      "tn": 171,
+      "recall": 1.0,
+      "precision": 0.8,
+      "false_positive_rate": 0.0172
+    },
+    "inserted": {
+      "tp": 24,
+      "fn": 0,
+      "fp": 3,
+      "tn": 162,
+      "recall": 1.0,
+      "precision": 0.8889,
+      "false_positive_rate": 0.0182
+    },
+    "unstable_frames": {
+      "1988": {
+        "('R', 'N', 'N')": 1,
+        "('N', 'N', 'N')": 2
+      },
+      "5678": {
+        "('R', 'N', 'N')": 2,
+        "('N', 'N', 'N')": 1
+      },
+      "5732": {
+        "('N', 'N', 'N')": 2,
+        "('R', 'N', 'N')": 1
+      }
+    }
+  },
+  {
+    "path": "tests/experiments/results/848x480_tokens-1120_production_r3.jsonl",
+    "configuration": {
+      "source": "848x480",
+      "port": 8000,
+      "visual_token_label": 1120,
+      "variant": "production"
+    },
+    "records": 189,
+    "completed": 189,
+    "errors": 0,
+    "latency_ms": {
+      "mean": 2021.889,
+      "p50": 1995.082,
+      "p95": 2243.833
+    },
+    "rotation": {
+      "tp": 42,
+      "fn": 27,
+      "fp": 13,
+      "tn": 77,
+      "recall": 0.6087,
+      "precision": 0.7636,
+      "false_positive_rate": 0.1444
+    },
+    "drop_with_reference_frame": {
+      "tp": 15,
+      "fn": 0,
+      "fp": 0,
+      "tn": 174,
+      "recall": 1.0,
+      "precision": 1.0,
+      "false_positive_rate": 0.0
+    },
+    "drop_without_reference_frame": {
+      "tp": 12,
+      "fn": 0,
+      "fp": 0,
+      "tn": 174,
+      "recall": 1.0,
+      "precision": 1.0,
+      "false_positive_rate": 0.0
+    },
+    "inserted": {
+      "tp": 24,
+      "fn": 0,
+      "fp": 41,
+      "tn": 124,
+      "recall": 1.0,
+      "precision": 0.3692,
+      "false_positive_rate": 0.2485
+    },
+    "unstable_frames": {
+      "1903": {
+        "('R', 'N', 'N')": 1,
+        "('N', 'N', 'N')": 2
+      },
+      "5574": {
+        "('R', 'N', 'N')": 2,
+        "('R', 'N', 'I')": 1
+      },
+      "5845": {
+        "('R', 'N', 'N')": 2,
+        "('R', 'N', 'I')": 1
+      },
+      "5930": {
+        "('R', 'N', 'N')": 1,
+        "('R', 'N', 'I')": 2
+      },
+      "5989": {
+        "('R', 'N', 'N')": 2,
+        "('R', 'N', 'I')": 1
+      }
+    }
+  }
+]

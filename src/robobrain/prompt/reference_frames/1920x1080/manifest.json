@@ -1,0 +1,74 @@
+{
+  "profile": "1920x1080",
+  "source_resolution": [
+    1920,
+    1080
+  ],
+  "standard_crop": [
+    792,
+    112,
+    1472,
+    675
+  ],
+  "standard_size": [
+    680,
+    563
+  ],
+  "tight_crop": [
+    951,
+    202,
+    1358,
+    585
+  ],
+  "tight_size": [
+    407,
+    383
+  ],
+  "resized": false,
+  "video_source": "video/insert_plug-full_model-aug-28-105trail-1x.MOV",
+  "standard_frame_indices": [
+    29,
+    1074,
+    4073,
+    4600,
+    6040,
+    7301,
+    7569,
+    9447,
+    9612,
+    10176,
+    15850,
+    15950,
+    17074,
+    17125
+  ],
+  "tight_frame_indices": [
+    4600,
+    7301,
+    7569,
+    9447,
+    17074
+  ],
+  "rotated_stills": [
+    {
+      "output": "rotated_a_tight.png",
+      "source": "src/robobrain/prompt/fail-1.png",
+      "crop": [
+        170,
+        80,
+        577,
+        463
+      ]
+    },
+    {
+      "output": "rotated_b_tight.png",
+      "source": "src/robobrain/prompt/fail-4.png",
+      "crop": [
+        170,
+        80,
+        577,
+        463
+      ]
+    }
+  ]
+}

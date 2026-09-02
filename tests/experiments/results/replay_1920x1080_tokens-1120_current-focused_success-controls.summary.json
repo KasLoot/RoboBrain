@@ -1,0 +1,145 @@
+{
+  "source": "1920x1080",
+  "port": 8000,
+  "rotation_required": 3,
+  "attempts": [
+    {
+      "attempt": 1,
+      "start": 137,
+      "end": 530,
+      "expected": "SUCCESS",
+      "sampled_frames": [
+        137,
+        203,
+        252,
+        302,
+        350,
+        398,
+        469,
+        522
+      ],
+      "terminal_event": null,
+      "correct": true
+    },
+    {
+      "attempt": 2,
+      "start": 604,
+      "end": 1097,
+      "expected": "SUCCESS",
+      "sampled_frames": [
+        604,
+        654,
+        720,
+        771,
+        820,
+        870,
+        918,
+        970,
+        1021,
+        1072
+      ],
+      "terminal_event": null,
+      "correct": true
+    },
+    {
+      "attempt": 3,
+      "start": 1285,
+      "end": 1668,
+      "expected": "SUCCESS",
+      "sampled_frames": [
+        1285,
+        1334,
+        1386,
+        1435,
+        1499,
+        1581,
+        1629
+      ],
+      "terminal_event": null,
+      "correct": true
+    },
+    {
+      "attempt": 5,
+      "start": 2379,
+      "end": 2869,
+      "expected": "SUCCESS",
+      "sampled_frames": [
+        2379,
+        2425,
+        2472,
+        2522,
+        2569,
+        2616,
+        2663,
+        2709,
+        2763,
+        2814
+      ],
+      "terminal_event": null,
+      "correct": true
+    },
+    {
+      "attempt": 6,
+      "start": 3061,
+      "end": 3491,
+      "expected": "SUCCESS",
+      "sampled_frames": [
+        3061,
+        3112,
+        3163,
+        3212,
+        3259,
+        3307,
+        3357,
+        3415,
+        3463
+      ],
+      "terminal_event": null,
+      "correct": true
+    },
+    {
+      "attempt": 7,
+      "start": 3580,
+      "end": 4072,
+      "expected": "SUCCESS",
+      "sampled_frames": [
+        3580,
+        3628,
+        3677,
+        3726,
+        3775,
+        3822,
+        3869,
+        3923,
+        3974,
+        4036
+      ],
+      "terminal_event": null,
+      "correct": true
+    },
+    {
+      "attempt": 8,
+      "start": 4178,
+      "end": 4856,
+      "expected": "SUCCESS",
+      "sampled_frames": [
+        4178,
+        4228,
+        4276,
+        4326,
+        4390,
+        4469,
+        4523,
+        4587,
+        4637,
+        4687,
+        4739,
+        4785
+      ],
+      "terminal_event": null,
+      "correct": true
+    }
+  ],
+  "successful_attempt_false_alerts": 0,
+  "failed_attempts_detected": 0
+}

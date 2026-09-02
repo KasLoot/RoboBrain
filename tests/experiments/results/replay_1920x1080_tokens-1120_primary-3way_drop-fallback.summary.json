@@ -1,0 +1,26 @@
+{
+  "source": "1920x1080",
+  "port": 8000,
+  "lane": "primary_3way",
+  "rotation_required": 3,
+  "attempts": [
+    {
+      "attempt": 10,
+      "start": 6010,
+      "end": 6060,
+      "expected": "FAIL",
+      "sampled_frames": [
+        6010,
+        6052
+      ],
+      "terminal_event": {
+        "frame": 6052,
+        "alert_completed_source_equivalent_frame": 6104,
+        "failure_type": "DROP_OR_CONTROL_LOSS"
+      },
+      "correct": true
+    }
+  ],
+  "successful_attempt_false_alerts": 0,
+  "failed_attempts_detected": 1
+}

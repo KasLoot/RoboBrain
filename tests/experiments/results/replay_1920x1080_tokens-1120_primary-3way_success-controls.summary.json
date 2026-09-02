@@ -1,0 +1,159 @@
+{
+  "source": "1920x1080",
+  "port": 8000,
+  "lane": "primary_3way",
+  "rotation_required": 3,
+  "attempts": [
+    {
+      "attempt": 1,
+      "start": 137,
+      "end": 530,
+      "expected": "SUCCESS",
+      "sampled_frames": [
+        137,
+        198,
+        247,
+        291,
+        330,
+        372,
+        426,
+        471,
+        510
+      ],
+      "terminal_event": null,
+      "correct": true
+    },
+    {
+      "attempt": 2,
+      "start": 604,
+      "end": 1097,
+      "expected": "SUCCESS",
+      "sampled_frames": [
+        604,
+        662,
+        706,
+        764,
+        813,
+        882,
+        925,
+        965,
+        1008,
+        1047
+      ],
+      "terminal_event": null,
+      "correct": true
+    },
+    {
+      "attempt": 3,
+      "start": 1285,
+      "end": 1668,
+      "expected": "SUCCESS",
+      "sampled_frames": [
+        1285,
+        1325,
+        1365,
+        1421,
+        1464,
+        1503,
+        1544,
+        1584,
+        1622,
+        1661
+      ],
+      "terminal_event": null,
+      "correct": true
+    },
+    {
+      "attempt": 5,
+      "start": 2379,
+      "end": 2869,
+      "expected": "SUCCESS",
+      "sampled_frames": [
+        2379,
+        2434,
+        2488,
+        2530,
+        2570,
+        2610,
+        2650,
+        2688,
+        2726,
+        2763,
+        2833
+      ],
+      "terminal_event": null,
+      "correct": true
+    },
+    {
+      "attempt": 6,
+      "start": 3061,
+      "end": 3491,
+      "expected": "SUCCESS",
+      "sampled_frames": [
+        3061,
+        3131,
+        3172,
+        3210,
+        3248,
+        3287,
+        3324,
+        3362,
+        3431,
+        3472
+      ],
+      "terminal_event": null,
+      "correct": true
+    },
+    {
+      "attempt": 7,
+      "start": 3580,
+      "end": 4072,
+      "expected": "SUCCESS",
+      "sampled_frames": [
+        3580,
+        3621,
+        3661,
+        3700,
+        3739,
+        3778,
+        3817,
+        3856,
+        3910,
+        3954,
+        4023
+      ],
+      "terminal_event": null,
+      "correct": true
+    },
+    {
+      "attempt": 8,
+      "start": 4178,
+      "end": 4856,
+      "expected": "SUCCESS",
+      "sampled_frames": [
+        4178,
+        4219,
+        4262,
+        4301,
+        4343,
+        4383,
+        4421,
+        4458,
+        4496,
+        4536,
+        4574,
+        4611,
+        4653,
+        4693,
+        4734,
+        4771,
+        4809,
+        4848
+      ],
+      "terminal_event": null,
+      "correct": true
+    }
+  ],
+  "successful_attempt_false_alerts": 0,
+  "failed_attempts_detected": 0
+}

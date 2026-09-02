@@ -1,0 +1,616 @@
+[
+  {
+    "path": "tests/experiments/results/1920x1080_tokens-1120_production_r3.jsonl",
+    "configuration": {
+      "source": "1920x1080",
+      "port": 8000,
+      "visual_token_label": 1120,
+      "variant": "production"
+    },
+    "records": 189,
+    "completed": 189,
+    "errors": 0,
+    "latency_ms": {
+      "mean": 2609.817,
+      "p50": 2350.776,
+      "p95": 3997.594
+    },
+    "rotation_strict_boundary": {
+      "tp": 39,
+      "fn": 30,
+      "fp": 13,
+      "tn": 77,
+      "recall": 0.5652,
+      "precision": 0.75,
+      "false_positive_rate": 0.1444
+    },
+    "rotation_without_boundary": {
+      "tp": 39,
+      "fn": 30,
+      "fp": 10,
+      "tn": 77,
+      "recall": 0.5652,
+      "precision": 0.7959,
+      "false_positive_rate": 0.1149
+    },
+    "drop_with_reference_frame": {
+      "tp": 15,
+      "fn": 0,
+      "fp": 3,
+      "tn": 171,
+      "recall": 1.0,
+      "precision": 0.8333,
+      "false_positive_rate": 0.0172
+    },
+    "drop_without_reference_frame": {
+      "tp": 12,
+      "fn": 0,
+      "fp": 3,
+      "tn": 171,
+      "recall": 1.0,
+      "precision": 0.8,
+      "false_positive_rate": 0.0172
+    },
+    "inserted": {
+      "tp": 24,
+      "fn": 0,
+      "fp": 3,
+      "tn": 162,
+      "recall": 1.0,
+      "precision": 0.8889,
+      "false_positive_rate": 0.0182
+    },
+    "unstable_frames": {
+      "1988": {
+        "('R', 'N', 'N')": 1,
+        "('N', 'N', 'N')": 2
+      },
+      "5678": {
+        "('R', 'N', 'N')": 2,
+        "('N', 'N', 'N')": 1
+      },
+      "5732": {
+        "('N', 'N', 'N')": 2,
+        "('R', 'N', 'N')": 1
+      }
+    }
+  },
+  {
+    "path": "tests/experiments/results/848x480_tokens-1120_production_r3.jsonl",
+    "configuration": {
+      "source": "848x480",
+      "port": 8000,
+      "visual_token_label": 1120,
+      "variant": "production"
+    },
+    "records": 189,
+    "completed": 189,
+    "errors": 0,
+    "latency_ms": {
+      "mean": 2021.889,
+      "p50": 1995.082,
+      "p95": 2243.833
+    },
+    "rotation_strict_boundary": {
+      "tp": 42,
+      "fn": 27,
+      "fp": 13,
+      "tn": 77,
+      "recall": 0.6087,
+      "precision": 0.7636,
+      "false_positive_rate": 0.1444
+    },
+    "rotation_without_boundary": {
+      "tp": 42,
+      "fn": 27,
+      "fp": 13,
+      "tn": 74,
+      "recall": 0.6087,
+      "precision": 0.7636,
+      "false_positive_rate": 0.1494
+    },
+    "drop_with_reference_frame": {
+      "tp": 15,
+      "fn": 0,
+      "fp": 0,
+      "tn": 174,
+      "recall": 1.0,
+      "precision": 1.0,
+      "false_positive_rate": 0.0
+    },
+    "drop_without_reference_frame": {
+      "tp": 12,
+      "fn": 0,
+      "fp": 0,
+      "tn": 174,
+      "recall": 1.0,
+      "precision": 1.0,
+      "false_positive_rate": 0.0
+    },
+    "inserted": {
+      "tp": 24,
+      "fn": 0,
+      "fp": 41,
+      "tn": 124,
+      "recall": 1.0,
+      "precision": 0.3692,
+      "false_positive_rate": 0.2485
+    },
+    "unstable_frames": {
+      "1903": {
+        "('R', 'N', 'N')": 1,
+        "('N', 'N', 'N')": 2
+      },
+      "5574": {
+        "('R', 'N', 'N')": 2,
+        "('R', 'N', 'I')": 1
+      },
+      "5845": {
+        "('R', 'N', 'N')": 2,
+        "('R', 'N', 'I')": 1
+      },
+      "5930": {
+        "('R', 'N', 'N')": 1,
+        "('R', 'N', 'I')": 2
+      },
+      "5989": {
+        "('R', 'N', 'N')": 2,
+        "('R', 'N', 'I')": 1
+      }
+    }
+  },
+  {
+    "path": "tests/experiments/results/1920x1080_tokens-1120_current-focused_safetyset_r3.jsonl",
+    "configuration": {
+      "source": "1920x1080",
+      "port": 8000,
+      "visual_token_label": 1120,
+      "variant": "current_focused"
+    },
+    "records": 129,
+    "completed": 129,
+    "errors": 0,
+    "latency_ms": {
+      "mean": 1644.929,
+      "p50": 1597.986,
+      "p95": 2005.13
+    },
+    "rotation_strict_boundary": {
+      "tp": 66,
+      "fn": 3,
+      "fp": 9,
+      "tn": 30,
+      "recall": 0.9565,
+      "precision": 0.88,
+      "false_positive_rate": 0.2308
+    },
+    "rotation_without_boundary": {
+      "tp": 66,
+      "fn": 3,
+      "fp": 6,
+      "tn": 30,
+      "recall": 0.9565,
+      "precision": 0.9167,
+      "false_positive_rate": 0.1667
+    },
+    "drop_with_reference_frame": {
+      "tp": 15,
+      "fn": 0,
+      "fp": 0,
+      "tn": 114,
+      "recall": 1.0,
+      "precision": 1.0,
+      "false_positive_rate": 0.0
+    },
+    "drop_without_reference_frame": {
+      "tp": 12,
+      "fn": 0,
+      "fp": 0,
+      "tn": 114,
+      "recall": 1.0,
+      "precision": 1.0,
+      "false_positive_rate": 0.0
+    },
+    "inserted": {
+      "tp": 0,
+      "fn": 0,
+      "fp": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "false_positive_rate": null
+    },
+    "unstable_frames": {}
+  },
+  {
+    "path": "tests/experiments/results/848x480_tokens-1120_current-focused_safetyset_r3.jsonl",
+    "configuration": {
+      "source": "848x480",
+      "port": 8000,
+      "visual_token_label": 1120,
+      "variant": "current_focused"
+    },
+    "records": 129,
+    "completed": 129,
+    "errors": 0,
+    "latency_ms": {
+      "mean": 1579.797,
+      "p50": 1563.292,
+      "p95": 1730.034
+    },
+    "rotation_strict_boundary": {
+      "tp": 3,
+      "fn": 66,
+      "fp": 8,
+      "tn": 31,
+      "recall": 0.0435,
+      "precision": 0.2727,
+      "false_positive_rate": 0.2051
+    },
+    "rotation_without_boundary": {
+      "tp": 3,
+      "fn": 66,
+      "fp": 8,
+      "tn": 28,
+      "recall": 0.0435,
+      "precision": 0.2727,
+      "false_positive_rate": 0.2222
+    },
+    "drop_with_reference_frame": {
+      "tp": 15,
+      "fn": 0,
+      "fp": 8,
+      "tn": 106,
+      "recall": 1.0,
+      "precision": 0.6522,
+      "false_positive_rate": 0.0702
+    },
+    "drop_without_reference_frame": {
+      "tp": 12,
+      "fn": 0,
+      "fp": 8,
+      "tn": 106,
+      "recall": 1.0,
+      "precision": 0.6,
+      "false_positive_rate": 0.0702
+    },
+    "inserted": {
+      "tp": 0,
+      "fn": 0,
+      "fp": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "false_positive_rate": null
+    },
+    "unstable_frames": {
+      "1919": {
+        "('N', 'N', None)": 2,
+        "('R', 'N', None)": 1
+      },
+      "1960": {
+        "('N', 'N', None)": 2,
+        "('R', 'N', None)": 1
+      },
+      "3660": {
+        "('N', 'D', None)": 2,
+        "('N', 'N', None)": 1
+      }
+    }
+  },
+  {
+    "path": "tests/experiments/results/1920x1080_tokens-1120_rotation-only_current-focused_r3.jsonl",
+    "configuration": {
+      "source": "1920x1080",
+      "port": 8000,
+      "visual_token_label": 1120,
+      "variant": "rotation_current_focused"
+    },
+    "records": 108,
+    "completed": 108,
+    "errors": 0,
+    "latency_ms": {
+      "mean": 907.247,
+      "p50": 897.809,
+      "p95": 1084.664
+    },
+    "rotation_strict_boundary": {
+      "tp": 66,
+      "fn": 3,
+      "fp": 9,
+      "tn": 30,
+      "recall": 0.9565,
+      "precision": 0.88,
+      "false_positive_rate": 0.2308
+    },
+    "rotation_without_boundary": {
+      "tp": 66,
+      "fn": 3,
+      "fp": 6,
+      "tn": 30,
+      "recall": 0.9565,
+      "precision": 0.9167,
+      "false_positive_rate": 0.1667
+    },
+    "drop_with_reference_frame": {
+      "tp": 0,
+      "fn": 0,
+      "fp": 0,
+      "tn": 108,
+      "recall": null,
+      "precision": null,
+      "false_positive_rate": 0.0
+    },
+    "drop_without_reference_frame": {
+      "tp": 0,
+      "fn": 0,
+      "fp": 0,
+      "tn": 108,
+      "recall": null,
+      "precision": null,
+      "false_positive_rate": 0.0
+    },
+    "inserted": {
+      "tp": 0,
+      "fn": 0,
+      "fp": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "false_positive_rate": null
+    },
+    "unstable_frames": {}
+  },
+  {
+    "path": "tests/experiments/results/1920x1080_tokens-1120_drop-reference-only_r3.jsonl",
+    "configuration": {
+      "source": "1920x1080",
+      "port": 8000,
+      "visual_token_label": 1120,
+      "variant": "drop_reference_focused"
+    },
+    "records": 93,
+    "completed": 93,
+    "errors": 0,
+    "latency_ms": {
+      "mean": 478.35,
+      "p50": 252.677,
+      "p95": 1145.922
+    },
+    "rotation_strict_boundary": {
+      "tp": 0,
+      "fn": 0,
+      "fp": 0,
+      "tn": 51,
+      "recall": null,
+      "precision": null,
+      "false_positive_rate": 0.0
+    },
+    "rotation_without_boundary": {
+      "tp": 0,
+      "fn": 0,
+      "fp": 0,
+      "tn": 51,
+      "recall": null,
+      "precision": null,
+      "false_positive_rate": 0.0
+    },
+    "drop_with_reference_frame": {
+      "tp": 27,
+      "fn": 0,
+      "fp": 0,
+      "tn": 66,
+      "recall": 1.0,
+      "precision": 1.0,
+      "false_positive_rate": 0.0
+    },
+    "drop_without_reference_frame": {
+      "tp": 24,
+      "fn": 0,
+      "fp": 0,
+      "tn": 66,
+      "recall": 1.0,
+      "precision": 1.0,
+      "false_positive_rate": 0.0
+    },
+    "inserted": {
+      "tp": 0,
+      "fn": 0,
+      "fp": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "false_positive_rate": null
+    },
+    "unstable_frames": {}
+  },
+  {
+    "path": "tests/experiments/results/1920x1080_tokens-1120_drop-no-reference_r3.jsonl",
+    "configuration": {
+      "source": "1920x1080",
+      "port": 8000,
+      "visual_token_label": 1120,
+      "variant": "drop_no_reference"
+    },
+    "records": 81,
+    "completed": 81,
+    "errors": 0,
+    "latency_ms": {
+      "mean": 542.248,
+      "p50": 526.518,
+      "p95": 769.366
+    },
+    "rotation_strict_boundary": {
+      "tp": 0,
+      "fn": 0,
+      "fp": 0,
+      "tn": 51,
+      "recall": null,
+      "precision": null,
+      "false_positive_rate": 0.0
+    },
+    "rotation_without_boundary": {
+      "tp": 0,
+      "fn": 0,
+      "fp": 0,
+      "tn": 51,
+      "recall": null,
+      "precision": null,
+      "false_positive_rate": 0.0
+    },
+    "drop_with_reference_frame": {
+      "tp": 12,
+      "fn": 3,
+      "fp": 3,
+      "tn": 63,
+      "recall": 0.8,
+      "precision": 0.8,
+      "false_positive_rate": 0.0455
+    },
+    "drop_without_reference_frame": {
+      "tp": 9,
+      "fn": 3,
+      "fp": 3,
+      "tn": 63,
+      "recall": 0.75,
+      "precision": 0.75,
+      "false_positive_rate": 0.0455
+    },
+    "inserted": {
+      "tp": 0,
+      "fn": 0,
+      "fp": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "false_positive_rate": null
+    },
+    "unstable_frames": {}
+  },
+  {
+    "path": "tests/experiments/results/1920x1080_tokens-1120_safety-primary_safetyset_r1.jsonl",
+    "configuration": {
+      "source": "1920x1080",
+      "port": 8000,
+      "visual_token_label": 1120,
+      "variant": "safety_primary"
+    },
+    "records": 47,
+    "completed": 47,
+    "errors": 0,
+    "latency_ms": {
+      "mean": 1309.201,
+      "p50": 1293.336,
+      "p95": 1789.761
+    },
+    "rotation_strict_boundary": {
+      "tp": 22,
+      "fn": 1,
+      "fp": 3,
+      "tn": 10,
+      "recall": 0.9565,
+      "precision": 0.88,
+      "false_positive_rate": 0.2308
+    },
+    "rotation_without_boundary": {
+      "tp": 22,
+      "fn": 1,
+      "fp": 2,
+      "tn": 10,
+      "recall": 0.9565,
+      "precision": 0.9167,
+      "false_positive_rate": 0.1667
+    },
+    "drop_with_reference_frame": {
+      "tp": 9,
+      "fn": 0,
+      "fp": 0,
+      "tn": 38,
+      "recall": 1.0,
+      "precision": 1.0,
+      "false_positive_rate": 0.0
+    },
+    "drop_without_reference_frame": {
+      "tp": 8,
+      "fn": 0,
+      "fp": 0,
+      "tn": 38,
+      "recall": 1.0,
+      "precision": 1.0,
+      "false_positive_rate": 0.0
+    },
+    "inserted": {
+      "tp": 0,
+      "fn": 0,
+      "fp": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "false_positive_rate": null
+    },
+    "unstable_frames": {}
+  },
+  {
+    "path": "tests/experiments/results/1920x1080_tokens-1120_production-primary_r1.jsonl",
+    "configuration": {
+      "source": "1920x1080",
+      "port": 8000,
+      "visual_token_label": 1120,
+      "variant": "production_primary"
+    },
+    "records": 67,
+    "completed": 67,
+    "errors": 0,
+    "latency_ms": {
+      "mean": 1590.542,
+      "p50": 1560.084,
+      "p95": 1753.425
+    },
+    "rotation_strict_boundary": {
+      "tp": 22,
+      "fn": 1,
+      "fp": 5,
+      "tn": 25,
+      "recall": 0.9565,
+      "precision": 0.8148,
+      "false_positive_rate": 0.1667
+    },
+    "rotation_without_boundary": {
+      "tp": 22,
+      "fn": 1,
+      "fp": 4,
+      "tn": 25,
+      "recall": 0.9565,
+      "precision": 0.8462,
+      "false_positive_rate": 0.1379
+    },
+    "drop_with_reference_frame": {
+      "tp": 9,
+      "fn": 0,
+      "fp": 0,
+      "tn": 58,
+      "recall": 1.0,
+      "precision": 1.0,
+      "false_positive_rate": 0.0
+    },
+    "drop_without_reference_frame": {
+      "tp": 8,
+      "fn": 0,
+      "fp": 0,
+      "tn": 58,
+      "recall": 1.0,
+      "precision": 1.0,
+      "false_positive_rate": 0.0
+    },
+    "inserted": {
+      "tp": 0,
+      "fn": 8,
+      "fp": 0,
+      "tn": 59,
+      "recall": 0.0,
+      "precision": null,
+      "false_positive_rate": 0.0
+    },
+    "unstable_frames": {}
+  }
+]

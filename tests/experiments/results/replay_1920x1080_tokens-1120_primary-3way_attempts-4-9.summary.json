@@ -1,0 +1,61 @@
+{
+  "source": "1920x1080",
+  "port": 8000,
+  "lane": "primary_3way",
+  "rotation_required": 3,
+  "attempts": [
+    {
+      "attempt": 4,
+      "start": 1788,
+      "end": 2288,
+      "expected": "SUCCESS",
+      "sampled_frames": [
+        1788,
+        1836,
+        1893,
+        1936,
+        1978,
+        2010,
+        2051,
+        2093,
+        2133,
+        2171,
+        2214,
+        2253
+      ],
+      "terminal_event": null,
+      "correct": true
+    },
+    {
+      "attempt": 9,
+      "start": 4967,
+      "end": 6060,
+      "expected": "FAIL",
+      "sampled_frames": [
+        4967,
+        5010,
+        5048,
+        5086,
+        5123,
+        5161,
+        5201,
+        5238,
+        5286,
+        5329,
+        5369,
+        5419,
+        5460,
+        5500,
+        5540
+      ],
+      "terminal_event": {
+        "frame": 5540,
+        "alert_completed_source_equivalent_frame": 5577,
+        "failure_type": "ROTATED_OR_MISALIGNED"
+      },
+      "correct": true
+    }
+  ],
+  "successful_attempt_false_alerts": 0,
+  "failed_attempts_detected": 1
+}

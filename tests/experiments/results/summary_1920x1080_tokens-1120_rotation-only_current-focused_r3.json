@@ -1,0 +1,65 @@
+[
+  {
+    "path": "tests/experiments/results/1920x1080_tokens-1120_rotation-only_current-focused_r3.jsonl",
+    "configuration": {
+      "source": "1920x1080",
+      "port": 8000,
+      "visual_token_label": 1120,
+      "variant": "rotation_current_focused"
+    },
+    "records": 108,
+    "completed": 108,
+    "errors": 0,
+    "latency_ms": {
+      "mean": 907.247,
+      "p50": 897.809,
+      "p95": 1084.664
+    },
+    "rotation_strict_boundary": {
+      "tp": 66,
+      "fn": 3,
+      "fp": 9,
+      "tn": 30,
+      "recall": 0.9565,
+      "precision": 0.88,
+      "false_positive_rate": 0.2308
+    },
+    "rotation_without_boundary": {
+      "tp": 66,
+      "fn": 3,
+      "fp": 6,
+      "tn": 30,
+      "recall": 0.9565,
+      "precision": 0.9167,
+      "false_positive_rate": 0.1667
+    },
+    "drop_with_reference_frame": {
+      "tp": 0,
+      "fn": 0,
+      "fp": 0,
+      "tn": 108,
+      "recall": null,
+      "precision": null,
+      "false_positive_rate": 0.0
+    },
+    "drop_without_reference_frame": {
+      "tp": 0,
+      "fn": 0,
+      "fp": 0,
+      "tn": 108,
+      "recall": null,
+      "precision": null,
+      "false_positive_rate": 0.0
+    },
+    "inserted": {
+      "tp": 0,
+      "fn": 0,
+      "fp": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "false_positive_rate": null
+    },
+    "unstable_frames": {}
+  }
+]

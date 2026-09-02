@@ -1,0 +1,65 @@
+[
+  {
+    "path": "tests/experiments/results/1920x1080_tokens-1120_drop-reference-only_r3.jsonl",
+    "configuration": {
+      "source": "1920x1080",
+      "port": 8000,
+      "visual_token_label": 1120,
+      "variant": "drop_reference_focused"
+    },
+    "records": 93,
+    "completed": 93,
+    "errors": 0,
+    "latency_ms": {
+      "mean": 478.35,
+      "p50": 252.677,
+      "p95": 1145.922
+    },
+    "rotation_strict_boundary": {
+      "tp": 0,
+      "fn": 0,
+      "fp": 0,
+      "tn": 51,
+      "recall": null,
+      "precision": null,
+      "false_positive_rate": 0.0
+    },
+    "rotation_without_boundary": {
+      "tp": 0,
+      "fn": 0,
+      "fp": 0,
+      "tn": 51,
+      "recall": null,
+      "precision": null,
+      "false_positive_rate": 0.0
+    },
+    "drop_with_reference_frame": {
+      "tp": 27,
+      "fn": 0,
+      "fp": 0,
+      "tn": 66,
+      "recall": 1.0,
+      "precision": 1.0,
+      "false_positive_rate": 0.0
+    },
+    "drop_without_reference_frame": {
+      "tp": 24,
+      "fn": 0,
+      "fp": 0,
+      "tn": 66,
+      "recall": 1.0,
+      "precision": 1.0,
+      "false_positive_rate": 0.0
+    },
+    "inserted": {
+      "tp": 0,
+      "fn": 0,
+      "fp": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "false_positive_rate": null
+    },
+    "unstable_frames": {}
+  }
+]

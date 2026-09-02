@@ -1,0 +1,65 @@
+[
+  {
+    "path": "tests/experiments/results/1920x1080_tokens-1120_safety-primary_safetyset_r1.jsonl",
+    "configuration": {
+      "source": "1920x1080",
+      "port": 8000,
+      "visual_token_label": 1120,
+      "variant": "safety_primary"
+    },
+    "records": 47,
+    "completed": 47,
+    "errors": 0,
+    "latency_ms": {
+      "mean": 1309.201,
+      "p50": 1293.336,
+      "p95": 1789.761
+    },
+    "rotation_strict_boundary": {
+      "tp": 22,
+      "fn": 1,
+      "fp": 3,
+      "tn": 10,
+      "recall": 0.9565,
+      "precision": 0.88,
+      "false_positive_rate": 0.2308
+    },
+    "rotation_without_boundary": {
+      "tp": 22,
+      "fn": 1,
+      "fp": 2,
+      "tn": 10,
+      "recall": 0.9565,
+      "precision": 0.9167,
+      "false_positive_rate": 0.1667
+    },
+    "drop_with_reference_frame": {
+      "tp": 9,
+      "fn": 0,
+      "fp": 0,
+      "tn": 38,
+      "recall": 1.0,
+      "precision": 1.0,
+      "false_positive_rate": 0.0
+    },
+    "drop_without_reference_frame": {
+      "tp": 8,
+      "fn": 0,
+      "fp": 0,
+      "tn": 38,
+      "recall": 1.0,
+      "precision": 1.0,
+      "false_positive_rate": 0.0
+    },
+    "inserted": {
+      "tp": 0,
+      "fn": 0,
+      "fp": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "false_positive_rate": null
+    },
+    "unstable_frames": {}
+  }
+]
