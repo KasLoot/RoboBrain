@@ -1,13 +1,10 @@
-.venv/
-.codex/
-.agents/
+video
 
-# all __pycache__ folders
+test
+output.mp4
+
+runs/*
+
 __pycache__/
 
-
-assets/dataset/
-
 .DS_Store
-
-*.zip
