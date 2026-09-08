@@ -2,26 +2,13 @@
 
 RoboBrain monitors plug insertion using separate SUCCESS and DROP specialists, followed by a bounded verification round.
 
-<table width="100%" style="table-layout: fixed;">
-  <tr>
-    <th width="50%"><a href="asset/traj-30-failure.mp4">Failure case — traj-30: DROP_FAILURE</a></th>
-    <th width="50%"><a href="asset/traj-31-success.mp4">Success case — traj-31: SUCCESS</a></th>
-  </tr>
-  <tr>
-    <td width="50%" valign="top">
-      <video controls playsinline preload="metadata" width="480" style="max-width: 100%;" poster="asset/traj-30-failure.jpg">
-        <source src="asset/traj-30-failure.mp4" type="video/mp4">
-        <a href="asset/traj-30-failure.mp4"><img src="asset/traj-30-failure.jpg" alt="RoboBrain confirms DROP_FAILURE after the plug falls onto the table." width="480"></a>
-      </video>
-    </td>
-    <td width="50%" valign="top">
-      <video controls playsinline preload="metadata" width="480" style="max-width: 100%;" poster="asset/traj-31-success.jpg">
-        <source src="asset/traj-31-success.mp4" type="video/mp4">
-        <a href="asset/traj-31-success.mp4"><img src="asset/traj-31-success.jpg" alt="RoboBrain confirms SUCCESS after the plug remains seated and the gripper releases it." width="480"></a>
-      </video>
-    </td>
-  </tr>
-</table>
+<!-- GitHub removes custom video elements. Linked GIFs keep both demos visible in the README. -->
+
+| Failure case — traj-30: DROP_FAILURE | Success case — traj-31: SUCCESS |
+|:---:|:---:|
+| [<img src="asset/traj-30-failure.gif" alt="Animated demo of RoboBrain detecting a dropped plug" width="400">](asset/traj-30-failure.mp4) | [<img src="asset/traj-31-success.gif" alt="Animated demo of RoboBrain confirming successful plug insertion" width="400">](asset/traj-31-success.mp4) |
+
+Click either animated preview to open the full MP4 video with audio.
 
 ## Run
 
