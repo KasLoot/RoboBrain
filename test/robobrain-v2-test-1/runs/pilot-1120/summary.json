@@ -1,0 +1,84 @@
+{
+  "episodes": 4,
+  "correct": 2,
+  "success_correct": 0,
+  "drop_detected": 2,
+  "false_failures": 1,
+  "false_successes": 0,
+  "unresolved": 1,
+  "request_errors": 0,
+  "requests": 520,
+  "results": [
+    {
+      "status": "FAIL",
+      "failure_type": "DROP_FAILURE",
+      "failure_description": "The plug is visibly dropped outside the gripper, stand, and socket.",
+      "decision_time_s": 18.739945791996433,
+      "evidence_counts": {
+        "success": 1,
+        "drop": 8
+      },
+      "verification_round": 1,
+      "evidence_source_time_s": 12.2,
+      "video": "traj-1.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 40,
+      "request_errors": 0,
+      "request_latency_median_s": 3.923589437494229,
+      "request_latency_p95_s": 7.258159125005477,
+      "normal_hz": 0.8860734233519533
+    },
+    {
+      "status": "FAIL",
+      "failure_type": "DROP_FAILURE",
+      "failure_description": "The plug is visibly dropped outside the gripper, stand, and socket.",
+      "decision_time_s": 16.66718329199648,
+      "evidence_counts": {
+        "success": 0,
+        "drop": 10
+      },
+      "verification_round": 1,
+      "evidence_source_time_s": 10.166666666666666,
+      "video": "traj-9.MOV",
+      "expected_status": "FAIL",
+      "requests": 38,
+      "request_errors": 0,
+      "request_latency_median_s": 6.338908228994114,
+      "request_latency_p95_s": 7.3244770410092315,
+      "normal_hz": 0.9737209617308505
+    },
+    {
+      "status": "FAIL",
+      "failure_type": "DROP_FAILURE",
+      "failure_description": "The plug is visibly dropped outside the gripper, stand, and socket.",
+      "decision_time_s": 26.105622666000272,
+      "evidence_counts": {
+        "success": 0,
+        "drop": 10
+      },
+      "verification_round": 1,
+      "evidence_source_time_s": 24.0,
+      "video": "traj-82.MOV",
+      "expected_status": "FAIL",
+      "requests": 64,
+      "request_errors": 0,
+      "request_latency_median_s": 1.144651270500617,
+      "request_latency_p95_s": 1.997484749997966,
+      "normal_hz": 0.9189365500265042
+    },
+    {
+      "status": "ON_GOING",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 90.03906720799569,
+      "stop_reason": "episode_timeout",
+      "video": "traj-105.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 378,
+      "request_errors": 0,
+      "request_latency_median_s": 0.36033081250207033,
+      "request_latency_p95_s": 6.367238416001783,
+      "normal_hz": 2.0005619846846012
+    }
+  ]
+}

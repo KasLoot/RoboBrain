@@ -1,0 +1,9 @@
+{
+  "python": "3.13.13",
+  "platform": "macOS-26.6.2-arm64-arm-64bit-Mach-O",
+  "packages": {
+    "httpx": "0.28.1",
+    "opencv-python": "5.0.0.93",
+    "numpy": "2.5.2"
+  }
+}

@@ -1,7 +1,8 @@
 video
 
-test
+
 output.mp4
+output/
 
 runs/*
 

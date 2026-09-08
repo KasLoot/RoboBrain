@@ -1,0 +1,636 @@
+{
+  "dataset": "video/insert_plug-full_model-aug-28-105trail-1x",
+  "annotation_sha256": "3c64681709d288da188e7484038a2b5b0e15104d12e3cc02bb65fc45d7c2aeb8",
+  "episodes": [
+    {
+      "video": "traj-1.MOV",
+      "status": "SUCCESS",
+      "sha256": "52a2045c87f4a1f3169f910eeea9c22b4894e8e53d7d3347d3ff18ff00092f68",
+      "bytes": 13183954
+    },
+    {
+      "video": "traj-2.MOV",
+      "status": "SUCCESS",
+      "sha256": "b40b9abc700a743a50f33034807e25719c79d66c1be3f3ac386944c829e1708d",
+      "bytes": 12512366
+    },
+    {
+      "video": "traj-3.MOV",
+      "status": "SUCCESS",
+      "sha256": "977f7e0148fdbc38e943e43b7cafef7cafc8c306af57294b2813fd9ff8e7064a",
+      "bytes": 12033107
+    },
+    {
+      "video": "traj-4.MOV",
+      "status": "SUCCESS",
+      "sha256": "8f5509d53448a6113ef580fdf996cad2999354adebadb221b98a98510ef41d2b",
+      "bytes": 14556696
+    },
+    {
+      "video": "traj-5.MOV",
+      "status": "SUCCESS",
+      "sha256": "2169b6e4c59f2b727ed46c3c4e3367c3e632e7bde2d4767497daadcaa0040fd4",
+      "bytes": 13052418
+    },
+    {
+      "video": "traj-6.MOV",
+      "status": "SUCCESS",
+      "sha256": "56aea1ae58754340cc95b0f197909dbca88bf472ae12ff04807ff50cd04174cb",
+      "bytes": 14534196
+    },
+    {
+      "video": "traj-7.MOV",
+      "status": "SUCCESS",
+      "sha256": "763039b0be43e3cb234b374aa369310dc452fdc7315dbe7acdf76423203f5741",
+      "bytes": 12562823
+    },
+    {
+      "video": "traj-8.MOV",
+      "status": "SUCCESS",
+      "sha256": "0633ed4a4ab1e5e8fcc6cecc8b1f90d7635f2096c802a2f6f2b24b24dc42f926",
+      "bytes": 19869902
+    },
+    {
+      "video": "traj-9.MOV",
+      "status": "FAIL",
+      "sha256": "accc6bafca5e020cc0e1306809b8c7f1d9dfea65e0c9ede71ca6333e4d4a7884",
+      "bytes": 26507505
+    },
+    {
+      "video": "traj-10.MOV",
+      "status": "SUCCESS",
+      "sha256": "d1159bdfd9293c0479fbbfc854ce5be2b03c980b4e6529bb44bee1b48a8a4f39",
+      "bytes": 13859925
+    },
+    {
+      "video": "traj-11.MOV",
+      "status": "SUCCESS",
+      "sha256": "2d220efcddc736f75dc6434979a39d37a9704c43ac303752c408c27958ce4acc",
+      "bytes": 14425286
+    },
+    {
+      "video": "traj-12.MOV",
+      "status": "SUCCESS",
+      "sha256": "df084650524c2f4a371e9ab8e4f400373b9bef7b8401b4b8b3878a8d18c9ee80",
+      "bytes": 14650554
+    },
+    {
+      "video": "traj-13.MOV",
+      "status": "SUCCESS",
+      "sha256": "839005083f2e184d5b3250ea6486ac2d72470a64bc2e0bda6b6d47e6c23eb02b",
+      "bytes": 13006651
+    },
+    {
+      "video": "traj-14.MOV",
+      "status": "SUCCESS",
+      "sha256": "eac643dc41d8800daf922acb1759ef0d354791b3100632ec886079297942f58a",
+      "bytes": 12673720
+    },
+    {
+      "video": "traj-15.MOV",
+      "status": "SUCCESS",
+      "sha256": "efabacbc922fc67f96b7db78a03b41507dc1f94b7dc3b6bd5e3baa8631022897",
+      "bytes": 13650117
+    },
+    {
+      "video": "traj-16.MOV",
+      "status": "SUCCESS",
+      "sha256": "dc33aee282bdab5edda720046bfdc3c33e9f36881b1e1b51d8c327f638816f96",
+      "bytes": 13283610
+    },
+    {
+      "video": "traj-17.MOV",
+      "status": "SUCCESS",
+      "sha256": "30627b5ee0975d628853d59019a4d38c81662f7fc130e3671e1fd8682191ed6d",
+      "bytes": 29364903
+    },
+    {
+      "video": "traj-18.MOV",
+      "status": "SUCCESS",
+      "sha256": "05790ae8036fb320b19e5e9d5a5f4ec2b02b38fb54603a415c7a0920bf739129",
+      "bytes": 13988223
+    },
+    {
+      "video": "traj-19.MOV",
+      "status": "SUCCESS",
+      "sha256": "338cd951c17d3494424bf688c2a34d236ff0bd2a597ab23022901a6137efaf26",
+      "bytes": 17068182
+    },
+    {
+      "video": "traj-20.MOV",
+      "status": "SUCCESS",
+      "sha256": "ce720a902af266db38b8a72df3edc1622c879d73b76c46f596532ec1f9f42004",
+      "bytes": 14229606
+    },
+    {
+      "video": "traj-21.MOV",
+      "status": "SUCCESS",
+      "sha256": "2e5317b724c10d38f4a7661522de753c61109f86f216bec7b481a3446f9288fc",
+      "bytes": 15657084
+    },
+    {
+      "video": "traj-22.MOV",
+      "status": "SUCCESS",
+      "sha256": "320828695f4f8b24da8d446e8cf4a52747419b69254ebe302d41c054cbde6d8f",
+      "bytes": 13198644
+    },
+    {
+      "video": "traj-23.MOV",
+      "status": "SUCCESS",
+      "sha256": "648b93af6375f6f51873eeb42a686dc0e917e93f149f194adf368ed330e11d4b",
+      "bytes": 15027600
+    },
+    {
+      "video": "traj-24.MOV",
+      "status": "SUCCESS",
+      "sha256": "48f52153ca3fc69bf371edf1de53b0d13990913e196fd0591938b638f4ef2a22",
+      "bytes": 13918254
+    },
+    {
+      "video": "traj-25.MOV",
+      "status": "SUCCESS",
+      "sha256": "e5e0d624bc8fb6c733d7df9580aa204cc35471b2914b48d650cd4cf32eb3115f",
+      "bytes": 17337185
+    },
+    {
+      "video": "traj-26.MOV",
+      "status": "SUCCESS",
+      "sha256": "af85ee977c56fc4fa1ebaddd15fb6a90772ced637dfcfea010402c21df168c38",
+      "bytes": 12050406
+    },
+    {
+      "video": "traj-27.MOV",
+      "status": "SUCCESS",
+      "sha256": "4eb669b43160e9df2fb76de1f66fe477ef66338f9004cfaecb7091b98a31bb3e",
+      "bytes": 13298908
+    },
+    {
+      "video": "traj-28.MOV",
+      "status": "SUCCESS",
+      "sha256": "e1af84f1a5802ffc34755a7bd8e83568aa8d0cd3aee275a9f9341a0be5b57e1c",
+      "bytes": 13170263
+    },
+    {
+      "video": "traj-29.MOV",
+      "status": "SUCCESS",
+      "sha256": "2600bd5d2b39af98cbb9e476d6b034be88500c926878741aad5b72630ea87a90",
+      "bytes": 14275222
+    },
+    {
+      "video": "traj-30.MOV",
+      "status": "SUCCESS",
+      "sha256": "d44b513ac5afe5291d2b7267167574cdb787ecc883c867c2ca065fbddd68001c",
+      "bytes": 15195869
+    },
+    {
+      "video": "traj-31.MOV",
+      "status": "SUCCESS",
+      "sha256": "3ae0809caf7093d00f05877cbcb0061158068f48b84ff33c31426330b6b10a9f",
+      "bytes": 16346137
+    },
+    {
+      "video": "traj-32.MOV",
+      "status": "SUCCESS",
+      "sha256": "94241435409da7365e49c5c66ba12d1af229906c915359aae6807ece2494da03",
+      "bytes": 15141875
+    },
+    {
+      "video": "traj-33.MOV",
+      "status": "SUCCESS",
+      "sha256": "d0e4768d5a9ca9d078c336d9997405d116e2748723beab87f6ff8ae2a4afb0d0",
+      "bytes": 13943338
+    },
+    {
+      "video": "traj-34.MOV",
+      "status": "SUCCESS",
+      "sha256": "a12600185994bb90ea66895e83f212fd02f80a66c9c58d95c066f09191ec84d0",
+      "bytes": 12249803
+    },
+    {
+      "video": "traj-35.MOV",
+      "status": "SUCCESS",
+      "sha256": "b1f86d0063d8d9187cffc19e4705a583e819f16fc18a737a27f8a101c3abc465",
+      "bytes": 14049417
+    },
+    {
+      "video": "traj-36.MOV",
+      "status": "SUCCESS",
+      "sha256": "cfd6bb027260023f20ba72983222545d0bbe66c838b1c9888bf1060734a0fa5d",
+      "bytes": 13652199
+    },
+    {
+      "video": "traj-37.MOV",
+      "status": "SUCCESS",
+      "sha256": "ef291dca879a68a9064fa85e38256dbdc720862d45b6cb1c4c46836c3e0dcd47",
+      "bytes": 14087899
+    },
+    {
+      "video": "traj-38.MOV",
+      "status": "SUCCESS",
+      "sha256": "5d2164478e6ef7abdc00559472882aaf64bf8b5fde92f7f6704655609ef03ed7",
+      "bytes": 14903100
+    },
+    {
+      "video": "traj-39.MOV",
+      "status": "SUCCESS",
+      "sha256": "2d1947cc3c192d884471735cb8b403933f974c812cbc59dbe27fc0b304c9c79b",
+      "bytes": 16549568
+    },
+    {
+      "video": "traj-40.MOV",
+      "status": "SUCCESS",
+      "sha256": "528306efe9427eedd2f1253c8a0ecf7184cf6e52dd6a0aeb6d8c3ca8f876954d",
+      "bytes": 14675678
+    },
+    {
+      "video": "traj-41.MOV",
+      "status": "SUCCESS",
+      "sha256": "e32d7d93e37f6b53b416d8b5799e77638d5dddcf74c616678a9957cbe86078a3",
+      "bytes": 13838064
+    },
+    {
+      "video": "traj-42.MOV",
+      "status": "SUCCESS",
+      "sha256": "83ac06e08a1ac22b992a5b4ed2eb262a23138a1e76e0df6f0ca96bfcd39d738c",
+      "bytes": 13203613
+    },
+    {
+      "video": "traj-43.MOV",
+      "status": "SUCCESS",
+      "sha256": "1c636205fc0e3a1e5f4fc08747ea44684a1fa4168c707ab74ddcb2962af08294",
+      "bytes": 13395295
+    },
+    {
+      "video": "traj-44.MOV",
+      "status": "SUCCESS",
+      "sha256": "1dc26759b11cb87882b291779b1f5ab6dc1d7edb9e95ed197d2ee6ff762797f1",
+      "bytes": 13673939
+    },
+    {
+      "video": "traj-45.MOV",
+      "status": "SUCCESS",
+      "sha256": "c6d0a9c37e09ffc15ac89e82814d81cf44c717aa69a729a46844e7cfc0113a03",
+      "bytes": 13491866
+    },
+    {
+      "video": "traj-46.MOV",
+      "status": "SUCCESS",
+      "sha256": "206a2a25d1a334aef379e8432341ecdf629f6b2c6f3d07d6b97dac9364f26438",
+      "bytes": 11479825
+    },
+    {
+      "video": "traj-47.MOV",
+      "status": "SUCCESS",
+      "sha256": "9eaf0a7ab74229bad050621a5d5aed199e1604b96fb20a4d9c9016a7e1d4e8ec",
+      "bytes": 17518401
+    },
+    {
+      "video": "traj-48.MOV",
+      "status": "SUCCESS",
+      "sha256": "9995910905e5f1812faf24cb074194f1442a1ecdc587068b4d0269ba1a8008ea",
+      "bytes": 13986868
+    },
+    {
+      "video": "traj-49.MOV",
+      "status": "SUCCESS",
+      "sha256": "5cdb7eae35aa0b118d7d7a15dccd84ec810e5431dacdac18bd7c4c0f406957f2",
+      "bytes": 12761705
+    },
+    {
+      "video": "traj-50.MOV",
+      "status": "SUCCESS",
+      "sha256": "f863f10643c0ddef69f8e0e8d284ba8d58afec8fce6144d1c38c16ec94199973",
+      "bytes": 14014213
+    },
+    {
+      "video": "traj-51.MOV",
+      "status": "SUCCESS",
+      "sha256": "e660227b4df10888722e04cc148a0059cbcb65a96ecad0f16e1ba9826847df8e",
+      "bytes": 14858813
+    },
+    {
+      "video": "traj-52.MOV",
+      "status": "SUCCESS",
+      "sha256": "74933f433aa3685c85af0e49f1d28d7b244610d6b97b24ea7e46732e5e61eb8e",
+      "bytes": 15972338
+    },
+    {
+      "video": "traj-53.MOV",
+      "status": "SUCCESS",
+      "sha256": "45cac4214afa69640fcb5dc3f461ba3b852cf8e5184383d05681dd58e30dde4c",
+      "bytes": 15156140
+    },
+    {
+      "video": "traj-54.MOV",
+      "status": "SUCCESS",
+      "sha256": "37d642312c2767bc34240635d6da90dfc4f361f37c1e8539c58395f8ca7f196f",
+      "bytes": 15844376
+    },
+    {
+      "video": "traj-55.MOV",
+      "status": "SUCCESS",
+      "sha256": "9764ed3769bc647464a10b0cabb2a2f0245313520408e8edba938207180ffecb",
+      "bytes": 13214349
+    },
+    {
+      "video": "traj-56.MOV",
+      "status": "SUCCESS",
+      "sha256": "be884311bbba372fb2719a38cfe934859d5fad8ef5202822adb7eeaf63563dd9",
+      "bytes": 19430442
+    },
+    {
+      "video": "traj-57.MOV",
+      "status": "SUCCESS",
+      "sha256": "065df36f5aabbb5983e27092a2ef1a10e5a9ab30534cd60346c6b8ff82a222dc",
+      "bytes": 16582427
+    },
+    {
+      "video": "traj-58.MOV",
+      "status": "SUCCESS",
+      "sha256": "631284da8d6790aa82804cc90ec0d79f0a90db9efb30031fb4ae1e4132684523",
+      "bytes": 13848484
+    },
+    {
+      "video": "traj-59.MOV",
+      "status": "SUCCESS",
+      "sha256": "6ded13b8b02b45f61deb0d0af95eea9e44f0a424ccc1752628b55df29dc02db9",
+      "bytes": 14730336
+    },
+    {
+      "video": "traj-60.MOV",
+      "status": "SUCCESS",
+      "sha256": "bc4e13fc1732cf2e42ebcc7eeae67691d51ad336d221bbcf3f1fc324e009cd61",
+      "bytes": 14822067
+    },
+    {
+      "video": "traj-61.MOV",
+      "status": "SUCCESS",
+      "sha256": "8d8b51d6bcc18948cc65a8d67622bf96cd3d0430f517ab69a779d1a8f46be61f",
+      "bytes": 13799530
+    },
+    {
+      "video": "traj-62.MOV",
+      "status": "SUCCESS",
+      "sha256": "5979b9ce5ae51fda3acfd312079592abbd37de6798a083c38160f04df645d03b",
+      "bytes": 13643108
+    },
+    {
+      "video": "traj-63.MOV",
+      "status": "SUCCESS",
+      "sha256": "382db6005954adf6f796ec5b628c31c00ec4dc98fa4c3ee628cf262462860eef",
+      "bytes": 12838651
+    },
+    {
+      "video": "traj-64.MOV",
+      "status": "SUCCESS",
+      "sha256": "7a7fe7220a1040d4f33538a85956be62cd1378f6ee64b3680b62482cd45e7252",
+      "bytes": 13542644
+    },
+    {
+      "video": "traj-65.MOV",
+      "status": "SUCCESS",
+      "sha256": "6a8c3f073d4e386654110f1f786361a0535d39352ccfed85735a504fdef19532",
+      "bytes": 12783193
+    },
+    {
+      "video": "traj-66.MOV",
+      "status": "SUCCESS",
+      "sha256": "d71b1cc7ef3807d6ef5eec1d2de53044a9d0a96803aba8061433fce3a85c0c30",
+      "bytes": 13463853
+    },
+    {
+      "video": "traj-67.MOV",
+      "status": "SUCCESS",
+      "sha256": "f0ac48180b60c9f9556c29787a55dbe3c7811d1a36406b35146ef78793638c69",
+      "bytes": 14485202
+    },
+    {
+      "video": "traj-68.MOV",
+      "status": "SUCCESS",
+      "sha256": "417591650a9d80f40998d7214190f7b315b3dd3a86bb259ef93feab3490b4327",
+      "bytes": 13543339
+    },
+    {
+      "video": "traj-69.MOV",
+      "status": "SUCCESS",
+      "sha256": "8b6dc4c4db6a2c6cf32c740dfa1e8e173d20fb1c60b7f2ac5835d6a8423e7f39",
+      "bytes": 16944454
+    },
+    {
+      "video": "traj-70.MOV",
+      "status": "SUCCESS",
+      "sha256": "ff92ad56f7e5558fedbff800fc7e715e43f81c524804eb994115090c15e10dc2",
+      "bytes": 15814780
+    },
+    {
+      "video": "traj-71.MOV",
+      "status": "SUCCESS",
+      "sha256": "bcf3b8d1ac092d467d20f8d4fd0288f6527cd6b83aef55908b8676dd7fd8ad16",
+      "bytes": 14544266
+    },
+    {
+      "video": "traj-72.MOV",
+      "status": "SUCCESS",
+      "sha256": "0209e2722682ee89518e89696e66ca31af305fec88717b8399dbecfddd9dcd4e",
+      "bytes": 14604441
+    },
+    {
+      "video": "traj-73.MOV",
+      "status": "SUCCESS",
+      "sha256": "5f9b239ca521c3a9e7c8e64b185297b3f92bebd6168601edebaa4ed0f6787029",
+      "bytes": 13423076
+    },
+    {
+      "video": "traj-74.MOV",
+      "status": "SUCCESS",
+      "sha256": "ee2964e8870573ac4f6b9396220506cb18aafe519ea71280d41c1dba62d4504c",
+      "bytes": 13466386
+    },
+    {
+      "video": "traj-75.MOV",
+      "status": "SUCCESS",
+      "sha256": "dbebc8043a73eee460477163147df579566552275f492b355a3cd30c86ea3ea8",
+      "bytes": 14564080
+    },
+    {
+      "video": "traj-76.MOV",
+      "status": "SUCCESS",
+      "sha256": "a47457d3c8142d952e3528f123b565f6d56c554934ac62b6e94198a44dd68a59",
+      "bytes": 15030218
+    },
+    {
+      "video": "traj-77.MOV",
+      "status": "SUCCESS",
+      "sha256": "b8cd6ff4dc90851ed5f15341145842543810a16d2f70d33afc57a5ab91006d06",
+      "bytes": 14314521
+    },
+    {
+      "video": "traj-78.MOV",
+      "status": "SUCCESS",
+      "sha256": "33a046b88062d19da552fdfe32bdabacba5e5940287490c4def1975cf6404ff7",
+      "bytes": 14688140
+    },
+    {
+      "video": "traj-79.MOV",
+      "status": "SUCCESS",
+      "sha256": "9083303b1c6e439817ec73b7ea3fc5f8d784c92d032a4a255826e2e4b37d07b1",
+      "bytes": 17282783
+    },
+    {
+      "video": "traj-80.MOV",
+      "status": "SUCCESS",
+      "sha256": "64528296248fddff39ceb71f343713ef82af43092763b96f7e0724dce5c1589b",
+      "bytes": 13709204
+    },
+    {
+      "video": "traj-81.MOV",
+      "status": "SUCCESS",
+      "sha256": "20fb5c70aa541c4e60ae636a95894e8e913e1793c3eebe362e9df17f2706796f",
+      "bytes": 13734112
+    },
+    {
+      "video": "traj-82.MOV",
+      "status": "FAIL",
+      "sha256": "6aefd0ac51e976855f53f461f53489c3cd9c13158d20d1a4e30b9bf33cbf3fe8",
+      "bytes": 19193851
+    },
+    {
+      "video": "traj-83.MOV",
+      "status": "SUCCESS",
+      "sha256": "c44db9bfc85a8229336d1886311dad1163690d3850691a0f67f6b9791d8f528e",
+      "bytes": 15650778
+    },
+    {
+      "video": "traj-84.MOV",
+      "status": "SUCCESS",
+      "sha256": "2cd774466ae1f1e8a3d16729a8103a45d626152d1c96136bf9f6ba88ecec9b4a",
+      "bytes": 13317996
+    },
+    {
+      "video": "traj-85.MOV",
+      "status": "SUCCESS",
+      "sha256": "0de003ec60c81820ee9ff0741363d34b508eae013c3cde45cf1190f4981743e8",
+      "bytes": 18045423
+    },
+    {
+      "video": "traj-86.MOV",
+      "status": "SUCCESS",
+      "sha256": "872566b417d6900285b1bb322817ace333f813a00359343a3d4722421aeca566",
+      "bytes": 18561173
+    },
+    {
+      "video": "traj-87.MOV",
+      "status": "SUCCESS",
+      "sha256": "2466ad1ebc196b97fa7a13abf88258dbe0c143599eb2e56a1603d7daa60bbc55",
+      "bytes": 18954813
+    },
+    {
+      "video": "traj-88.MOV",
+      "status": "SUCCESS",
+      "sha256": "0c933eecaaee2deeabaaa20557ac5120dc3836b43641df5170b322cc9153b7b5",
+      "bytes": 13444341
+    },
+    {
+      "video": "traj-89.MOV",
+      "status": "SUCCESS",
+      "sha256": "1ed79317bc12796753ed43fceb524eaa9f5db179ba55abbcdd47469bb013973a",
+      "bytes": 13189709
+    },
+    {
+      "video": "traj-90.MOV",
+      "status": "SUCCESS",
+      "sha256": "82d4eaa40406509915f9ba86f3a3e89999acfa8fcb3c04e5e1d3ba5ef0987423",
+      "bytes": 15659006
+    },
+    {
+      "video": "traj-91.MOV",
+      "status": "SUCCESS",
+      "sha256": "83cfe33161ad9a2e16138f4063c11490e847b5f05f29663dc9b9aed812aa51a7",
+      "bytes": 14491987
+    },
+    {
+      "video": "traj-92.MOV",
+      "status": "SUCCESS",
+      "sha256": "e8bf16adcdd54d1f08371d13077c01ffed7ed46b77b676767a3258ec2888ac3d",
+      "bytes": 13947531
+    },
+    {
+      "video": "traj-93.MOV",
+      "status": "SUCCESS",
+      "sha256": "414e01ebf2103d589cbd45c8c1476f51b91a2f2fc8848e115a62e62155a5ff7c",
+      "bytes": 29038104
+    },
+    {
+      "video": "traj-94.MOV",
+      "status": "SUCCESS",
+      "sha256": "026709d4839685237baec65f4872805e863818b46bbd899df441b0426bc85b21",
+      "bytes": 15065242
+    },
+    {
+      "video": "traj-95.MOV",
+      "status": "SUCCESS",
+      "sha256": "eedec7eb1125d385a7ef99175482fc1723401438359e5174d9f2b80694c39d10",
+      "bytes": 20381698
+    },
+    {
+      "video": "traj-96.MOV",
+      "status": "SUCCESS",
+      "sha256": "503d2e2c87d64abf3cd915d2a51fde42581f3ad8669c1708afaa7f3d120aed18",
+      "bytes": 16460764
+    },
+    {
+      "video": "traj-97.MOV",
+      "status": "SUCCESS",
+      "sha256": "e61c29aab4ee8967c21b56e324ed21f7db81722ba9df203ef8b77391abafdc0a",
+      "bytes": 16150571
+    },
+    {
+      "video": "traj-98.MOV",
+      "status": "SUCCESS",
+      "sha256": "1fd211271161de146015e5e7a073ee69904526019ee9ec3d3a04919b5a0da34b",
+      "bytes": 16154640
+    },
+    {
+      "video": "traj-99.MOV",
+      "status": "SUCCESS",
+      "sha256": "8485b55f125773674c47f263666ee8096ba16a8d31d9a85ec1b47adfeea70b12",
+      "bytes": 18465411
+    },
+    {
+      "video": "traj-100.MOV",
+      "status": "SUCCESS",
+      "sha256": "1a978fe2d7f17f5825a64b875f003a03595fe970158c1f6511931caf68b2a949",
+      "bytes": 13906025
+    },
+    {
+      "video": "traj-101.MOV",
+      "status": "SUCCESS",
+      "sha256": "4faf04ee8945bda36c8901ac45383ce30222b6bf638480232aaa75d2f2160ba3",
+      "bytes": 15111857
+    },
+    {
+      "video": "traj-102.MOV",
+      "status": "SUCCESS",
+      "sha256": "0b05b41aa86dc798ebc39f8965759a1c46c4785f0bd10178ffb57bccac61de05",
+      "bytes": 15934225
+    },
+    {
+      "video": "traj-103.MOV",
+      "status": "SUCCESS",
+      "sha256": "c73d686c15a7cecdb4e93adfdedcddde679222565a2d7405df36c97f5dc63aff",
+      "bytes": 19056755
+    },
+    {
+      "video": "traj-104.MOV",
+      "status": "SUCCESS",
+      "sha256": "aac709c580e95ad6e5785708c1375658a1e03eaa4253294da775bdee9fd03192",
+      "bytes": 13468833
+    },
+    {
+      "video": "traj-105.MOV",
+      "status": "SUCCESS",
+      "sha256": "f3a9b6d2a9ce55620622e7cf3501ae233c928e76c1db9f10711794fcd297be1e",
+      "bytes": 19093805
+    }
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "episodes": 1,
+  "correct_episode_labels": 1,
+  "success_correct": 0,
+  "fail_correct": 1,
+  "drop_detected": 1,
+  "rotation_detected": 0,
+  "false_failures": 0,
+  "false_successes": 0,
+  "unresolved": 0,
+  "completed_requests": 87,
+  "request_errors": 0,
+  "request_latency_median_s": 1.5504854999999225,
+  "request_latency_p95_s": 3.1229370000000927,
+  "normal_hz_median": 0.6443543140417604,
+  "verification_rounds": 1,
+  "verification_duration_median_s": 3.8724028340002405,
+  "verification_sample_interval_median_s": 0.10002345899920329,
+  "verification_sample_interval_p95_s": 0.10224545800156193,
+  "scheduler_violations": [],
+  "reviewed_failure_timing": [
+    {
+      "video": "traj-4.MOV",
+      "failure_type": "DROP_FAILURE",
+      "premature": false,
+      "latency_interval_s": [
+        6.818620374334326,
+        7.018620374334326
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "video": "traj-4.MOV",
+      "status": "FAIL",
+      "source_frame": 773,
+      "source_time_s": 25.766666666666666,
+      "decision_time_s": 32.38528704100099,
+      "crop": [
+        330,
+        100,
+        1620,
+        860
+      ]
+    }
+  ]
+}

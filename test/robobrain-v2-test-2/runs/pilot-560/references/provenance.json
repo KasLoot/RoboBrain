@@ -1,0 +1,46 @@
+[
+  {
+    "file": "success_released.jpg",
+    "episode": 1,
+    "source_frame": 498,
+    "crop": [
+      900,
+      120,
+      1510,
+      720
+    ]
+  },
+  {
+    "file": "success_held.jpg",
+    "episode": 1,
+    "source_frame": 420,
+    "crop": [
+      900,
+      120,
+      1510,
+      720
+    ]
+  },
+  {
+    "file": "drop_on_table.jpg",
+    "episode": 82,
+    "source_frame": 690,
+    "crop": [
+      330,
+      100,
+      1620,
+      860
+    ]
+  },
+  {
+    "file": "drop_seated.jpg",
+    "episode": 1,
+    "source_frame": 498,
+    "crop": [
+      330,
+      100,
+      1620,
+      860
+    ]
+  }
+]

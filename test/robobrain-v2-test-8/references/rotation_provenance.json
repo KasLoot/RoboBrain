@@ -1,0 +1,38 @@
+[
+  {
+    "file": "rotation_aligned.jpg",
+    "dataset": "video/insert_plug-full_model-aug-28-105trail-1x",
+    "video": "traj-1.MOV",
+    "source_frame": 390,
+    "crop": [
+      950,
+      140,
+      1470,
+      680
+    ]
+  },
+  {
+    "file": "rotation_slipped.jpg",
+    "dataset": "video/insert_plug-full_model-aug-28-105trail-1x",
+    "video": "traj-9.MOV",
+    "source_frame": 600,
+    "crop": [
+      950,
+      140,
+      1470,
+      680
+    ]
+  },
+  {
+    "file": "rotation_released.jpg",
+    "dataset": "video/insert_plug-full_model-aug-28-105trail-1x",
+    "video": "traj-11.MOV",
+    "source_frame": 513,
+    "crop": [
+      950,
+      140,
+      1470,
+      680
+    ]
+  }
+]

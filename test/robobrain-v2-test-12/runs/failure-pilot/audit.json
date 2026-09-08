@@ -1,0 +1,69 @@
+{
+  "episodes": 2,
+  "correct_episode_labels": 2,
+  "success_correct": 0,
+  "fail_correct": 2,
+  "drop_detected": 1,
+  "rotation_detected": 1,
+  "false_failures": 0,
+  "false_successes": 0,
+  "unresolved": 0,
+  "completed_requests": 138,
+  "request_errors": 0,
+  "request_latency_median_s": 1.5702017920011713,
+  "request_latency_p95_s": 11.411361542002851,
+  "normal_hz_median": 0.6562308382426063,
+  "verification_rounds": 2,
+  "verification_duration_median_s": 12.116742334001174,
+  "verification_sample_interval_median_s": 0.10001554200061946,
+  "verification_sample_interval_p95_s": 0.10315495900067617,
+  "scheduler_violations": [],
+  "reviewed_failure_timing": [
+    {
+      "video": "traj-9.MOV",
+      "failure_type": "ROTATION_FAILURE",
+      "premature": false,
+      "latency_interval_s": [
+        14.652521667000837,
+        15.052521667000837
+      ]
+    },
+    {
+      "video": "traj-82.MOV",
+      "failure_type": "DROP_FAILURE",
+      "premature": false,
+      "latency_interval_s": [
+        5.121116417001758,
+        5.22111641700176
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "video": "traj-9.MOV",
+      "status": "FAIL",
+      "source_frame": 516,
+      "source_time_s": 17.2,
+      "decision_time_s": 28.452521667000838,
+      "crop": [
+        950,
+        140,
+        1470,
+        680
+      ]
+    },
+    {
+      "video": "traj-82.MOV",
+      "status": "FAIL",
+      "source_frame": 704,
+      "source_time_s": 23.466666666666665,
+      "decision_time_s": 26.12111641700176,
+      "crop": [
+        330,
+        100,
+        1620,
+        860
+      ]
+    }
+  ]
+}

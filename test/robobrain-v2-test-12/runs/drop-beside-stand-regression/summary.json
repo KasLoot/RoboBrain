@@ -1,0 +1,38 @@
+{
+  "episodes": 1,
+  "correct": 1,
+  "success_correct": 0,
+  "fail_correct": 1,
+  "drop_detected": 1,
+  "rotation_detected": 0,
+  "false_failures": 0,
+  "false_successes": 0,
+  "unresolved": 0,
+  "request_errors": 0,
+  "requests": 87,
+  "results": [
+    {
+      "status": "FAIL",
+      "failure_type": "DROP_FAILURE",
+      "failure_description": "the adapter is lying on the tabletop next to the white stand",
+      "decision_time_s": 32.38528704100099,
+      "evidence_counts": {
+        "success": 0,
+        "drop": 10,
+        "rotation": 0
+      },
+      "verification_round": 1,
+      "confirmed_failure_types": [
+        "DROP_FAILURE"
+      ],
+      "evidence_source_time_s": 25.766666666666666,
+      "video": "traj-4.MOV",
+      "expected_status": "FAIL",
+      "requests": 87,
+      "request_errors": 0,
+      "request_latency_median_s": 1.5504854999999225,
+      "request_latency_p95_s": 3.1229370000000927,
+      "normal_hz": 0.6443543140417604
+    }
+  ]
+}

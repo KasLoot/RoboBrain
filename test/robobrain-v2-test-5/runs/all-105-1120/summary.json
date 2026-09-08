@@ -1,0 +1,1110 @@
+{
+  "episodes": 58,
+  "correct": 57,
+  "success_correct": 56,
+  "drop_detected": 1,
+  "false_failures": 0,
+  "false_successes": 0,
+  "unresolved": 1,
+  "request_errors": 1,
+  "requests": 3749,
+  "results": [
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 21.03237875000923,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0
+      },
+      "verification_round": 2,
+      "evidence_source_time_s": 16.833333333333332,
+      "video": "traj-1.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 64,
+      "request_errors": 0,
+      "request_latency_median_s": 1.066632229500101,
+      "request_latency_p95_s": 7.377851291006664,
+      "normal_hz": 0.647219556919009
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 20.074864916998195,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0
+      },
+      "verification_round": 2,
+      "evidence_source_time_s": 14.766666666666667,
+      "video": "traj-2.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 61,
+      "request_errors": 0,
+      "request_latency_median_s": 1.0733995840128046,
+      "request_latency_p95_s": 7.247059707995504,
+      "normal_hz": 0.5997196855668405
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 17.031308125006035,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0
+      },
+      "verification_round": 1,
+      "evidence_source_time_s": 14.3,
+      "video": "traj-3.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 46,
+      "request_errors": 0,
+      "request_latency_median_s": 1.1633010005025426,
+      "request_latency_p95_s": 1.4533817909978097,
+      "normal_hz": 0.8597474596904742
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 20.272052625005017,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0
+      },
+      "verification_round": 1,
+      "evidence_source_time_s": 17.766666666666666,
+      "video": "traj-4.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 52,
+      "request_errors": 0,
+      "request_latency_median_s": 1.1070414994974271,
+      "request_latency_p95_s": 1.4574969579989556,
+      "normal_hz": 0.8654569758159922
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 21.383019208005862,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0
+      },
+      "verification_round": 2,
+      "evidence_source_time_s": 15.366666666666667,
+      "video": "traj-5.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 64,
+      "request_errors": 0,
+      "request_latency_median_s": 1.116094917000737,
+      "request_latency_p95_s": 7.18971999999485,
+      "normal_hz": 0.6330000401466348
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 21.75526641700708,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0
+      },
+      "verification_round": 2,
+      "evidence_source_time_s": 17.5,
+      "video": "traj-6.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 64,
+      "request_errors": 0,
+      "request_latency_median_s": 1.102687208003772,
+      "request_latency_p95_s": 7.5492140839924105,
+      "normal_hz": 0.6240000698879589
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 20.772725333998096,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0
+      },
+      "verification_round": 2,
+      "evidence_source_time_s": 14.433333333333334,
+      "video": "traj-7.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 62,
+      "request_errors": 0,
+      "request_latency_median_s": 1.1851382290042238,
+      "request_latency_p95_s": 7.227939541000524,
+      "normal_hz": 0.6199176399379687
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 26.14787441599765,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0
+      },
+      "verification_round": 1,
+      "evidence_source_time_s": 24.166666666666668,
+      "video": "traj-8.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 62,
+      "request_errors": 0,
+      "request_latency_median_s": 1.1074994375012466,
+      "request_latency_p95_s": 1.5346368750033434,
+      "normal_hz": 0.8620749787028767
+    },
+    {
+      "status": "FAIL",
+      "failure_type": "DROP_FAILURE",
+      "failure_description": "The plug is visibly dropped outside the gripper, stand, and socket.",
+      "decision_time_s": 36.02014741601306,
+      "evidence_counts": {
+        "success": 0,
+        "drop": 10
+      },
+      "verification_round": 2,
+      "evidence_source_time_s": 33.43333333333333,
+      "video": "traj-9.MOV",
+      "expected_status": "FAIL",
+      "requests": 86,
+      "request_errors": 0,
+      "request_latency_median_s": 1.1827947295023478,
+      "request_latency_p95_s": 7.201025291986298,
+      "normal_hz": 0.7001795594609607
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 21.857293542008847,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0
+      },
+      "verification_round": 2,
+      "evidence_source_time_s": 15.7,
+      "video": "traj-10.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 64,
+      "request_errors": 0,
+      "request_latency_median_s": 1.123034166499565,
+      "request_latency_p95_s": 7.377886832997319,
+      "normal_hz": 0.6349700705736117
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 22.317482625003322,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0
+      },
+      "verification_round": 2,
+      "evidence_source_time_s": 17.133333333333333,
+      "video": "traj-11.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 64,
+      "request_errors": 0,
+      "request_latency_median_s": 1.0853904580071685,
+      "request_latency_p95_s": 7.290818541005137,
+      "normal_hz": 0.6053348592047203
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 19.782006915993406,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0
+      },
+      "verification_round": 2,
+      "evidence_source_time_s": 17.066666666666666,
+      "video": "traj-12.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 58,
+      "request_errors": 0,
+      "request_latency_median_s": 1.3195604374923278,
+      "request_latency_p95_s": 8.207156959004351,
+      "normal_hz": 0.5541878148870842
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 20.54112866599462,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0
+      },
+      "verification_round": 2,
+      "evidence_source_time_s": 14.733333333333333,
+      "video": "traj-13.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 61,
+      "request_errors": 0,
+      "request_latency_median_s": 1.1409505420015194,
+      "request_latency_p95_s": 7.66341537500557,
+      "normal_hz": 0.5843078936081137
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 19.338022583004204,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0
+      },
+      "verification_round": 2,
+      "evidence_source_time_s": 14.266666666666667,
+      "video": "traj-14.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 60,
+      "request_errors": 0,
+      "request_latency_median_s": 1.1292964584936271,
+      "request_latency_p95_s": 7.324370916991029,
+      "normal_hz": 0.5973568182443189
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 18.663104791005026,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0
+      },
+      "verification_round": 1,
+      "evidence_source_time_s": 15.733333333333333,
+      "video": "traj-15.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 52,
+      "request_errors": 0,
+      "request_latency_median_s": 1.0539370414990117,
+      "request_latency_p95_s": 1.2535912080056733,
+      "normal_hz": 0.9108315656054843
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 17.781388292001793,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0
+      },
+      "verification_round": 1,
+      "evidence_source_time_s": 14.933333333333334,
+      "video": "traj-16.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 48,
+      "request_errors": 0,
+      "request_latency_median_s": 1.0875671044996125,
+      "request_latency_p95_s": 1.4586228749976726,
+      "normal_hz": 0.8827450417985326
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 40.35921850000159,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0
+      },
+      "verification_round": 1,
+      "evidence_source_time_s": 38.46666666666667,
+      "video": "traj-17.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 88,
+      "request_errors": 0,
+      "request_latency_median_s": 1.087594958495174,
+      "request_latency_p95_s": 1.4221709170087706,
+      "normal_hz": 0.8820692254415413
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 21.030037874996196,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0
+      },
+      "verification_round": 2,
+      "evidence_source_time_s": 15.866666666666667,
+      "video": "traj-18.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 64,
+      "request_errors": 0,
+      "request_latency_median_s": 1.058238875004463,
+      "request_latency_p95_s": 7.260460416000569,
+      "normal_hz": 0.6461594610396323
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 23.343267374992138,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0
+      },
+      "verification_round": 2,
+      "evidence_source_time_s": 20.066666666666666,
+      "video": "traj-19.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 66,
+      "request_errors": 0,
+      "request_latency_median_s": 1.1143659580047824,
+      "request_latency_p95_s": 7.277482042001793,
+      "normal_hz": 0.6228616404662713
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 19.404036125008133,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0
+      },
+      "verification_round": 1,
+      "evidence_source_time_s": 17.133333333333333,
+      "video": "traj-20.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 50,
+      "request_errors": 0,
+      "request_latency_median_s": 1.0809485205027158,
+      "request_latency_p95_s": 1.5535682500049006,
+      "normal_hz": 0.8541312290847636
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 21.86952333401132,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0
+      },
+      "verification_round": 2,
+      "evidence_source_time_s": 17.633333333333333,
+      "video": "traj-21.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 64,
+      "request_errors": 0,
+      "request_latency_median_s": 1.0847974170028465,
+      "request_latency_p95_s": 7.25284291699063,
+      "normal_hz": 0.6212851553457762
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 20.483367790991906,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0
+      },
+      "verification_round": 2,
+      "evidence_source_time_s": 14.966666666666667,
+      "video": "traj-22.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 62,
+      "request_errors": 0,
+      "request_latency_median_s": 1.091224667005008,
+      "request_latency_p95_s": 7.25072545898729,
+      "normal_hz": 0.6107619047035016
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 21.55278891698981,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0
+      },
+      "verification_round": 2,
+      "evidence_source_time_s": 17.9,
+      "video": "traj-23.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 64,
+      "request_errors": 0,
+      "request_latency_median_s": 1.069633666498703,
+      "request_latency_p95_s": 7.311692375005805,
+      "normal_hz": 0.6293101289471096
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 18.600479375003488,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0
+      },
+      "verification_round": 1,
+      "evidence_source_time_s": 15.9,
+      "video": "traj-24.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 50,
+      "request_errors": 0,
+      "request_latency_median_s": 1.067301666997082,
+      "request_latency_p95_s": 1.6332088749913964,
+      "normal_hz": 0.9007964481699059
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 20.72551091600326,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0
+      },
+      "verification_round": 1,
+      "evidence_source_time_s": 18.9,
+      "video": "traj-25.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 54,
+      "request_errors": 0,
+      "request_latency_median_s": 1.073006478996831,
+      "request_latency_p95_s": 1.4182083749910817,
+      "normal_hz": 0.8994299710287706
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 16.69491045799805,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0
+      },
+      "verification_round": 1,
+      "evidence_source_time_s": 14.1,
+      "video": "traj-26.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 46,
+      "request_errors": 0,
+      "request_latency_median_s": 1.109272042005614,
+      "request_latency_p95_s": 1.4310759170039091,
+      "normal_hz": 0.8712446215299552
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 20.278292125003645,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0
+      },
+      "verification_round": 2,
+      "evidence_source_time_s": 14.966666666666667,
+      "video": "traj-27.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 62,
+      "request_errors": 0,
+      "request_latency_median_s": 1.104189583005791,
+      "request_latency_p95_s": 7.213571707994561,
+      "normal_hz": 0.619037293888395
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 19.939459207991604,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0
+      },
+      "verification_round": 2,
+      "evidence_source_time_s": 15.9,
+      "video": "traj-28.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 62,
+      "request_errors": 0,
+      "request_latency_median_s": 1.0654916249986854,
+      "request_latency_p95_s": 7.234777874997235,
+      "normal_hz": 0.6315362881893587
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 21.22279274999164,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0
+      },
+      "verification_round": 2,
+      "evidence_source_time_s": 16.566666666666666,
+      "video": "traj-29.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 64,
+      "request_errors": 0,
+      "request_latency_median_s": 1.069491979003942,
+      "request_latency_p95_s": 7.373805208000704,
+      "normal_hz": 0.6394092239032081
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 19.84204033399874,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0
+      },
+      "verification_round": 1,
+      "evidence_source_time_s": 17.3,
+      "video": "traj-30.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 52,
+      "request_errors": 0,
+      "request_latency_median_s": 1.0956553335054195,
+      "request_latency_p95_s": 1.4579729160032002,
+      "normal_hz": 0.887837360608798
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 22.378930584003683,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0
+      },
+      "verification_round": 2,
+      "evidence_source_time_s": 19.233333333333334,
+      "video": "traj-31.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 62,
+      "request_errors": 1,
+      "request_latency_median_s": 1.278962603500986,
+      "request_latency_p95_s": 7.394479541995679,
+      "normal_hz": 0.5811420647134199
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 20.80529249999381,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0
+      },
+      "verification_round": 2,
+      "evidence_source_time_s": 16.866666666666667,
+      "video": "traj-32.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 61,
+      "request_errors": 0,
+      "request_latency_median_s": 1.0924249999952735,
+      "request_latency_p95_s": 7.252862541994546,
+      "normal_hz": 0.5766592502854139
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 16.941751542006386,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0
+      },
+      "verification_round": 1,
+      "evidence_source_time_s": 14.0,
+      "video": "traj-33.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 44,
+      "request_errors": 0,
+      "request_latency_median_s": 1.3983434584952192,
+      "request_latency_p95_s": 2.7263007500005187,
+      "normal_hz": 0.8671464730412913
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 20.295964083008585,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0
+      },
+      "verification_round": 2,
+      "evidence_source_time_s": 14.266666666666667,
+      "video": "traj-34.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 62,
+      "request_errors": 0,
+      "request_latency_median_s": 1.0794050415061065,
+      "request_latency_p95_s": 7.2402500419993885,
+      "normal_hz": 0.6173132933539314
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 19.360932916999445,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0
+      },
+      "verification_round": 1,
+      "evidence_source_time_s": 16.933333333333334,
+      "video": "traj-35.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 52,
+      "request_errors": 0,
+      "request_latency_median_s": 1.0619805835012812,
+      "request_latency_p95_s": 1.4299740410060622,
+      "normal_hz": 0.9127866360829973
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 21.032091458007926,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0
+      },
+      "verification_round": 2,
+      "evidence_source_time_s": 15.2,
+      "video": "traj-36.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 64,
+      "request_errors": 0,
+      "request_latency_median_s": 1.052364604001923,
+      "request_latency_p95_s": 7.257557874996564,
+      "normal_hz": 0.6446470283541017
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 19.574677917000372,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0
+      },
+      "verification_round": 2,
+      "evidence_source_time_s": 15.666666666666666,
+      "video": "traj-37.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 60,
+      "request_errors": 0,
+      "request_latency_median_s": 1.0829871044988977,
+      "request_latency_p95_s": 7.952685290991212,
+      "normal_hz": 0.5901446685334986
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 19.759339249998447,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0
+      },
+      "verification_round": 2,
+      "evidence_source_time_s": 17.133333333333333,
+      "video": "traj-38.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 58,
+      "request_errors": 0,
+      "request_latency_median_s": 1.3011921249999432,
+      "request_latency_p95_s": 7.337082083002315,
+      "normal_hz": 0.5542356510504634
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 20.865483625006163,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0
+      },
+      "verification_round": 1,
+      "evidence_source_time_s": 17.8,
+      "video": "traj-39.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 52,
+      "request_errors": 0,
+      "request_latency_median_s": 1.126177916492452,
+      "request_latency_p95_s": 1.442767750006169,
+      "normal_hz": 0.8444828583325975
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 21.736687249998795,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0
+      },
+      "verification_round": 2,
+      "evidence_source_time_s": 15.533333333333333,
+      "video": "traj-40.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 64,
+      "request_errors": 0,
+      "request_latency_median_s": 1.1258551869977964,
+      "request_latency_p95_s": 7.235743540994008,
+      "normal_hz": 0.6245811940168973
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 21.872493458999088,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0
+      },
+      "verification_round": 2,
+      "evidence_source_time_s": 16.333333333333332,
+      "video": "traj-41.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 64,
+      "request_errors": 0,
+      "request_latency_median_s": 1.1692475415038643,
+      "request_latency_p95_s": 7.414408291995642,
+      "normal_hz": 0.6217371491180244
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 17.187206457994762,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0
+      },
+      "verification_round": 1,
+      "evidence_source_time_s": 14.4,
+      "video": "traj-42.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 46,
+      "request_errors": 0,
+      "request_latency_median_s": 1.1270339999973658,
+      "request_latency_p95_s": 1.5241735000017798,
+      "normal_hz": 0.8506133110089293
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 16.979921667007147,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0
+      },
+      "verification_round": 1,
+      "evidence_source_time_s": 13.533333333333333,
+      "video": "traj-43.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 48,
+      "request_errors": 0,
+      "request_latency_median_s": 1.0428933540024445,
+      "request_latency_p95_s": 1.2453172910027206,
+      "normal_hz": 0.8765804563194758
+    },
+    {
+      "status": "ON_GOING",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 90.03954374999739,
+      "stop_reason": "episode_timeout",
+      "video": "traj-44.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 360,
+      "request_errors": 0,
+      "request_latency_median_s": 0.38690243749442743,
+      "request_latency_p95_s": 6.608830583994859,
+      "normal_hz": 1.9009503183305851
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 19.912912166997558,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0
+      },
+      "verification_round": 2,
+      "evidence_source_time_s": 15.7,
+      "video": "traj-45.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 60,
+      "request_errors": 0,
+      "request_latency_median_s": 1.199841125002422,
+      "request_latency_p95_s": 7.3493904170027236,
+      "normal_hz": 0.5792765003709879
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 16.69212904199958,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0
+      },
+      "verification_round": 1,
+      "evidence_source_time_s": 12.833333333333334,
+      "video": "traj-46.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 48,
+      "request_errors": 0,
+      "request_latency_median_s": 1.062962312498712,
+      "request_latency_p95_s": 1.1897771670046495,
+      "normal_hz": 0.8959851887476288
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 23.89052349999838,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0
+      },
+      "verification_round": 2,
+      "evidence_source_time_s": 20.233333333333334,
+      "video": "traj-47.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 68,
+      "request_errors": 0,
+      "request_latency_median_s": 1.0719284584993147,
+      "request_latency_p95_s": 7.247025582997594,
+      "normal_hz": 0.6603667458985653
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 20.267302000007476,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0
+      },
+      "verification_round": 2,
+      "evidence_source_time_s": 15.566666666666666,
+      "video": "traj-48.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 62,
+      "request_errors": 0,
+      "request_latency_median_s": 1.0839216669919551,
+      "request_latency_p95_s": 7.240621082994039,
+      "normal_hz": 0.6204379606182363
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 18.989395416996558,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0
+      },
+      "verification_round": 2,
+      "evidence_source_time_s": 13.966666666666667,
+      "video": "traj-49.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 60,
+      "request_errors": 0,
+      "request_latency_median_s": 1.0725372704982874,
+      "request_latency_p95_s": 7.318194584004232,
+      "normal_hz": 0.6056001400125447
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 20.17712991699227,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0
+      },
+      "verification_round": 2,
+      "evidence_source_time_s": 15.633333333333333,
+      "video": "traj-50.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 62,
+      "request_errors": 0,
+      "request_latency_median_s": 1.0807476664995193,
+      "request_latency_p95_s": 7.314479333013878,
+      "normal_hz": 0.6264312581316935
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 19.391105500006233,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0
+      },
+      "verification_round": 1,
+      "evidence_source_time_s": 17.433333333333334,
+      "video": "traj-51.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 50,
+      "request_errors": 0,
+      "request_latency_median_s": 1.122158333499101,
+      "request_latency_p95_s": 1.4122667080082465,
+      "normal_hz": 0.8568218406640358
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 20.543707542004995,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0
+      },
+      "verification_round": 2,
+      "evidence_source_time_s": 18.033333333333335,
+      "video": "traj-52.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 60,
+      "request_errors": 0,
+      "request_latency_median_s": 1.2496444999997038,
+      "request_latency_p95_s": 7.395457334001549,
+      "normal_hz": 0.5844497086541578
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 23.174071499990532,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0
+      },
+      "verification_round": 2,
+      "evidence_source_time_s": 18.966666666666665,
+      "video": "traj-53.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 66,
+      "request_errors": 0,
+      "request_latency_median_s": 1.084191624999221,
+      "request_latency_p95_s": 7.255524457999854,
+      "normal_hz": 0.6296365257686403
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 19.89330208300089,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0
+      },
+      "verification_round": 1,
+      "evidence_source_time_s": 18.166666666666668,
+      "video": "traj-54.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 52,
+      "request_errors": 0,
+      "request_latency_median_s": 1.083587583503686,
+      "request_latency_p95_s": 1.5705999999918276,
+      "normal_hz": 0.881323463399542
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 18.802300791998277,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0
+      },
+      "verification_round": 2,
+      "evidence_source_time_s": 15.133333333333333,
+      "video": "traj-55.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 60,
+      "request_errors": 0,
+      "request_latency_median_s": 1.05629164599668,
+      "request_latency_p95_s": 7.362570124998456,
+      "normal_hz": 0.6167923036375398
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 24.781473333991016,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0
+      },
+      "verification_round": 2,
+      "evidence_source_time_s": 22.733333333333334,
+      "video": "traj-56.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 66,
+      "request_errors": 0,
+      "request_latency_median_s": 1.2157927284933976,
+      "request_latency_p95_s": 7.269663208004204,
+      "normal_hz": 0.6117530386886815
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 20.679968000011286,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0
+      },
+      "verification_round": 2,
+      "evidence_source_time_s": 18.333333333333332,
+      "video": "traj-57.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 58,
+      "request_errors": 0,
+      "request_latency_median_s": 1.2713114585058065,
+      "request_latency_p95_s": 7.373181916991598,
+      "normal_hz": 0.5295976328363989
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 20.828612375000375,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0
+      },
+      "verification_round": 2,
+      "evidence_source_time_s": 15.333333333333334,
+      "video": "traj-58.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 64,
+      "request_errors": 0,
+      "request_latency_median_s": 1.0586203125058091,
+      "request_latency_p95_s": 7.245087750008679,
+      "normal_hz": 0.6524777052336352
+    }
+  ]
+}

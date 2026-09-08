@@ -1,0 +1,9 @@
+{
+  "standalone_copy_check": "passed: copied own code/config/prompts/references to a temporary directory and ran uv --offline --script check.py",
+  "workflow_check": "passed",
+  "audit_self_check": "passed",
+  "production_changes": false,
+  "robot_api_calls": "none; replay control actions are explicitly simulated",
+  "frozen_candidate_manifest": "candidate-sha256.json",
+  "development_input_manifest": "dataset-manifest-105.json"
+}

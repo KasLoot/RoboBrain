@@ -1,0 +1,12 @@
+{
+  "episodes": 45,
+  "original_labels_matched": 44,
+  "visual_review_complete": true,
+  "confirmed_visual_false_failures": [
+    "traj-36.MOV"
+  ],
+  "rotation_note": "traj-30 triggered rotation verification but it did not confirm; later drop verification confirmed FAIL.",
+  "request_error": "One rotation request at source time zero in traj-23 was disconnected and mapped to UNCERTAIN.",
+  "scheduler_violations": 0,
+  "production_changes": false
+}

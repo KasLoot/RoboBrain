@@ -1,0 +1,7 @@
+{
+  "reviewer": "assistant",
+  "video": "traj-36.MOV",
+  "finding": "Plug visibly seated after gripper withdrawal. Early STAND/UNKNOWN classifications prevented the false drop seen in experiment 10.",
+  "status_supported": "SUCCESS",
+  "reviewed_source_frame": 592
+}

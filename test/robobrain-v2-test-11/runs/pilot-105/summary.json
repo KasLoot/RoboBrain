@@ -1,0 +1,101 @@
+{
+  "episodes": 4,
+  "correct": 4,
+  "success_correct": 2,
+  "fail_correct": 2,
+  "drop_detected": 1,
+  "rotation_detected": 1,
+  "false_failures": 0,
+  "false_successes": 0,
+  "unresolved": 0,
+  "request_errors": 0,
+  "requests": 264,
+  "results": [
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 21.660578708000685,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0,
+        "rotation": 0
+      },
+      "verification_round": 1,
+      "evidence_source_time_s": 17.033333333333335,
+      "video": "traj-1.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 66,
+      "request_errors": 0,
+      "request_latency_median_s": 1.701758103999964,
+      "request_latency_p95_s": 2.7780056669980695,
+      "normal_hz": 0.653087743406356
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 19.398487208000006,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0,
+        "rotation": 0
+      },
+      "verification_round": 1,
+      "evidence_source_time_s": 15.066666666666666,
+      "video": "traj-2.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 63,
+      "request_errors": 0,
+      "request_latency_median_s": 1.606152958000166,
+      "request_latency_p95_s": 2.437635207999847,
+      "normal_hz": 0.663014586433869
+    },
+    {
+      "status": "FAIL",
+      "failure_type": "ROTATION_FAILURE",
+      "failure_description": "The adapter is grasped by the fingers but has rotated so the metallic pins are visible and dangling in front of the socket.",
+      "decision_time_s": 29.13580550000188,
+      "evidence_counts": {
+        "success": 0,
+        "drop": 0,
+        "rotation": 10
+      },
+      "verification_round": 1,
+      "confirmed_failure_types": [
+        "ROTATION_FAILURE"
+      ],
+      "evidence_source_time_s": 16.9,
+      "video": "traj-9.MOV",
+      "expected_status": "FAIL",
+      "requests": 60,
+      "request_errors": 0,
+      "request_latency_median_s": 6.241480187500201,
+      "request_latency_p95_s": 11.806409625001834,
+      "normal_hz": 0.625563852956344
+    },
+    {
+      "status": "FAIL",
+      "failure_type": "DROP_FAILURE",
+      "failure_description": "The adapter is standing on the tabletop near the power strip.",
+      "decision_time_s": 26.721905750000587,
+      "evidence_counts": {
+        "success": 0,
+        "drop": 10,
+        "rotation": 0
+      },
+      "verification_round": 1,
+      "confirmed_failure_types": [
+        "DROP_FAILURE"
+      ],
+      "evidence_source_time_s": 23.466666666666665,
+      "video": "traj-82.MOV",
+      "expected_status": "FAIL",
+      "requests": 75,
+      "request_errors": 0,
+      "request_latency_median_s": 1.602357125000708,
+      "request_latency_p95_s": 2.3631935420016816,
+      "normal_hz": 0.6251498188992713
+    }
+  ]
+}

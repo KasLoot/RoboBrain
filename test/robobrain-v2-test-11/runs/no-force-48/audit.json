@@ -1,0 +1,320 @@
+{
+  "episodes": 23,
+  "correct_episode_labels": 22,
+  "success_correct": 21,
+  "fail_correct": 1,
+  "drop_detected": 1,
+  "rotation_detected": 0,
+  "false_failures": 0,
+  "false_successes": 0,
+  "unresolved": 1,
+  "completed_requests": 1854,
+  "request_errors": 0,
+  "request_latency_median_s": 1.535733374999836,
+  "request_latency_p95_s": 2.322698500000115,
+  "normal_hz_median": 0.6413047335980944,
+  "verification_rounds": 23,
+  "verification_duration_median_s": 2.671186208001018,
+  "verification_sample_interval_median_s": 0.10001437500250177,
+  "verification_sample_interval_p95_s": 0.10418833299991093,
+  "scheduler_violations": [],
+  "reviewed_failure_timing": [
+    {
+      "video": "traj-14.MOV",
+      "failure_type": "DROP_FAILURE",
+      "premature": false,
+      "latency_interval_s": [
+        5.822119749666552,
+        6.022119749666551
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "video": "traj-1.MOV",
+      "status": "SUCCESS",
+      "source_frame": 337,
+      "source_time_s": 11.233333333333333,
+      "decision_time_s": 16.80951216700123,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ]
+    },
+    {
+      "video": "traj-2.MOV",
+      "status": "SUCCESS",
+      "source_frame": 443,
+      "source_time_s": 14.766666666666667,
+      "decision_time_s": 18.211420666997583,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ]
+    },
+    {
+      "video": "traj-3.MOV",
+      "status": "SUCCESS",
+      "source_frame": 473,
+      "source_time_s": 15.766666666666667,
+      "decision_time_s": 19.739845959000377,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ]
+    },
+    {
+      "video": "traj-5.MOV",
+      "status": "SUCCESS",
+      "source_frame": 435,
+      "source_time_s": 14.5,
+      "decision_time_s": 17.932266374999017,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ]
+    },
+    {
+      "video": "traj-6.MOV",
+      "status": "SUCCESS",
+      "source_frame": 415,
+      "source_time_s": 13.833333333333334,
+      "decision_time_s": 16.695574833000137,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ]
+    },
+    {
+      "video": "traj-7.MOV",
+      "status": "SUCCESS",
+      "source_frame": 519,
+      "source_time_s": 17.3,
+      "decision_time_s": 20.96900900000037,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ]
+    },
+    {
+      "video": "traj-8.MOV",
+      "status": "SUCCESS",
+      "source_frame": 441,
+      "source_time_s": 14.7,
+      "decision_time_s": 17.943157249999786,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ]
+    },
+    {
+      "video": "traj-9.MOV",
+      "status": "SUCCESS",
+      "source_frame": 469,
+      "source_time_s": 15.633333333333333,
+      "decision_time_s": 20.76110720899669,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ]
+    },
+    {
+      "video": "traj-10.MOV",
+      "status": "SUCCESS",
+      "source_frame": 445,
+      "source_time_s": 14.833333333333334,
+      "decision_time_s": 18.196804375002102,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ]
+    },
+    {
+      "video": "traj-11.MOV",
+      "status": "SUCCESS",
+      "source_frame": 489,
+      "source_time_s": 16.3,
+      "decision_time_s": 20.06309579200024,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ]
+    },
+    {
+      "video": "traj-12.MOV",
+      "status": "SUCCESS",
+      "source_frame": 482,
+      "source_time_s": 16.066666666666666,
+      "decision_time_s": 19.98824091700226,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ]
+    },
+    {
+      "video": "traj-13.MOV",
+      "status": "SUCCESS",
+      "source_frame": 572,
+      "source_time_s": 19.066666666666666,
+      "decision_time_s": 23.023476334001316,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ]
+    },
+    {
+      "video": "traj-14.MOV",
+      "status": "FAIL",
+      "source_frame": 676,
+      "source_time_s": 22.533333333333335,
+      "decision_time_s": 28.155453082999884,
+      "crop": [
+        330,
+        100,
+        1620,
+        860
+      ]
+    },
+    {
+      "video": "traj-15.MOV",
+      "status": "SUCCESS",
+      "source_frame": 554,
+      "source_time_s": 18.466666666666665,
+      "decision_time_s": 21.67549904200132,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ]
+    },
+    {
+      "video": "traj-16.MOV",
+      "status": "SUCCESS",
+      "source_frame": 482,
+      "source_time_s": 16.066666666666666,
+      "decision_time_s": 20.18640674999915,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ]
+    },
+    {
+      "video": "traj-17.MOV",
+      "status": "SUCCESS",
+      "source_frame": 772,
+      "source_time_s": 25.733333333333334,
+      "decision_time_s": 29.60520404199997,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ]
+    },
+    {
+      "video": "traj-18.MOV",
+      "status": "SUCCESS",
+      "source_frame": 428,
+      "source_time_s": 14.266666666666667,
+      "decision_time_s": 18.2421078749976,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ]
+    },
+    {
+      "video": "traj-19.MOV",
+      "status": "SUCCESS",
+      "source_frame": 490,
+      "source_time_s": 16.333333333333332,
+      "decision_time_s": 19.97113229200113,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ]
+    },
+    {
+      "video": "traj-20.MOV",
+      "status": "SUCCESS",
+      "source_frame": 504,
+      "source_time_s": 16.8,
+      "decision_time_s": 19.784997708000446,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ]
+    },
+    {
+      "video": "traj-21.MOV",
+      "status": "SUCCESS",
+      "source_frame": 568,
+      "source_time_s": 18.933333333333334,
+      "decision_time_s": 23.249648916000297,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ]
+    },
+    {
+      "video": "traj-22.MOV",
+      "status": "SUCCESS",
+      "source_frame": 469,
+      "source_time_s": 15.633333333333333,
+      "decision_time_s": 19.94036770800085,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ]
+    },
+    {
+      "video": "traj-23.MOV",
+      "status": "SUCCESS",
+      "source_frame": 635,
+      "source_time_s": 21.166666666666668,
+      "decision_time_s": 24.443487209002342,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ]
+    }
+  ]
+}

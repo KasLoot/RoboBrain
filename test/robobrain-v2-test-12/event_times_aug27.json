@@ -1,0 +1,34 @@
+{
+  "traj-30.MOV": {
+    "DROP_FAILURE": {
+      "onset_interval_s": [
+        14.433333333333334,
+        14.7
+      ],
+      "reviewed_source_frames": [
+        433,
+        441,
+        447,
+        453
+      ],
+      "note": "Still retained at the earlier bound; visibly detached and falling at the later bound."
+    },
+    "ROTATION_FAILURE": {
+      "onset_interval_s": [
+        11,
+        13
+      ],
+      "reviewed_source_frames": [
+        330,
+        390,
+        393,
+        401,
+        409,
+        417,
+        425,
+        433
+      ],
+      "note": "Coarse visual onset: normal-looking insertion grasp at 11 s, abnormal retained grasp with downward pins clearly visible by 13 s. Not an angle measurement."
+    }
+  }
+}

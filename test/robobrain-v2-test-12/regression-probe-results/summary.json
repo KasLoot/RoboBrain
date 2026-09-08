@@ -1,0 +1,30 @@
+[
+  {
+    "case": "no-force-4",
+    "video": "insert_plug-no_force-aug-28-1x/traj-4.MOV",
+    "source_frame": 773,
+    "mode": "frozen-image classification probe, not episode playback",
+    "expected_drop": true,
+    "evidence_counts": {
+      "success": 0,
+      "drop": 10,
+      "rotation": 0
+    },
+    "correct": true,
+    "request_errors": 0
+  },
+  {
+    "case": "stand-36",
+    "video": "insert_plug-full_model-aug-27-1x/traj-36.MOV",
+    "source_frame": 118,
+    "mode": "frozen-image classification probe, not episode playback",
+    "expected_drop": false,
+    "evidence_counts": {
+      "success": 0,
+      "drop": 0,
+      "rotation": 0
+    },
+    "correct": true,
+    "request_errors": 0
+  }
+]

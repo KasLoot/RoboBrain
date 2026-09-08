@@ -1,0 +1,7 @@
+{
+  "reason": "Stopped after a confirmed missed drop in traj-4. Adapter lying behind the stand was persistently misclassified STAND. Experiment 12 clarifies top-versus-side support.",
+  "completed_episodes": 23,
+  "planned_episodes": 48,
+  "partial_run": true,
+  "source_and_outputs_preserved": true
+}

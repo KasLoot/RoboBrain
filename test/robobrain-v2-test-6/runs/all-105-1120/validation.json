@@ -1,0 +1,10 @@
+{
+  "unique_episodes": 105,
+  "source_matches_run_snapshot": true,
+  "configuration_matches_run": true,
+  "prompt_and_reference_snapshots_match": true,
+  "production_imports_found": false,
+  "standalone_uv_check_passed": true,
+  "scheduler_violations": 0,
+  "visual_review_complete": true
+}

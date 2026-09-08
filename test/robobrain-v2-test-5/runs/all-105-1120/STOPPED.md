@@ -1,0 +1,1 @@
+Stopped after 58 completed episodes (57 correct, 1 unresolved, 0 false failures). Episode 44 exposed an unintended socket-ordinal constraint in the success prompt. Experiment 6 corrects that constraint. The interrupted next episode is not included in summary.json.

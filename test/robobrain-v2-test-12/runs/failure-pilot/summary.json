@@ -1,0 +1,61 @@
+{
+  "episodes": 2,
+  "correct": 2,
+  "success_correct": 0,
+  "fail_correct": 2,
+  "drop_detected": 1,
+  "rotation_detected": 1,
+  "false_failures": 0,
+  "false_successes": 0,
+  "unresolved": 0,
+  "request_errors": 0,
+  "requests": 138,
+  "results": [
+    {
+      "status": "FAIL",
+      "failure_type": "ROTATION_FAILURE",
+      "failure_description": "The adapter is grasped by the fingers, but the metallic pins are dangling downward in front of the socket.",
+      "decision_time_s": 28.452521667000838,
+      "evidence_counts": {
+        "success": 0,
+        "drop": 0,
+        "rotation": 10
+      },
+      "verification_round": 1,
+      "confirmed_failure_types": [
+        "ROTATION_FAILURE"
+      ],
+      "evidence_source_time_s": 17.2,
+      "video": "traj-9.MOV",
+      "expected_status": "FAIL",
+      "requests": 63,
+      "request_errors": 0,
+      "request_latency_median_s": 1.6109955829997489,
+      "request_latency_p95_s": 11.526900249999017,
+      "normal_hz": 0.6750023231693889
+    },
+    {
+      "status": "FAIL",
+      "failure_type": "DROP_FAILURE",
+      "failure_description": "The adapter is standing on the tabletop in front of the power strip.",
+      "decision_time_s": 26.12111641700176,
+      "evidence_counts": {
+        "success": 0,
+        "drop": 10,
+        "rotation": 0
+      },
+      "verification_round": 1,
+      "confirmed_failure_types": [
+        "DROP_FAILURE"
+      ],
+      "evidence_source_time_s": 23.466666666666665,
+      "video": "traj-82.MOV",
+      "expected_status": "FAIL",
+      "requests": 75,
+      "request_errors": 0,
+      "request_latency_median_s": 1.5562222079970525,
+      "request_latency_p95_s": 2.301997291000589,
+      "normal_hz": 0.6374593533158236
+    }
+  ]
+}

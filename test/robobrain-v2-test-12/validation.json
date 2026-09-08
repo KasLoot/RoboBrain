@@ -1,0 +1,104 @@
+{
+  "workflow_check": "passed",
+  "development_image_probe": {
+    "matched_votes": 121,
+    "total": 123,
+    "request_errors": 0,
+    "exceptions": [
+      "Deliberate FALLING abstention",
+      "One blurred rotation miss"
+    ]
+  },
+  "frozen_image_regressions": {
+    "no_force_4_drop_votes": 10,
+    "aug27_36_drop_votes": 0,
+    "responses_per_case": 30,
+    "request_errors": 0
+  },
+  "streaming_checks": {
+    "development_failure_pilot": "traj-9 ROTATION_FAILURE; traj-82 DROP_FAILURE",
+    "no_force_4": "DROP_FAILURE with 10/10 votes",
+    "aug27_36": "SUCCESS with no false drop confirmation"
+  },
+  "frozen_manifest": "candidate-sha256.json",
+  "production_changes": false,
+  "robot_api_calls": "none; simulated handoffs only",
+  "runtime": {
+    "python": "3.13.13 (main, Jun  2 2026, 22:33:40) [Clang 22.1.3 ]",
+    "opencv": "5.0.0",
+    "httpx": "0.28.1"
+  },
+  "development_complete": {
+    "episodes": 105,
+    "original_labels_matched": 104,
+    "unresolved": 0,
+    "request_errors": 0,
+    "scheduler_violations": 0,
+    "policy_review_pending": []
+  },
+  "development_scored": {
+    "episodes": 105,
+    "correct": 104,
+    "false_failures": 1,
+    "system_errors": [
+      "traj-93.MOV"
+    ],
+    "edge_case": "Gripper occlusion; counted as an incorrect result."
+  },
+  "completed_evaluation": [
+    {
+      "dataset": "insert_plug-full_model-aug-28-105trail-1x",
+      "input_clips_hashed": 105,
+      "scored": 105,
+      "correct": 104,
+      "request_errors": 0,
+      "scheduler_violations": 0,
+      "visual_review_complete": true
+    },
+    {
+      "dataset": "insert_plug-full_model-aug-27-1x",
+      "input_clips_hashed": 45,
+      "scored": 45,
+      "correct": 45,
+      "request_errors": 0,
+      "scheduler_violations": 0,
+      "visual_review_complete": true
+    },
+    {
+      "dataset": "insert_plug-no_force-aug-28-1x",
+      "input_clips_hashed": 48,
+      "scored": 48,
+      "correct": 48,
+      "request_errors": 1,
+      "scheduler_violations": 0,
+      "visual_review_complete": true
+    }
+  ],
+  "artifact_integrity": {
+    "all_input_video_and_annotation_hashes_verified": true,
+    "all_three_runtime_snapshots_identical": true,
+    "detector_unchanged_after_final_run": true,
+    "original_hash_manifest": "runs/candidate-sha256-at-run.json",
+    "post_run_changes": [
+      "Evaluation helper adds a dry-run count check.",
+      "Scoring helper validates complete datasets and consolidates results without excluding episodes.",
+      "Reports and visual review records."
+    ]
+  },
+  "scoring_check": "passed; all 198 clips required, including traj-93",
+  "benchmark_dry_run": [
+    105,
+    45,
+    48
+  ],
+  "final_result": {
+    "episodes": 198,
+    "correct": 197,
+    "false_failures": 1,
+    "false_successes": 0,
+    "unresolved": 0,
+    "request_errors": 1,
+    "excluded_clips": [],
+    "system_error": "Dataset 1 traj-93: gripper occlusion, SUCCESS incorrectly reported as ROTATION_FAILURE"
+  }
+}
