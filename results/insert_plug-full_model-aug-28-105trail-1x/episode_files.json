@@ -1,0 +1,632 @@
+[
+  {
+    "video": "traj-1.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-1.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-1.jpg"
+  },
+  {
+    "video": "traj-2.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-2.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-2.jpg"
+  },
+  {
+    "video": "traj-3.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-3.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-3.jpg"
+  },
+  {
+    "video": "traj-4.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-4.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-4.jpg"
+  },
+  {
+    "video": "traj-5.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-5.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-5.jpg"
+  },
+  {
+    "video": "traj-6.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-6.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-6.jpg"
+  },
+  {
+    "video": "traj-7.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-7.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-7.jpg"
+  },
+  {
+    "video": "traj-8.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-8.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-8.jpg"
+  },
+  {
+    "video": "traj-9.MOV",
+    "status": "FAIL",
+    "request_log": "runs/all-105-1120/traj-9.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-9.jpg"
+  },
+  {
+    "video": "traj-10.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-10.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-10.jpg"
+  },
+  {
+    "video": "traj-11.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-11.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-11.jpg"
+  },
+  {
+    "video": "traj-12.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-12.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-12.jpg"
+  },
+  {
+    "video": "traj-13.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-13.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-13.jpg"
+  },
+  {
+    "video": "traj-14.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-14.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-14.jpg"
+  },
+  {
+    "video": "traj-15.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-15.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-15.jpg"
+  },
+  {
+    "video": "traj-16.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-16.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-16.jpg"
+  },
+  {
+    "video": "traj-17.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-17.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-17.jpg"
+  },
+  {
+    "video": "traj-18.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-18.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-18.jpg"
+  },
+  {
+    "video": "traj-19.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-19.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-19.jpg"
+  },
+  {
+    "video": "traj-20.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-20.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-20.jpg"
+  },
+  {
+    "video": "traj-21.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-21.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-21.jpg"
+  },
+  {
+    "video": "traj-22.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-22.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-22.jpg"
+  },
+  {
+    "video": "traj-23.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-23.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-23.jpg"
+  },
+  {
+    "video": "traj-24.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-24.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-24.jpg"
+  },
+  {
+    "video": "traj-25.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-25.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-25.jpg"
+  },
+  {
+    "video": "traj-26.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-26.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-26.jpg"
+  },
+  {
+    "video": "traj-27.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-27.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-27.jpg"
+  },
+  {
+    "video": "traj-28.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-28.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-28.jpg"
+  },
+  {
+    "video": "traj-29.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-29.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-29.jpg"
+  },
+  {
+    "video": "traj-30.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-30.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-30.jpg"
+  },
+  {
+    "video": "traj-31.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-31.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-31.jpg"
+  },
+  {
+    "video": "traj-32.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-32.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-32.jpg"
+  },
+  {
+    "video": "traj-33.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-33.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-33.jpg"
+  },
+  {
+    "video": "traj-34.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-34.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-34.jpg"
+  },
+  {
+    "video": "traj-35.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-35.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-35.jpg"
+  },
+  {
+    "video": "traj-36.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-36.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-36.jpg"
+  },
+  {
+    "video": "traj-37.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-37.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-37.jpg"
+  },
+  {
+    "video": "traj-38.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-38.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-38.jpg"
+  },
+  {
+    "video": "traj-39.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-39.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-39.jpg"
+  },
+  {
+    "video": "traj-40.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-40.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-40.jpg"
+  },
+  {
+    "video": "traj-41.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-41.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-41.jpg"
+  },
+  {
+    "video": "traj-42.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-42.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-42.jpg"
+  },
+  {
+    "video": "traj-43.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-43.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-43.jpg"
+  },
+  {
+    "video": "traj-44.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-44.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-44.jpg"
+  },
+  {
+    "video": "traj-45.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-45.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-45.jpg"
+  },
+  {
+    "video": "traj-46.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-46.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-46.jpg"
+  },
+  {
+    "video": "traj-47.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-47.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-47.jpg"
+  },
+  {
+    "video": "traj-48.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-48.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-48.jpg"
+  },
+  {
+    "video": "traj-49.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-49.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-49.jpg"
+  },
+  {
+    "video": "traj-50.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-50.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-50.jpg"
+  },
+  {
+    "video": "traj-51.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-51.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-51.jpg"
+  },
+  {
+    "video": "traj-52.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-52.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-52.jpg"
+  },
+  {
+    "video": "traj-53.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-53.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-53.jpg"
+  },
+  {
+    "video": "traj-54.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-54.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-54.jpg"
+  },
+  {
+    "video": "traj-55.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-55.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-55.jpg"
+  },
+  {
+    "video": "traj-56.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-56.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-56.jpg"
+  },
+  {
+    "video": "traj-57.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-57.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-57.jpg"
+  },
+  {
+    "video": "traj-58.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-58.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-58.jpg"
+  },
+  {
+    "video": "traj-59.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-59.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-59.jpg"
+  },
+  {
+    "video": "traj-60.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-60.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-60.jpg"
+  },
+  {
+    "video": "traj-61.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-61.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-61.jpg"
+  },
+  {
+    "video": "traj-62.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-62.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-62.jpg"
+  },
+  {
+    "video": "traj-63.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-63.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-63.jpg"
+  },
+  {
+    "video": "traj-64.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-64.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-64.jpg"
+  },
+  {
+    "video": "traj-65.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-65.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-65.jpg"
+  },
+  {
+    "video": "traj-66.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-66.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-66.jpg"
+  },
+  {
+    "video": "traj-67.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-67.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-67.jpg"
+  },
+  {
+    "video": "traj-68.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-68.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-68.jpg"
+  },
+  {
+    "video": "traj-69.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-69.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-69.jpg"
+  },
+  {
+    "video": "traj-70.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-70.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-70.jpg"
+  },
+  {
+    "video": "traj-71.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-71.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-71.jpg"
+  },
+  {
+    "video": "traj-72.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-72.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-72.jpg"
+  },
+  {
+    "video": "traj-73.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-73.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-73.jpg"
+  },
+  {
+    "video": "traj-74.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-74.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-74.jpg"
+  },
+  {
+    "video": "traj-75.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-75.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-75.jpg"
+  },
+  {
+    "video": "traj-76.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-76.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-76.jpg"
+  },
+  {
+    "video": "traj-77.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-77.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-77.jpg"
+  },
+  {
+    "video": "traj-78.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-78.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-78.jpg"
+  },
+  {
+    "video": "traj-79.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-79.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-79.jpg"
+  },
+  {
+    "video": "traj-80.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-80.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-80.jpg"
+  },
+  {
+    "video": "traj-81.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-81.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-81.jpg"
+  },
+  {
+    "video": "traj-82.MOV",
+    "status": "FAIL",
+    "request_log": "runs/all-105-1120/traj-82.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-82.jpg"
+  },
+  {
+    "video": "traj-83.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-83.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-83.jpg"
+  },
+  {
+    "video": "traj-84.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-84.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-84.jpg"
+  },
+  {
+    "video": "traj-85.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-85.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-85.jpg"
+  },
+  {
+    "video": "traj-86.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-86.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-86.jpg"
+  },
+  {
+    "video": "traj-87.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-87.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-87.jpg"
+  },
+  {
+    "video": "traj-88.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-88.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-88.jpg"
+  },
+  {
+    "video": "traj-89.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-89.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-89.jpg"
+  },
+  {
+    "video": "traj-90.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-90.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-90.jpg"
+  },
+  {
+    "video": "traj-91.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-91.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-91.jpg"
+  },
+  {
+    "video": "traj-92.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-92.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-92.jpg"
+  },
+  {
+    "video": "traj-93.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-93.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-93.jpg"
+  },
+  {
+    "video": "traj-94.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/rerun-traj-94-updated/traj-94.jsonl",
+    "terminal_evidence": "runs/rerun-traj-94-updated/review/traj-94.jpg"
+  },
+  {
+    "video": "traj-95.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-95.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-95.jpg"
+  },
+  {
+    "video": "traj-96.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-96.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-96.jpg"
+  },
+  {
+    "video": "traj-97.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-97.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-97.jpg"
+  },
+  {
+    "video": "traj-98.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-98.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-98.jpg"
+  },
+  {
+    "video": "traj-99.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-99.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-99.jpg"
+  },
+  {
+    "video": "traj-100.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-100.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-100.jpg"
+  },
+  {
+    "video": "traj-101.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-101.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-101.jpg"
+  },
+  {
+    "video": "traj-102.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-102.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-102.jpg"
+  },
+  {
+    "video": "traj-103.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-103.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-103.jpg"
+  },
+  {
+    "video": "traj-104.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-104.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-104.jpg"
+  },
+  {
+    "video": "traj-105.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/all-105-1120/traj-105.jsonl",
+    "terminal_evidence": "runs/all-105-1120/review/traj-105.jpg"
+  }
+]

@@ -1,0 +1,17 @@
+{
+  "video": "traj-32.MOV",
+  "supplied_annotation": "FAIL",
+  "visible_outcome": "DROP_FAILURE",
+  "reviewer": "Codex visual inspection",
+  "evidence_image": "sequence.jpg",
+  "onset_interval_s": [
+    16.966666666666665,
+    17.166666666666668
+  ],
+  "reviewed_source_frames": [
+    509,
+    515,
+    521
+  ],
+  "finding": "Frame 509 shows the plug still held; frame 515 shows it falling clear of the fingers; frame 521 shows it on the table."
+}

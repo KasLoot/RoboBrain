@@ -1,0 +1,44 @@
+{
+  "episodes": 1,
+  "correct_episode_labels": 1,
+  "success_correct": 0,
+  "drop_detected": 1,
+  "false_failures": 0,
+  "false_successes": 0,
+  "unresolved": 0,
+  "completed_requests": 62,
+  "request_errors": 0,
+  "request_latency_median_s": 1.079552624999451,
+  "request_latency_p95_s": 7.190229833000558,
+  "normal_hz_median": 0.6191792155159422,
+  "verification_rounds": 2,
+  "verification_duration_median_s": 7.533775167000385,
+  "verification_sample_interval_median_s": 0.1000450000001365,
+  "verification_sample_interval_p95_s": 0.1047231250004188,
+  "scheduler_violations": [],
+  "reviewed_drop_timing": [
+    {
+      "video": "traj-32.MOV",
+      "premature": false,
+      "latency_interval_s": [
+        3.190856000333344,
+        3.390856000333347
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "video": "traj-32.MOV",
+      "status": "FAIL",
+      "source_frame": 521,
+      "source_time_s": 17.366666666666667,
+      "decision_time_s": 20.357522667000012,
+      "crop": [
+        330,
+        100,
+        1620,
+        860
+      ]
+    }
+  ]
+}

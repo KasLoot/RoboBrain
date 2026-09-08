@@ -1,0 +1,165 @@
+{
+  "episodes": 8,
+  "correct": 8,
+  "success_correct": 6,
+  "drop_detected": 2,
+  "false_failures": 0,
+  "false_successes": 0,
+  "unresolved": 0,
+  "request_errors": 5,
+  "requests": 722,
+  "results": [
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 18.668576875003055,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0
+      },
+      "verification_round": 2,
+      "evidence_source_time_s": 16.833333333333332,
+      "video": "traj-1.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 78,
+      "request_errors": 0,
+      "request_latency_median_s": 1.1197598754952196,
+      "request_latency_p95_s": 2.9323411250079516,
+      "normal_hz": 1.2144949025877243
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 17.24207100000058,
+      "evidence_counts": {
+        "success": 9,
+        "drop": 0
+      },
+      "verification_round": 2,
+      "evidence_source_time_s": 14.766666666666667,
+      "video": "traj-2.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 78,
+      "request_errors": 1,
+      "request_latency_median_s": 0.7571970625067479,
+      "request_latency_p95_s": 2.930729874991812,
+      "normal_hz": 1.2289938577806896
+    },
+    {
+      "status": "FAIL",
+      "failure_type": "DROP_FAILURE",
+      "failure_description": "The plug is visibly dropped outside the gripper, stand, and socket.",
+      "decision_time_s": 35.58911379100755,
+      "evidence_counts": {
+        "success": 0,
+        "drop": 10
+      },
+      "verification_round": 3,
+      "evidence_source_time_s": 33.43333333333333,
+      "video": "traj-9.MOV",
+      "expected_status": "FAIL",
+      "requests": 141,
+      "request_errors": 0,
+      "request_latency_median_s": 0.7402600420027738,
+      "request_latency_p95_s": 2.9109661249967758,
+      "normal_hz": 1.2391023057577877
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 19.76798120800231,
+      "evidence_counts": {
+        "success": 9,
+        "drop": 0
+      },
+      "verification_round": 2,
+      "evidence_source_time_s": 17.133333333333333,
+      "video": "traj-11.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 86,
+      "request_errors": 3,
+      "request_latency_median_s": 0.7563639375002822,
+      "request_latency_p95_s": 2.884576458003721,
+      "normal_hz": 1.2715251520136772
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 17.585910458001308,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0
+      },
+      "verification_round": 2,
+      "evidence_source_time_s": 15.733333333333333,
+      "video": "traj-15.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 79,
+      "request_errors": 0,
+      "request_latency_median_s": 0.7505250410031294,
+      "request_latency_p95_s": 2.8758540419948986,
+      "normal_hz": 1.2698814055105083
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 17.990617666000617,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0
+      },
+      "verification_round": 2,
+      "evidence_source_time_s": 15.333333333333334,
+      "video": "traj-58.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 80,
+      "request_errors": 0,
+      "request_latency_median_s": 0.7977933125002892,
+      "request_latency_p95_s": 3.146041083993623,
+      "normal_hz": 1.238043253354305
+    },
+    {
+      "status": "FAIL",
+      "failure_type": "DROP_FAILURE",
+      "failure_description": "The plug is visibly dropped outside the gripper, stand, and socket.",
+      "decision_time_s": 26.177994417012087,
+      "evidence_counts": {
+        "success": 0,
+        "drop": 10
+      },
+      "verification_round": 2,
+      "evidence_source_time_s": 23.766666666666666,
+      "video": "traj-82.MOV",
+      "expected_status": "FAIL",
+      "requests": 100,
+      "request_errors": 0,
+      "request_latency_median_s": 0.7023399794998113,
+      "request_latency_p95_s": 2.948216582997702,
+      "normal_hz": 1.3566330339926291
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 20.082775291011785,
+      "evidence_counts": {
+        "success": 9,
+        "drop": 0
+      },
+      "verification_round": 2,
+      "evidence_source_time_s": 17.833333333333332,
+      "video": "traj-105.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 80,
+      "request_errors": 1,
+      "request_latency_median_s": 0.9790242914968985,
+      "request_latency_p95_s": 2.944254040994565,
+      "normal_hz": 1.241291206185545
+    }
+  ]
+}

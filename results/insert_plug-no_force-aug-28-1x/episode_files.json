@@ -1,0 +1,290 @@
+[
+  {
+    "video": "traj-1.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/no-force-aug28-1120/traj-1.jsonl",
+    "terminal_evidence": "runs/no-force-aug28-1120/review/traj-1.jpg"
+  },
+  {
+    "video": "traj-2.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/no-force-aug28-1120/traj-2.jsonl",
+    "terminal_evidence": "runs/no-force-aug28-1120/review/traj-2.jpg"
+  },
+  {
+    "video": "traj-3.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/no-force-aug28-1120/traj-3.jsonl",
+    "terminal_evidence": "runs/no-force-aug28-1120/review/traj-3.jpg"
+  },
+  {
+    "video": "traj-4.MOV",
+    "status": "FAIL",
+    "request_log": "runs/no-force-aug28-1120/traj-4.jsonl",
+    "terminal_evidence": "runs/no-force-aug28-1120/review/traj-4.jpg"
+  },
+  {
+    "video": "traj-5.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/no-force-aug28-1120/traj-5.jsonl",
+    "terminal_evidence": "runs/no-force-aug28-1120/review/traj-5.jpg"
+  },
+  {
+    "video": "traj-6.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/no-force-aug28-1120/traj-6.jsonl",
+    "terminal_evidence": "runs/no-force-aug28-1120/review/traj-6.jpg"
+  },
+  {
+    "video": "traj-7.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/no-force-aug28-1120/traj-7.jsonl",
+    "terminal_evidence": "runs/no-force-aug28-1120/review/traj-7.jpg"
+  },
+  {
+    "video": "traj-8.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/no-force-aug28-1120/traj-8.jsonl",
+    "terminal_evidence": "runs/no-force-aug28-1120/review/traj-8.jpg"
+  },
+  {
+    "video": "traj-9.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/no-force-aug28-1120/traj-9.jsonl",
+    "terminal_evidence": "runs/no-force-aug28-1120/review/traj-9.jpg"
+  },
+  {
+    "video": "traj-10.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/no-force-aug28-1120/traj-10.jsonl",
+    "terminal_evidence": "runs/no-force-aug28-1120/review/traj-10.jpg"
+  },
+  {
+    "video": "traj-11.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/no-force-aug28-1120/traj-11.jsonl",
+    "terminal_evidence": "runs/no-force-aug28-1120/review/traj-11.jpg"
+  },
+  {
+    "video": "traj-12.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/no-force-aug28-1120/traj-12.jsonl",
+    "terminal_evidence": "runs/no-force-aug28-1120/review/traj-12.jpg"
+  },
+  {
+    "video": "traj-13.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/no-force-aug28-1120/traj-13.jsonl",
+    "terminal_evidence": "runs/no-force-aug28-1120/review/traj-13.jpg"
+  },
+  {
+    "video": "traj-14.MOV",
+    "status": "FAIL",
+    "request_log": "runs/no-force-aug28-1120/traj-14.jsonl",
+    "terminal_evidence": "runs/no-force-aug28-1120/review/traj-14.jpg"
+  },
+  {
+    "video": "traj-15.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/no-force-aug28-1120/traj-15.jsonl",
+    "terminal_evidence": "runs/no-force-aug28-1120/review/traj-15.jpg"
+  },
+  {
+    "video": "traj-16.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/no-force-aug28-1120/traj-16.jsonl",
+    "terminal_evidence": "runs/no-force-aug28-1120/review/traj-16.jpg"
+  },
+  {
+    "video": "traj-17.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/no-force-aug28-1120/traj-17.jsonl",
+    "terminal_evidence": "runs/no-force-aug28-1120/review/traj-17.jpg"
+  },
+  {
+    "video": "traj-18.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/no-force-aug28-1120/traj-18.jsonl",
+    "terminal_evidence": "runs/no-force-aug28-1120/review/traj-18.jpg"
+  },
+  {
+    "video": "traj-19.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/no-force-aug28-1120/traj-19.jsonl",
+    "terminal_evidence": "runs/no-force-aug28-1120/review/traj-19.jpg"
+  },
+  {
+    "video": "traj-20.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/no-force-aug28-1120/traj-20.jsonl",
+    "terminal_evidence": "runs/no-force-aug28-1120/review/traj-20.jpg"
+  },
+  {
+    "video": "traj-21.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/no-force-aug28-1120/traj-21.jsonl",
+    "terminal_evidence": "runs/no-force-aug28-1120/review/traj-21.jpg"
+  },
+  {
+    "video": "traj-22.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/no-force-aug28-1120/traj-22.jsonl",
+    "terminal_evidence": "runs/no-force-aug28-1120/review/traj-22.jpg"
+  },
+  {
+    "video": "traj-23.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/no-force-aug28-1120/traj-23.jsonl",
+    "terminal_evidence": "runs/no-force-aug28-1120/review/traj-23.jpg"
+  },
+  {
+    "video": "traj-24.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/no-force-aug28-1120/traj-24.jsonl",
+    "terminal_evidence": "runs/no-force-aug28-1120/review/traj-24.jpg"
+  },
+  {
+    "video": "traj-25.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/no-force-aug28-1120/traj-25.jsonl",
+    "terminal_evidence": "runs/no-force-aug28-1120/review/traj-25.jpg"
+  },
+  {
+    "video": "traj-26.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/no-force-aug28-1120/traj-26.jsonl",
+    "terminal_evidence": "runs/no-force-aug28-1120/review/traj-26.jpg"
+  },
+  {
+    "video": "traj-27.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/no-force-aug28-1120/traj-27.jsonl",
+    "terminal_evidence": "runs/no-force-aug28-1120/review/traj-27.jpg"
+  },
+  {
+    "video": "traj-28.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/no-force-aug28-1120/traj-28.jsonl",
+    "terminal_evidence": "runs/no-force-aug28-1120/review/traj-28.jpg"
+  },
+  {
+    "video": "traj-29.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/no-force-aug28-1120/traj-29.jsonl",
+    "terminal_evidence": "runs/no-force-aug28-1120/review/traj-29.jpg"
+  },
+  {
+    "video": "traj-30.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/no-force-aug28-1120/traj-30.jsonl",
+    "terminal_evidence": "runs/no-force-aug28-1120/review/traj-30.jpg"
+  },
+  {
+    "video": "traj-31.MOV",
+    "status": "FAIL",
+    "request_log": "runs/no-force-aug28-1120/traj-31.jsonl",
+    "terminal_evidence": "runs/no-force-aug28-1120/review/traj-31.jpg"
+  },
+  {
+    "video": "traj-32.MOV",
+    "status": "FAIL",
+    "request_log": "runs/rerun-no-force-traj-32-updated/traj-32.jsonl",
+    "terminal_evidence": "runs/rerun-no-force-traj-32-updated/review/traj-32.jpg"
+  },
+  {
+    "video": "traj-33.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/no-force-aug28-1120/traj-33.jsonl",
+    "terminal_evidence": "runs/no-force-aug28-1120/review/traj-33.jpg"
+  },
+  {
+    "video": "traj-34.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/no-force-aug28-1120/traj-34.jsonl",
+    "terminal_evidence": "runs/no-force-aug28-1120/review/traj-34.jpg"
+  },
+  {
+    "video": "traj-35.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/no-force-aug28-1120/traj-35.jsonl",
+    "terminal_evidence": "runs/no-force-aug28-1120/review/traj-35.jpg"
+  },
+  {
+    "video": "traj-36.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/no-force-aug28-1120/traj-36.jsonl",
+    "terminal_evidence": "runs/no-force-aug28-1120/review/traj-36.jpg"
+  },
+  {
+    "video": "traj-37.MOV",
+    "status": "FAIL",
+    "request_log": "runs/no-force-aug28-1120/traj-37.jsonl",
+    "terminal_evidence": "runs/no-force-aug28-1120/review/traj-37.jpg"
+  },
+  {
+    "video": "traj-38.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/no-force-aug28-1120/traj-38.jsonl",
+    "terminal_evidence": "runs/no-force-aug28-1120/review/traj-38.jpg"
+  },
+  {
+    "video": "traj-39.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/no-force-aug28-1120/traj-39.jsonl",
+    "terminal_evidence": "runs/no-force-aug28-1120/review/traj-39.jpg"
+  },
+  {
+    "video": "traj-40.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/no-force-aug28-1120/traj-40.jsonl",
+    "terminal_evidence": "runs/no-force-aug28-1120/review/traj-40.jpg"
+  },
+  {
+    "video": "traj-41.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/no-force-aug28-1120/traj-41.jsonl",
+    "terminal_evidence": "runs/no-force-aug28-1120/review/traj-41.jpg"
+  },
+  {
+    "video": "traj-42.MOV",
+    "status": "FAIL",
+    "request_log": "runs/no-force-aug28-1120/traj-42.jsonl",
+    "terminal_evidence": "runs/no-force-aug28-1120/review/traj-42.jpg"
+  },
+  {
+    "video": "traj-43.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/no-force-aug28-1120/traj-43.jsonl",
+    "terminal_evidence": "runs/no-force-aug28-1120/review/traj-43.jpg"
+  },
+  {
+    "video": "traj-44.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/no-force-aug28-1120/traj-44.jsonl",
+    "terminal_evidence": "runs/no-force-aug28-1120/review/traj-44.jpg"
+  },
+  {
+    "video": "traj-45.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/no-force-aug28-1120/traj-45.jsonl",
+    "terminal_evidence": "runs/no-force-aug28-1120/review/traj-45.jpg"
+  },
+  {
+    "video": "traj-46.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/no-force-aug28-1120/traj-46.jsonl",
+    "terminal_evidence": "runs/no-force-aug28-1120/review/traj-46.jpg"
+  },
+  {
+    "video": "traj-47.MOV",
+    "status": "FAIL",
+    "request_log": "runs/no-force-aug28-1120/traj-47.jsonl",
+    "terminal_evidence": "runs/no-force-aug28-1120/review/traj-47.jpg"
+  },
+  {
+    "video": "traj-48.MOV",
+    "status": "SUCCESS",
+    "request_log": "runs/no-force-aug28-1120/traj-48.jsonl",
+    "terminal_evidence": "runs/no-force-aug28-1120/review/traj-48.jpg"
+  }
+]

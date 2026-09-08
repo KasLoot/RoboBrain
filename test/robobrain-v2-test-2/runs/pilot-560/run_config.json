@@ -1,0 +1,51 @@
+{
+  "base_url": "http://127.0.0.1:8000/v1",
+  "model": "/workspace/models/gemma-4-26B-A4B-it",
+  "fps": 30,
+  "evidence_horizon": 10,
+  "horizon_duration": 1.0,
+  "evidence_threshold": {
+    "success": 5,
+    "drop": 5
+  },
+  "request_timeout": 20.0,
+  "episode_timeout": 90.0,
+  "max_tokens": 96,
+  "crops": {
+    "success": [
+      900,
+      120,
+      1510,
+      720
+    ],
+    "drop": [
+      330,
+      100,
+      1620,
+      860
+    ]
+  },
+  "references": {
+    "success": [
+      {
+        "file": "success_released.jpg",
+        "label": "REFERENCE POSITIVE: adapter seated in the rightmost socket, with the released gripper hovering above it."
+      },
+      {
+        "file": "success_held.jpg",
+        "label": "REFERENCE NEGATIVE: gripper still gripping/pressing the adapter at the socket."
+      }
+    ],
+    "drop": [
+      {
+        "file": "drop_on_table.jpg",
+        "label": "REFERENCE POSITIVE: adapter on the table in front of the power strip, with no support from stand or socket."
+      },
+      {
+        "file": "drop_seated.jpg",
+        "label": "REFERENCE NEGATIVE: adapter seated in the rightmost socket after release; the white block on the left is the empty stand."
+      }
+    ]
+  },
+  "source_code_sha256": "e107177bc207c585f839f9cc61af5bec96c0cde51ec5099a3a0f3c6dba683a24"
+}

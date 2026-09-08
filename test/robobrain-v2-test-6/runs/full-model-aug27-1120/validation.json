@@ -1,0 +1,15 @@
+{
+  "dataset": "/Users/liuyuxin/workspace/RoboBrain/video/insert_plug-full_model-aug-27-1x",
+  "unique_episode_results": 45,
+  "source_config_prompts_references_match_original_baseline": true,
+  "input_videos_match_review_manifest": true,
+  "supplied_annotation_file_unchanged": true,
+  "terminal_decisions_visually_reviewed": 45,
+  "nonterminal_results_visually_reviewed": [],
+  "scheduler_violations": [],
+  "premature_terminal_decisions_found_in_review": [],
+  "event_times_sha256": "924c70e3053de5e36dbd8fc781406fa28bcf0076d0eeb083b3bbbbddb641de53",
+  "runtime_source_sha256": "7bdcfec54261d2be2fbb6da9285663c6ace784b2a4d4fc8aa72e774d3c2e6812",
+  "request_errors": 1,
+  "request_error_detail": "One success-specialist request in traj-45, verification round 2 slot 2, disconnected. It contributed UNCERTAIN, not a positive vote."
+}

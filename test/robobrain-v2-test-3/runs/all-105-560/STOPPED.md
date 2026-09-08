@@ -1,0 +1,1 @@
+Stopped deliberately after 64 completed episodes: 54 correct labels, 6 unresolved, and 4 false failures. The endpoint was clearly inferior to 1120 tokens; the GPU was reassigned to experiment 4. An interrupted final episode, if present in the JSONL logs, is not included in summary.json.

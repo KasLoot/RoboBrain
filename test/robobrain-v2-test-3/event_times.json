@@ -1,0 +1,4 @@
+{
+  "traj-9.MOV": {"event": "DROP_FAILURE", "onset_interval_s": [32.6, 32.8], "reviewed_source_frames": [978, 981, 984]},
+  "traj-82.MOV": {"event": "DROP_FAILURE", "onset_interval_s": [21.8, 22.1], "reviewed_source_frames": [654, 657, 660, 663]}
+}

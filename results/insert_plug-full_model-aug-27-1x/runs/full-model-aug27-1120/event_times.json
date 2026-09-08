@@ -1,0 +1,14 @@
+{
+  "traj-30.MOV": {
+    "onset_interval_s": [
+      14.5,
+      15.1
+    ],
+    "reviewed_source_frames": [
+      435,
+      453
+    ],
+    "evidence": "traj-30-drop-sequence.jpg",
+    "method": "Codex visual review: last sampled frame still held, first sampled frame visibly dropped. The interval brackets the transition; it is not an exact onset timestamp."
+  }
+}
