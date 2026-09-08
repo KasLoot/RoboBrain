@@ -1,0 +1,29 @@
+{
+  "video": "traj-93.MOV",
+  "annotation_status": "SUCCESS",
+  "reported_status": "FAIL",
+  "failure_type": "ROTATION_FAILURE",
+  "verification_source_interval_s": [
+    16.033333333333335,
+    16.933333333333334
+  ],
+  "decision_time_s": 28.16369445899909,
+  "evidence_counts": {
+    "success": 0,
+    "drop": 0,
+    "rotation": 10
+  },
+  "visible_sequence": "The gripper obscures the plug during the relevant interval. The original clip ends in success, but the occluded grasp is not used for a rotation judgment.",
+  "user_confirmation_pending": false,
+  "annotation_modified": false,
+  "policy_adjusted_accuracy": null,
+  "review_images": [
+    "review/rotation-review-93-1.jpg",
+    "review/rotation-review-93-2.jpg"
+  ],
+  "disposition": "SYSTEM_ERROR",
+  "user_classification": "Count as a system error and document the gripper-occlusion edge case.",
+  "interpretation": "The gripper obscures the plug. The system incorrectly reports ROTATION_FAILURE for a SUCCESS clip; this error remains in the evaluation denominator.",
+  "included_in_evaluation": true,
+  "error_category": "FALSE_FAILURE"
+}

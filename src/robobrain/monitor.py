@@ -1,4 +1,4 @@
-"""Experiment 6 monitor: native crops, paired specialists and bounded verification."""
+"""Experiment 12 specialists with bounded verification and production event logging."""
 
 import asyncio
 import base64
@@ -14,45 +14,116 @@ import cv2
 import httpx
 
 HERE = Path(__file__).resolve().parent
-SPECIALISTS = ("success", "drop")
 VERDICTS = ("POSITIVE", "NEGATIVE", "UNCERTAIN")
-SCHEMA = {
-    "type": "object",
-    "properties": {
-        "verdict": {"type": "string", "enum": list(VERDICTS)},
-        "reason": {"type": "string"},
-    },
-    "required": ["verdict", "reason"],
-    "additionalProperties": False,
-}
-DROP_LOCATIONS = ("STAND", "GRIPPER", "SOCKET", "TABLE", "FALLING", "UNKNOWN")
-DROP_SCHEMA = {
-    "type": "object",
-    "properties": {
-        "location": {"type": "string", "enum": list(DROP_LOCATIONS)},
-        "reason": {"type": "string"},
-    },
-    "required": ["location", "reason"],
-    "additionalProperties": False,
-}
 
 
-def parse_observation(specialist, content):
-    parsed = json.loads(content)
-    if not isinstance(parsed, dict) or not isinstance(parsed.get("reason"), str):
-        raise ValueError("Invalid specialist observation")
-    expected = {"location", "reason"} if specialist == "drop" else {"verdict", "reason"}
-    if set(parsed) != expected:
-        raise ValueError("Unexpected fields in specialist observation")
-    if specialist == "drop":
-        location = parsed.get("location")
-        if location not in DROP_LOCATIONS:
-            raise ValueError("Invalid plug location")
-        verdict = "POSITIVE" if location in ("TABLE", "FALLING") else "UNCERTAIN" if location == "UNKNOWN" else "NEGATIVE"
-        return {**parsed, "verdict": verdict}
-    if parsed.get("verdict") not in VERDICTS:
-        raise ValueError("Invalid specialist verdict")
-    return parsed
+class Specialist:
+    """One standard observation and evidence workflow, configured by visual task."""
+    def __init__(self, system_prompt, config):
+        self.prompt, self.config = system_prompt, config
+        self.name, self.crop = config["name"], config["crop"]
+        self.field, self.values = config["field"], config["values"]
+        self.failure_type = config["failure_type"]
+        self.threshold = config["threshold"]
+        if not isinstance(self.field, str) or not self.field or self.field == "reason":
+            raise ValueError("Invalid specialist observation field")
+        if (not isinstance(self.values, dict) or not self.values
+                or not all(isinstance(k, str) and isinstance(v, str) and v in VERDICTS
+                           for k, v in self.values.items())):
+            raise ValueError("Invalid observation-to-vote mapping")
+        if self.failure_type is not None and (not isinstance(self.failure_type, str) or not self.failure_type):
+            raise ValueError("failure_type must be null for success or a nonempty failure name")
+        self.schema = {"type": "object", "properties": {
+            self.field: {"type": "string", "enum": list(self.values)},
+            "reason": {"type": "string"}}, "required": [self.field, "reason"],
+            "additionalProperties": False}
+        self.references = []
+        for reference in config.get("reference_images", []):
+            path = (HERE / "references" / reference["file"]).resolve()
+            if not path.is_relative_to(HERE / "references"):
+                raise ValueError("Reference must be inside the package references directory")
+            self.references.extend([
+                {"type": "text", "text": reference["label"]},
+                {"type": "image_url", "image_url": {
+                    "url": "data:image/jpeg;base64," + base64.b64encode(path.read_bytes()).decode("ascii")}},
+            ])
+
+    def parse(self, content):
+        parsed = json.loads(content)
+        if not isinstance(parsed, dict) or set(parsed) != {self.field, "reason"}:
+            raise ValueError("Invalid specialist response fields")
+        if (not isinstance(parsed["reason"], str) or not isinstance(parsed[self.field], str)
+                or parsed[self.field] not in self.values):
+            raise ValueError("Invalid specialist observation")
+        return {**parsed, "verdict": self.values[parsed[self.field]]}
+
+    def evidence_count(self, observations):
+        return sum(o["specialist"] == self.name and o["verdict"] == "POSITIVE" for o in observations)
+
+    def confirmed(self, observations):
+        return self.evidence_count(observations) > self.threshold
+
+    async def observe(self, frame, backend, started_at, log, **tags):
+        specialist = self.name
+        observation = {
+            "type": "observation", "specialist": specialist,
+            "request_id": next(backend.request_ids),
+            "sequence": frame.sequence, "source_frame": frame.source_index,
+            "source_time_s": frame.source_index / 30,
+            "captured_time_s": frame.observed_at - started_at,
+            **tags,
+        }
+        sent = time.monotonic()
+        log({**observation, "type": "request_started", "sent_time_s": sent - started_at})
+        try:
+            response = await backend.client.post(
+                self.config["base_url"].rstrip("/") + "/chat/completions",
+                json={
+                    "model": self.config["model"], "temperature": 0,
+                    "max_tokens": self.config["max_tokens"],
+                    "chat_template_kwargs": {"enable_thinking": False},
+                    "messages": [
+                        {"role": "system", "content": self.prompt},
+                        {"role": "user", "content": [
+                            *self.references,
+                            {"type": "text", "text": "Current camera observation:"},
+                            image_content(frame.image, self.crop),
+                        ]},
+                    ],
+                    "response_format": {"type": "json_schema", "json_schema": {
+                        "name": "visual_observation", "strict": True,
+                        "schema": self.schema,
+                    }},
+                },
+                timeout=self.config["request_timeout"],
+            )
+            observation["http_status"] = response.status_code
+            observation["response_text"] = response.text
+            response.raise_for_status()
+            body = response.json()
+            observation["response"] = body
+            message = body["choices"][0]["message"]
+            if not isinstance(message, dict):
+                raise ValueError("Invalid assistant message")
+            observation["raw"] = message.get("content")
+            if message.get("reasoning") or message.get("reasoning_content"):
+                raise ValueError("Endpoint emitted reasoning despite enable_thinking=False")
+            observation.update(self.parse(message["content"]))
+            observation["usage"] = body.get("usage", {})
+        except asyncio.CancelledError:
+            observation.update(verdict="UNCERTAIN", reason="Request cancelled", cancelled=True)
+            raise
+        except (httpx.HTTPError, ValueError, KeyError, TypeError, IndexError) as exc:
+            detail = str(exc)
+            if isinstance(exc, httpx.HTTPStatusError):
+                detail += ": " + exc.response.text[:800]
+            observation.update(verdict="UNCERTAIN", reason="Request unavailable", error=detail[:1200])
+        finally:
+            received = time.monotonic()
+            observation.update(sent_time_s=sent - started_at,
+                               received_time_s=received - started_at, latency_s=received - sent)
+            log(observation)
+        return observation
 
 
 def load_config(path=HERE / "config.json", base_url=None):
@@ -63,8 +134,9 @@ def load_config(path=HERE / "config.json", base_url=None):
         config["base_url"] = base_url.rstrip("/")
     if not isinstance(config["model"], str) or not config["model"].strip():
         raise ValueError("model must be a nonempty string")
-    if type(config["max_tokens"]) is not int or config["max_tokens"] < 1:
-        raise ValueError("max_tokens must be a positive integer")
+    for name in ("max_tokens", "max_connections"):
+        if type(config[name]) is not int or config[name] < 1:
+            raise ValueError(f"{name} must be a positive integer")
     try:
         endpoint = httpx.URL(config["base_url"])
     except (TypeError, httpx.InvalidURL) as exc:
@@ -81,7 +153,14 @@ def load_config(path=HERE / "config.json", base_url=None):
         raise ValueError("The camera simulator runs at 30 fps")
     if n > config["fps"] * config["horizon_duration"]:
         raise ValueError("Evidence sampling cannot exceed the camera's 30 fps")
-    for specialist in SPECIALISTS:
+    definitions = config.get("specialists")
+    if not isinstance(definitions, dict) or not definitions:
+        raise ValueError("Configuration must define its specialists; use the current config.json as a template")
+    if any(not isinstance(name, str) or not name.isidentifier() or not isinstance(spec, dict)
+           for name, spec in definitions.items()):
+        raise ValueError("Each specialist must have an identifier name and a settings object")
+    config["enabled_specialists"] = list(definitions)
+    for specialist in config["enabled_specialists"]:
         threshold = config["evidence_threshold"][specialist]
         if type(threshold) is not int or not 0 <= threshold < n:
             raise ValueError("Each evidence_threshold must be an integer in [0, N)")
@@ -177,112 +256,70 @@ def image_content(image, crop):
 
 
 class Backend:
+    """Shared transport; specialists never own independent verification schedulers."""
     def __init__(self, config, client):
         self.config, self.client = config, client
         self.request_ids = itertools.count(1)
-        self.prompts = {s: (HERE / "prompts" / f"{s}.md").read_text() for s in SPECIALISTS}
-        self.references = {s: [] for s in SPECIALISTS}
-        for specialist, references in config.get("references", {}).items():
-            for reference in references:
-                path = (HERE / "references" / reference["file"]).resolve()
-                if not path.is_relative_to(HERE / "references"):
-                    raise ValueError("Reference image must be inside the package references directory")
-                self.references[specialist].extend([
-                    {"type": "text", "text": reference["label"]},
-                    {"type": "image_url", "image_url": {
-                        "url": "data:image/jpeg;base64," + base64.b64encode(path.read_bytes()).decode("ascii")}},
-                ])
+        self.specialists = {}
+        for name in config["enabled_specialists"]:
+            settings = {**config, **config["specialists"][name], "name": name,
+                        "crop": config["crops"][name], "threshold": config["evidence_threshold"][name],
+                        "reference_images": config.get("references", {}).get(name, [])}
+            self.specialists[name] = Specialist((HERE / "prompts" / f"{name}.md").read_text(), settings)
 
-    async def pair(self, frame, started_at, log, *, normal, round_id=None, slot=None):
+    async def batch(self, frame, started_at, log, *, normal, round_id=None, slot=None):
         return await asyncio.gather(*(
-            self.ask(s, frame, started_at, log, normal=normal, round_id=round_id, slot=slot)
-            for s in SPECIALISTS
+            specialist.observe(frame, self, started_at, log, normal=normal, round_id=round_id, slot=slot)
+            for specialist in self.specialists.values()
         ))
 
-    async def ask(self, specialist, frame, started_at, log, **tags):
-        observation = {
-            "type": "observation", "specialist": specialist,
-            "request_id": next(self.request_ids),
-            "sequence": frame.sequence, "source_frame": frame.source_index,
-            "source_time_s": frame.source_index / 30,
-            "captured_time_s": frame.observed_at - started_at,
-            **tags,
-        }
-        sent = time.monotonic()
-        log({**observation, "type": "request_started", "sent_time_s": sent - started_at})
-        try:
-            response = await self.client.post(
-                self.config["base_url"].rstrip("/") + "/chat/completions",
-                json={
-                    "model": self.config["model"], "temperature": 0,
-                    "max_tokens": self.config["max_tokens"],
-                    "chat_template_kwargs": {"enable_thinking": False},
-                    "messages": [
-                        {"role": "system", "content": self.prompts[specialist]},
-                        {"role": "user", "content": [
-                            *self.references[specialist],
-                            {"type": "text", "text": "Current camera observation:"},
-                            image_content(frame.image, self.config["crops"][specialist]),
-                        ]},
-                    ],
-                    "response_format": {"type": "json_schema", "json_schema": {
-                        "name": "visual_observation", "strict": True,
-                        "schema": DROP_SCHEMA if specialist == "drop" else SCHEMA,
-                    }},
-                },
-                timeout=self.config["request_timeout"],
-            )
-            observation["http_status"] = response.status_code
-            observation["response_text"] = response.text
-            response.raise_for_status()
-            body = response.json()
-            observation["response"] = body
-            message = body["choices"][0]["message"]
-            if not isinstance(message, dict):
-                raise ValueError("Endpoint returned an invalid assistant message")
-            observation["raw"] = message.get("content")
-            if message.get("reasoning") or message.get("reasoning_content"):
-                raise ValueError("Endpoint emitted reasoning despite enable_thinking=False")
-            observation.update(parse_observation(specialist, message["content"]))
-            observation["usage"] = body.get("usage", {})
-        except asyncio.CancelledError:
-            observation.update(verdict="UNCERTAIN", reason="Request cancelled", cancelled=True)
-            raise
-        except (httpx.HTTPError, ValueError, KeyError, TypeError, IndexError) as exc:
-            detail = str(exc)
-            if isinstance(exc, httpx.HTTPStatusError):
-                detail += ": " + exc.response.text[:800]
-            observation.update(verdict="UNCERTAIN", reason="Request unavailable", error=detail[:1200])
-        finally:
-            received = time.monotonic()
-            observation.update(sent_time_s=sent - started_at,
-                               received_time_s=received - started_at, latency_s=received - sent)
-            log(observation)
-        return observation
 
-
-def decide(observations, config):
-    expected = {(i, s) for i in range(config["evidence_horizon"]) for s in SPECIALISTS}
+def decide(observations, config, specialists):
+    expected = {(i, name) for i in range(config["evidence_horizon"]) for name in specialists}
     keys = [(o["slot"], o["specialist"]) for o in observations]
     if len(keys) != len(expected) or set(keys) != expected:
-        raise ValueError("Verification must contain exactly one response per slot and specialist")
-    counts = {s: sum(o["specialist"] == s and o["verdict"] == "POSITIVE" for o in observations) for s in SPECIALISTS}
-    success = counts["success"] > config["evidence_threshold"]["success"]
-    drop = counts["drop"] > config["evidence_threshold"]["drop"]
-    status = "SUCCESS" if success and not drop else "FAIL" if drop and not success else "ON_GOING"
-    return status, counts
+        raise ValueError("Verification requires one response per slot and specialist")
+    counts = {name: specialist.evidence_count(observations) for name, specialist in specialists.items()}
+    confirmed = [s for s in specialists.values() if s.confirmed(observations)]
+    successes = [s for s in confirmed if s.failure_type is None]
+    failures = [s for s in confirmed if s.failure_type is not None]
+    status = "SUCCESS" if successes and not failures else "FAIL" if failures and not successes else "ON_GOING"
+    return status, counts, failures
 
 
-async def verify(camera, backend, config, first_pair, started_at, triggered_at, round_id, log):
-    tasks = [first_pair]
+class ReplayController:
+    """Log proposed VA hand-offs once per attempt. No robot APIs are called."""
+    def __init__(self):
+        self.finished = set()
+
+    def start(self, attempt, log):
+        for action in ("SCENE_READY", "START_INSERTION_VA"):
+            log({"type": "control_action", "attempt_id": attempt, "action": action, "mode": "SIMULATED"})
+
+    def finish(self, attempt, result, log):
+        if result["status"] == "ON_GOING" or attempt in self.finished:
+            return
+        self.finished.add(attempt)
+        actions = ["STOP_INSERTION_VA"]
+        if result["status"] == "FAIL":
+            actions += ["RELEASE_GRIPPER", "START_RECOVERY_VA"]
+        actions += ["RESET_SCENE"]
+        for action in actions:
+            log({"type": "control_action", "attempt_id": attempt, "action": action,
+                 "idempotency_key": f"{attempt}:{action}", "mode": "SIMULATED",
+                 "status": result["status"], "failure_type": result.get("failure_type")})
+
+
+async def verify(camera, backend, config, first_batch, started_at, triggered_at, round_id, log):
+    tasks = [first_batch]
     try:
         for slot in range(1, config["evidence_horizon"]):
             target = triggered_at + slot * config["horizon_duration"] / config["evidence_horizon"]
             await asyncio.sleep(max(0, target - time.monotonic()))
-            tasks.append(asyncio.create_task(backend.pair(
+            tasks.append(asyncio.create_task(backend.batch(
                 camera.get(), started_at, log, normal=False, round_id=round_id, slot=slot,
             )))
-        return [o for pair in await asyncio.gather(*tasks) for o in pair]
+        return [o for batch in await asyncio.gather(*tasks) for o in batch]
     finally:
         for task in tasks:
             if not task.done():
@@ -292,7 +329,7 @@ async def verify(camera, backend, config, first_pair, started_at, triggered_at, 
 
 async def monitor(camera, backend, config, log, stop_event=None):
     started_at = camera.started_at
-    normal = asyncio.create_task(backend.pair(camera.get(), started_at, log, normal=True))
+    normal = asyncio.create_task(backend.batch(camera.get(), started_at, log, normal=True))
     verification = None
     round_id, rearm_after = 0, -1.0
     consecutive_errors = 0
@@ -311,7 +348,7 @@ async def monitor(camera, backend, config, log, stop_event=None):
                                             return_when=asyncio.FIRST_COMPLETED)
                 if verification in done:
                     observations = verification.result()
-                    status, counts = decide(observations, config)
+                    status, counts, failures = decide(observations, config, backend.specialists)
                     log({"type": "verification_finished", "round_id": round_id,
                          "counts": counts, "status": status,
                          "time_s": time.monotonic() - started_at})
@@ -321,37 +358,40 @@ async def monitor(camera, backend, config, log, stop_event=None):
                         result.update(status=status, decision_time_s=rearm_after,
                                       evidence_counts=counts, verification_round=round_id)
                         if status == "FAIL":
-                            result.update(failure_type="DROP_FAILURE",
-                                          failure_description="The plug is visibly dropped outside the gripper, stand, and socket.")
+                            primary = failures[0]
+                            positives = [o for o in observations if o["specialist"] == primary.name and o["verdict"] == "POSITIVE"]
+                            result.update(failure_type=primary.failure_type,
+                                          confirmed_failure_types=[s.failure_type for s in failures],
+                                          failure_description=max(positives, key=lambda o: o["source_time_s"])["reason"])
                         result["evidence_source_time_s"] = max(o["source_time_s"] for o in observations)
                         result["source_frame"] = round(result["evidence_source_time_s"] * 30)
                         log({"type": "status", **result})
                         return result
                 if normal in done:
-                    pair = normal.result()
-                    consecutive_errors = consecutive_errors + 1 if all("error" in o for o in pair) else 0
+                    batch = normal.result()
+                    consecutive_errors = consecutive_errors + 1 if all("error" in o for o in batch) else 0
                     if consecutive_errors >= 5:
                         raise RuntimeError("Five consecutive normal batches failed; check the model endpoint")
-                    result["source_frame"] = round(pair[0]["source_time_s"] * 30)
+                    result["source_frame"] = round(batch[0]["source_time_s"] * 30)
                     log({"type": "status", **result, "decision_time_s": time.monotonic() - started_at})
                     trigger = (
                         verification is None
-                        and pair[0]["captured_time_s"] >= rearm_after
-                        and any(o["verdict"] == "POSITIVE" for o in pair)
+                        and batch[0]["captured_time_s"] >= rearm_after
+                        and any(o["verdict"] == "POSITIVE" for o in batch)
                     )
                     frame = camera.get()
                     if trigger:
                         round_id += 1
                     triggered_at = time.monotonic()
-                    # This next normal pair is also verification slot 0 when triggered.
-                    normal = asyncio.create_task(backend.pair(
+                    # This next normal batch is also verification slot 0 when triggered.
+                    normal = asyncio.create_task(backend.batch(
                         frame, started_at, log, normal=True,
                         round_id=round_id if trigger else None, slot=0 if trigger else None,
                     ))
                     if trigger:
                         log({"type": "verification_started", "round_id": round_id,
                              "time_s": triggered_at - started_at,
-                             "trigger_source_time_s": pair[0]["source_time_s"]})
+                             "trigger_source_time_s": batch[0]["source_time_s"]})
                         verification = asyncio.create_task(verify(
                             camera, backend, config, normal, started_at, triggered_at, round_id, log,
                         ))

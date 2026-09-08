@@ -1,0 +1,15 @@
+{
+  "reviewer": "assistant visual review",
+  "scope": "Coarse insertion sequences and denser drop-onset sequences for all annotated failures, examined before the no-force model run. These are not exhaustive rotation annotations.",
+  "aug27/traj-30.MOV": "Abnormal retained grasp with downward exposed pins clearly visible from about 13 s, followed by a drop.",
+  "no-force": {
+    "traj-4.MOV": "Visible unsupported fall and final tabletop landing confirm FAIL. No-force drop-onset bounds saved separately.",
+    "traj-14.MOV": "Visible unsupported fall and final tabletop landing confirm FAIL. No-force drop-onset bounds saved separately.",
+    "traj-31.MOV": "Visible unsupported fall and final tabletop landing confirm FAIL. No-force drop-onset bounds saved separately.",
+    "traj-32.MOV": "Visible unsupported fall and final tabletop landing confirm FAIL. No-force drop-onset bounds saved separately.",
+    "traj-37.MOV": "Visible unsupported fall and final tabletop landing confirm FAIL. No-force drop-onset bounds saved separately.",
+    "traj-42.MOV": "Visible unsupported fall and final tabletop landing confirm FAIL. No-force drop-onset bounds saved separately.",
+    "traj-47.MOV": "Visible unsupported fall and final tabletop landing confirm FAIL. No-force drop-onset bounds saved separately."
+  },
+  "annotation_changes": []
+}

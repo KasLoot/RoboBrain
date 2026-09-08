@@ -1,0 +1,1265 @@
+{
+  "scope": "Identical source-frame/crop reviews are reused only after verifying unchanged dataset video hashes and matching frame, crop and status. Changed captures are inspected separately.",
+  "reviewed": {
+    "traj-1.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 511,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter and visibly separated gripper; terminal SUCCESS evidence supported."
+    },
+    "traj-2.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 452,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter and visibly separated gripper; terminal SUCCESS evidence supported."
+    },
+    "traj-3.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 435,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter and visibly separated gripper; terminal SUCCESS evidence supported."
+    },
+    "traj-4.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 542,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter and visibly separated gripper; terminal SUCCESS evidence supported."
+    },
+    "traj-5.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 467,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter and visibly separated gripper; terminal SUCCESS evidence supported."
+    },
+    "traj-6.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 534,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter and visibly separated gripper; terminal SUCCESS evidence supported."
+    },
+    "traj-7.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 445,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter with open, separated gripper; terminal SUCCESS evidence supported."
+    },
+    "traj-8.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 734,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter with open, separated gripper; terminal SUCCESS evidence supported."
+    },
+    "traj-10.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 480,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter with open, separated gripper; terminal SUCCESS evidence supported."
+    },
+    "traj-11.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 526,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter with open, separated gripper; terminal SUCCESS evidence supported."
+    },
+    "traj-12.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 518,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter with open, separated gripper; terminal SUCCESS evidence supported."
+    },
+    "traj-13.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 448,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Additional release-sequence review shows gripper withdrawing while adapter stays seated, then hovering nearby. SUCCESS supported; see review/near-gripper-13-34.jpg."
+    },
+    "traj-14.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 428,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter with separated gripper; terminal SUCCESS evidence supported."
+    },
+    "traj-15.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 481,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter with separated gripper; terminal SUCCESS evidence supported."
+    },
+    "traj-9.MOV": {
+      "method": "new capture visually inspected",
+      "source_frame": 518,
+      "crop": [
+        950,
+        140,
+        1470,
+        680
+      ],
+      "finding": "Adapter retained in fingers with exposed pins pointing down in front of socket. Rotation evidence supported; decision at 29.38 s precedes reviewed drop onset."
+    },
+    "traj-16.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 457,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter with separated gripper; terminal SUCCESS evidence supported."
+    },
+    "traj-17.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 1166,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter with separated gripper; terminal SUCCESS evidence supported."
+    },
+    "traj-18.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 485,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter with separated gripper; terminal SUCCESS evidence supported."
+    },
+    "traj-19.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 611,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter with separated gripper; terminal SUCCESS evidence supported."
+    },
+    "traj-20.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 495,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter with separated or withdrawn gripper; terminal SUCCESS evidence supported."
+    },
+    "traj-21.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 541,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter with separated or withdrawn gripper; terminal SUCCESS evidence supported."
+    },
+    "traj-22.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 458,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter with separated or withdrawn gripper; terminal SUCCESS evidence supported."
+    },
+    "traj-23.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 515,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter with separated or withdrawn gripper; terminal SUCCESS evidence supported."
+    },
+    "traj-24.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 489,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter with separated or withdrawn gripper; terminal SUCCESS evidence supported."
+    },
+    "traj-25.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 573,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter with separated or withdrawn gripper; terminal SUCCESS evidence supported."
+    },
+    "traj-26.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 404,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter with separated or withdrawn gripper; terminal SUCCESS evidence supported."
+    },
+    "traj-27.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 458,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter with separated or withdrawn gripper; terminal SUCCESS evidence supported."
+    },
+    "traj-28.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 455,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter with separated or withdrawn gripper; terminal SUCCESS evidence supported."
+    },
+    "traj-29.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 503,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter with separated or withdrawn gripper; terminal SUCCESS evidence supported."
+    },
+    "traj-30.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 528,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter with separated or withdrawn gripper; terminal SUCCESS evidence supported."
+    },
+    "traj-31.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 586,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter with separated or withdrawn gripper; terminal SUCCESS evidence supported."
+    },
+    "traj-32.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 509,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter with separated or withdrawn gripper; terminal SUCCESS evidence supported."
+    },
+    "traj-33.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 429,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter with separated or withdrawn gripper; terminal SUCCESS evidence supported."
+    },
+    "traj-34.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 406,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Additional release-sequence review shows gripper withdrawing while adapter stays seated, then hovering nearby. SUCCESS supported; see review/near-gripper-13-34.jpg."
+    },
+    "traj-35.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 489,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter with separated or withdrawn gripper; terminal SUCCESS evidence supported."
+    },
+    "traj-36.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 465,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter with separated or withdrawn gripper; terminal SUCCESS evidence supported."
+    },
+    "traj-37.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 482,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter with separated or withdrawn gripper; terminal SUCCESS evidence supported."
+    },
+    "traj-38.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 520,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter with separated or withdrawn gripper; terminal SUCCESS evidence supported."
+    },
+    "traj-39.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 540,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter with separated or withdrawn gripper; terminal SUCCESS evidence supported."
+    },
+    "traj-40.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 478,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter with separated or withdrawn gripper; terminal SUCCESS evidence supported."
+    },
+    "traj-41.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 471,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter with separated or withdrawn gripper; terminal SUCCESS evidence supported."
+    },
+    "traj-42.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 441,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter with separated or withdrawn gripper; terminal SUCCESS evidence supported."
+    },
+    "traj-43.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 412,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Release-sequence review shows fingers opening and lifting while plug remains seated. SUCCESS supported; see review/near-gripper-43.jpg."
+    },
+    "traj-44.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 452,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter with separated or withdrawn gripper; terminal SUCCESS evidence supported."
+    },
+    "traj-45.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 477,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter with separated or withdrawn gripper; terminal SUCCESS evidence supported."
+    },
+    "traj-46.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 394,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter with separated or withdrawn gripper; terminal SUCCESS evidence supported."
+    },
+    "traj-47.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 619,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter with separated or withdrawn gripper; terminal SUCCESS evidence supported."
+    },
+    "traj-48.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 479,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter with separated or withdrawn gripper; terminal SUCCESS evidence supported."
+    },
+    "traj-49.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 428,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter with separated or withdrawn gripper; terminal SUCCESS evidence supported."
+    },
+    "traj-50.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 481,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter after gripper withdrawal; terminal SUCCESS evidence supported."
+    },
+    "traj-51.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 532,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter after gripper withdrawal; terminal SUCCESS evidence supported."
+    },
+    "traj-52.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 553,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter after gripper withdrawal; terminal SUCCESS evidence supported."
+    },
+    "traj-53.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 550,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter after gripper withdrawal; terminal SUCCESS evidence supported."
+    },
+    "traj-54.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 545,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter after gripper withdrawal; terminal SUCCESS evidence supported."
+    },
+    "traj-55.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 460,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter after gripper withdrawal; terminal SUCCESS evidence supported."
+    },
+    "traj-56.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 694,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter with separated or withdrawn gripper; terminal SUCCESS evidence supported."
+    },
+    "traj-57.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 562,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter with separated or withdrawn gripper; terminal SUCCESS evidence supported."
+    },
+    "traj-58.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 469,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter with separated or withdrawn gripper; terminal SUCCESS evidence supported."
+    },
+    "traj-59.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 505,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter with separated or withdrawn gripper; terminal SUCCESS evidence supported."
+    },
+    "traj-60.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 510,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter with separated or withdrawn gripper; terminal SUCCESS evidence supported."
+    },
+    "traj-61.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 488,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Release sequence confirms fingers lift away while adapter remains seated; subsequent nearby pose is still released. See review/near-gripper-61.jpg."
+    },
+    "traj-62.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 460,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter with separated or withdrawn gripper; terminal SUCCESS evidence supported."
+    },
+    "traj-63.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 430,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter with separated or withdrawn gripper; terminal SUCCESS evidence supported."
+    },
+    "traj-64.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 477,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Release sequence shows fingers open and lift above a plug that stays seated. SUCCESS supported; see review/near-gripper-64-67.jpg."
+    },
+    "traj-65.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 435,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter with separated or withdrawn gripper; terminal SUCCESS evidence supported."
+    },
+    "traj-66.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 465,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter with separated or withdrawn gripper; terminal SUCCESS evidence supported."
+    },
+    "traj-67.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 513,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Release sequence shows fingers open and lift above a plug that stays seated. SUCCESS supported; see review/near-gripper-64-67.jpg."
+    },
+    "traj-68.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 462,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter with separated or withdrawn gripper; terminal SUCCESS evidence supported."
+    },
+    "traj-69.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 609,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter with separated or withdrawn gripper; terminal SUCCESS evidence supported."
+    },
+    "traj-70.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 553,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter with separated or withdrawn gripper; terminal SUCCESS evidence supported."
+    },
+    "traj-71.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 516,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter with separated or withdrawn gripper; terminal SUCCESS evidence supported."
+    },
+    "traj-72.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 523,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter with separated or withdrawn gripper; terminal SUCCESS evidence supported."
+    },
+    "traj-73.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 441,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter with separated or withdrawn gripper; terminal SUCCESS evidence supported."
+    },
+    "traj-74.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 460,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter with separated or withdrawn gripper; terminal SUCCESS evidence supported."
+    },
+    "traj-75.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 493,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter with separated or withdrawn gripper; terminal SUCCESS evidence supported."
+    },
+    "traj-76.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 518,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter with separated or withdrawn gripper; terminal SUCCESS evidence supported."
+    },
+    "traj-77.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 493,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter with separated or withdrawn gripper; terminal SUCCESS evidence supported."
+    },
+    "traj-78.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 519,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter with separated or withdrawn gripper; terminal SUCCESS evidence supported."
+    },
+    "traj-79.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 592,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter with separated or withdrawn gripper; terminal SUCCESS evidence supported."
+    },
+    "traj-80.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 470,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter after gripper withdrawal; terminal SUCCESS evidence supported."
+    },
+    "traj-81.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 467,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter after gripper withdrawal; terminal SUCCESS evidence supported."
+    },
+    "traj-82.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 704,
+      "crop": [
+        330,
+        100,
+        1620,
+        860
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Adapter visibly resting on bare tabletop in front of socket, separate from empty gripper and stand. DROP_FAILURE supported; onset sequence independently reviewed."
+    },
+    "traj-83.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 501,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter after gripper withdrawal; terminal SUCCESS evidence supported."
+    },
+    "traj-84.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 407,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter after gripper withdrawal; terminal SUCCESS evidence supported."
+    },
+    "traj-85.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 588,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter after gripper withdrawal; terminal SUCCESS evidence supported."
+    },
+    "traj-86.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 599,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter after gripper withdrawal; terminal SUCCESS evidence supported."
+    },
+    "traj-87.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 639,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter with separated or withdrawn gripper; terminal SUCCESS evidence supported."
+    },
+    "traj-88.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 415,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter with separated or withdrawn gripper; terminal SUCCESS evidence supported."
+    },
+    "traj-89.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 414,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter with separated or withdrawn gripper; terminal SUCCESS evidence supported."
+    },
+    "traj-90.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 491,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter with separated or withdrawn gripper; terminal SUCCESS evidence supported."
+    },
+    "traj-91.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 449,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter with separated or withdrawn gripper; terminal SUCCESS evidence supported."
+    },
+    "traj-92.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 432,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter with separated or withdrawn gripper; terminal SUCCESS evidence supported."
+    },
+    "traj-94.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 483,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter with separated or withdrawn gripper; terminal SUCCESS evidence supported."
+    },
+    "traj-95.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 693,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter with separated or withdrawn gripper; terminal SUCCESS evidence supported."
+    },
+    "traj-96.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 532,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter with separated or withdrawn gripper; terminal SUCCESS evidence supported."
+    },
+    "traj-97.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 507,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter with separated or withdrawn gripper; terminal SUCCESS evidence supported."
+    },
+    "traj-98.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 497,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter with separated or withdrawn gripper; terminal SUCCESS evidence supported."
+    },
+    "traj-93.MOV": {
+      "method": "new capture visually inspected, with unchanged-video temporal sequence review",
+      "source_frame": 508,
+      "crop": [
+        950,
+        140,
+        1470,
+        680
+      ],
+      "finding": "Retained plug with downward exposed pins resembles the rotation failure example. Later wrist reorientation and successful insertion are visible. Original SUCCESS label retained; intended intervention classification is pending user confirmation."
+    },
+    "traj-99.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 596,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter with separated or withdrawn gripper; terminal SUCCESS evidence supported."
+    },
+    "traj-100.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 430,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter after gripper withdrawal; terminal SUCCESS evidence supported."
+    },
+    "traj-101.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 492,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter after gripper withdrawal; terminal SUCCESS evidence supported."
+    },
+    "traj-102.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 518,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter after gripper withdrawal; terminal SUCCESS evidence supported."
+    },
+    "traj-104.MOV": {
+      "method": "identical source frame and crop previously visually inspected",
+      "source_frame": 433,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "prior_review": "test/robobrain-v2-test-10/runs/all-105/visual_review.json",
+      "finding": "Seated adapter after gripper withdrawal; terminal SUCCESS evidence supported."
+    },
+    "traj-103.MOV": {
+      "method": "new capture visually inspected",
+      "source_frame": 552,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "finding": "Adapter remains seated with gripper withdrawn. SUCCESS evidence supported."
+    },
+    "traj-105.MOV": {
+      "method": "new capture visually inspected",
+      "source_frame": 556,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ],
+      "finding": "Adapter remains seated with gripper withdrawn. SUCCESS evidence supported."
+    }
+  },
+  "review_complete": true,
+  "policy_review_pending": [
+    "traj-93.MOV"
+  ]
+}

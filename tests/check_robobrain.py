@@ -15,33 +15,44 @@ import cv2
 import httpx
 import numpy as np
 
-from robobrain.monitor import Backend, Frame, SimulatedCamera, SPECIALISTS, decide, image_content, load_config, monitor, parse_observation
+from robobrain.monitor import Backend, Frame, ReplayController, SimulatedCamera, decide, image_content, load_config, monitor
 from robobrain.presentation import EpisodeReport, LiveView, annotate_frame, render_recording
 from robobrain.__main__ import select_videos
 
 
-def evidence(success, drop):
-    return [{"slot": i, "specialist": s, "verdict": "POSITIVE" if i < {"success": success, "drop": drop}[s] else "UNCERTAIN"}
+SPECIALISTS = ("success", "drop", "rotation")
+
+
+def evidence(success, drop, rotation=0):
+    return [{"slot": i, "specialist": s, "verdict": "POSITIVE" if i < {"success": success, "drop": drop, "rotation": rotation}[s] else "UNCERTAIN"}
             for i in range(10) for s in SPECIALISTS]
 
 
 async def checks():
     config = load_config()
-    for location, expected in [("STAND", "NEGATIVE"), ("GRIPPER", "NEGATIVE"), ("SOCKET", "NEGATIVE"), ("TABLE", "POSITIVE"), ("FALLING", "POSITIVE"), ("UNKNOWN", "UNCERTAIN")]:
-        assert parse_observation("drop", json.dumps({"location": location, "reason": "visible relation"}))["verdict"] == expected
-    assert decide(evidence(5, 0), config)[0] == "ON_GOING"
-    assert decide(evidence(6, 0), config)[0] == "SUCCESS"
-    assert decide(evidence(0, 6), config)[0] == "FAIL"
-    assert decide(evidence(6, 6), config)[0] == "ON_GOING"
+    specs = Backend(config, None).specialists
+    assert tuple(specs) == SPECIALISTS and config['max_connections'] == 36
+    for location, expected in [("STAND", "NEGATIVE"), ("GRIPPER", "NEGATIVE"), ("SOCKET", "NEGATIVE"), ("TABLE", "POSITIVE"), ("FALLING", "UNCERTAIN"), ("UNKNOWN", "UNCERTAIN")]:
+        assert specs['drop'].parse(json.dumps({"location": location, "reason": "visible relation"}))["verdict"] == expected
+    for pose, expected in [('HELD_NORMAL', 'NEGATIVE'), ('HELD_ROTATED', 'POSITIVE'), ('NOT_HELD', 'NEGATIVE'), ('NOT_INSERTING', 'NEGATIVE'), ('UNKNOWN', 'UNCERTAIN')]:
+        assert specs['rotation'].parse(json.dumps({'grasp_state': pose, 'reason': 'visible grasp'}))['verdict'] == expected
+    assert decide(evidence(5, 0), config, specs)[0] == "ON_GOING"
+    assert decide(evidence(6, 0), config, specs)[0] == "SUCCESS"
+    assert decide(evidence(0, 6), config, specs)[0] == "FAIL"
+    assert decide(evidence(6, 6), config, specs)[0] == "ON_GOING"
+    assert decide(evidence(0, 0, 5), config, specs)[0] == "ON_GOING"
+    assert decide(evidence(0, 0, 6), config, specs)[0] == "FAIL"
+    assert decide(evidence(6, 0, 6), config, specs)[0] == "ON_GOING"
+    assert [s.failure_type for s in decide(evidence(0, 6, 6), config, specs)[2]] == ['DROP_FAILURE', 'ROTATION_FAILURE']
     try:
-        parse_observation('success', '{"verdict":"POSITIVE","reason":"visible","type":"status","status":"SUCCESS"}')
+        specs['success'].parse('{"verdict":"POSITIVE","reason":"visible","type":"status","status":"SUCCESS"}')
     except ValueError:
         pass
     else:
         raise AssertionError('Model output must not overwrite trusted event metadata')
     for invalid in [evidence(6, 0)[:-1], evidence(6, 0) + [evidence(6, 0)[0]]]:
         try:
-            decide(invalid, config)
+            decide(invalid, config, specs)
         except ValueError:
             pass
         else:
@@ -54,7 +65,7 @@ async def checks():
         decoded = cv2.imdecode(np.frombuffer(data, np.uint8), cv2.IMREAD_COLOR)
         assert decoded.shape[:2] == (crop[3] - crop[1], crop[2] - crop[0])
 
-    malformed_messages = iter([None, {"content": "not JSON"}])
+    malformed_messages = iter([None, {"content": "not JSON"}, {"content": '{"grasp_state":"HELD_ROTATED","reason":"visible"}', "reasoning": "Unexpected thinking"}])
     async def handler(request):
         payload = json.loads(request.content)
         assert payload["chat_template_kwargs"] == {"enable_thinking": False}
@@ -62,7 +73,8 @@ async def checks():
         return httpx.Response(200, json={"choices": [{"message": next(malformed_messages)}]})
     async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as client:
         backend = Backend(config, client)
-        observations = await backend.pair(Frame(image, 0, 0, time.monotonic()), time.monotonic(), lambda _: None, normal=True)
+        observations = await backend.batch(Frame(image, 0, 0, time.monotonic()), time.monotonic(), lambda _: None, normal=True)
+        assert len(observations) == 3
         assert all(o["verdict"] == "UNCERTAIN" and "error" in o for o in observations)
 
     with tempfile.TemporaryDirectory() as directory:
@@ -94,19 +106,22 @@ async def checks():
             return Frame(None, index, index, now)
 
     class FakeBackend:
-        def __init__(self, conflict_first=False):
+        def __init__(self, conflict_first=False, positive='success'):
+            self.specialists = specs
             self.active = 0
             self.conflict_first = conflict_first
-        async def pair(self, frame, started_at, log, **tags):
+            self.positive = positive
+        async def batch(self, frame, started_at, log, **tags):
             self.active += 1
             try:
-                # Out-of-order completion; the final verification pair is slowest.
+                # Out-of-order completion; the final verification batch is slowest.
                 await asyncio.sleep(.18 if tags.get("slot") == 9 else .04)
                 rows = []
                 for specialist in SPECIALISTS:
                     row = {"type": "observation", "specialist": specialist, "source_time_s": frame.source_index / 30,
+                           "reason": "visible evidence",
                            "captured_time_s": frame.observed_at - started_at, **tags,
-                           "verdict": "POSITIVE" if specialist == "success" or (self.conflict_first and tags.get("round_id") == 1) else "NEGATIVE"}
+                           "verdict": "POSITIVE" if specialist == self.positive or (self.conflict_first and tags.get("round_id") == 1) else "NEGATIVE"}
                     log(row)
                     rows.append(row)
                 return rows
@@ -117,10 +132,10 @@ async def checks():
     backend = FakeBackend()
     config["horizon_duration"] = .4
     result = await monitor(FakeCamera(), backend, config, events.append)
-    assert result["status"] == "SUCCESS" and result["evidence_counts"] == {"success": 10, "drop": 0}
+    assert result["status"] == "SUCCESS" and result["evidence_counts"] == {"success": 10, "drop": 0, "rotation": 0}
     assert sum(e["type"] == "verification_started" for e in events) == 1
     verified = [e for e in events if e["type"] == "observation" and e.get("round_id") == 1]
-    assert len(verified) == 20
+    assert len(verified) == 30
     assert any(e["type"] == "observation" and e.get("normal") and e.get("round_id") is None for e in events[3:])
     assert backend.active == 0
     assert result["decision_time_s"] >= .04 + .36 + .18
@@ -133,6 +148,21 @@ async def checks():
     assert finishes[0]["status"] == "ON_GOING"
     assert starts[1]["time_s"] > finishes[0]["time_s"] + .039
     assert backend.active == 0
+    backend = FakeBackend(positive='rotation')
+    result = await monitor(FakeCamera(), backend, config, lambda _: None)
+    assert result['status'] == 'FAIL' and result['failure_type'] == 'ROTATION_FAILURE'
+    assert result['confirmed_failure_types'] == ['ROTATION_FAILURE']
+    assert result['failure_description'] == 'visible evidence' and result['source_frame'] >= 0
+    assert backend.active == 0
+    actions = []
+    controller = ReplayController()
+    controller.start('attempt', actions.append)
+    controller.finish('attempt', result, actions.append)
+    controller.finish('attempt', result, actions.append)
+    assert [e['action'] for e in actions] == ['SCENE_READY', 'START_INSERTION_VA', 'STOP_INSERTION_VA', 'RELEASE_GRIPPER', 'START_RECOVERY_VA', 'RESET_SCENE']
+    assert all(e['mode'] == 'SIMULATED' for e in actions)
+    controller.finish('unresolved', {'status': 'ON_GOING'}, actions.append)
+    assert len(actions) == 6
     backend = FakeBackend()
     config["episode_timeout"] = .12
     result = await monitor(FakeCamera(), backend, config, lambda _: None)
@@ -146,13 +176,13 @@ async def checks():
     async with httpx.AsyncClient(transport=httpx.MockTransport(blocked)) as client:
         backend = Backend(load_config(), client)
         events = []
-        task = asyncio.create_task(backend.pair(Frame(image, 0, 0, time.monotonic()), time.monotonic(), events.append, normal=True))
+        task = asyncio.create_task(backend.batch(Frame(image, 0, 0, time.monotonic()), time.monotonic(), events.append, normal=True))
         await asyncio.sleep(.05)
         task.cancel()
         await asyncio.gather(task, return_exceptions=True)
         started = [e for e in events if e['type'] == 'request_started']
         finished = [e for e in events if e['type'] == 'observation']
-        assert len(started) == len(finished) == 2
+        assert len(started) == len(finished) == 3
         assert {e['request_id'] for e in started} == {e['request_id'] for e in finished}
         assert all(e['cancelled'] and e['verdict'] == 'UNCERTAIN' for e in finished)
 
@@ -171,7 +201,7 @@ def recording_checks():
     ffmpeg, ffprobe = shutil.which('ffmpeg'), shutil.which('ffprobe')
     assert ffmpeg and ffprobe, 'Recording checks require ffmpeg and ffprobe'
     image = np.full((1080, 1920, 3), 170, np.uint8)
-    state = {'status': 'FAIL', 'failure_type': 'DROP_FAILURE', 'source_frame': 3}
+    state = {'status': 'FAIL', 'failure_type': 'ROTATION_FAILURE', 'source_frame': 3}
     real_put_text = cv2.putText
     with patch('robobrain.presentation.cv2.putText', wraps=real_put_text) as draw:
         annotated = annotate_frame(image, 9, state)
@@ -179,7 +209,7 @@ def recording_checks():
     assert 'Frame 10' in calls and 'Operating Status' in calls and ' (frame 4):' in calls
     assert calls['Operating Status'][5] == calls[' (frame 4):'][5] == (255, 145, 50)
     assert calls['Operating Status'][6] > calls[' (frame 4):'][6]
-    assert 'Status: FAIL' in calls and 'Failure type: DROP_FAILURE' in calls
+    assert 'Status: FAIL' in calls and 'Failure type: ROTATION_FAILURE' in calls
     assert np.all(image == 170) and not np.array_equal(image, annotated)
 
     with tempfile.TemporaryDirectory() as directory:
@@ -190,7 +220,7 @@ def recording_checks():
                         '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-c:a', 'aac', str(video)], check=True)
         assert select_videos(root, [1])[1] == [video.resolve()]
         initial = {'type': 'status', 'status': 'ON_GOING', 'failure_type': None, 'source_frame': -1, 'decision_time_s': 0.}
-        late = {'type': 'status', 'status': 'FAIL', 'failure_type': 'DROP_FAILURE', 'source_frame': 35, 'decision_time_s': 1.6}
+        late = {'type': 'status', 'status': 'FAIL', 'failure_type': 'ROTATION_FAILURE', 'source_frame': 35, 'decision_time_s': 1.6}
         displayed = []
         def inspect_frame(image, source_frame, state):
             displayed.append((source_frame, state['status']))
@@ -216,17 +246,20 @@ def recording_checks():
         output = root/'output'/'dataset'/'traj-1'
         report = EpisodeReport(video, 'dataset', load_config(), output, LiveView())
         report.log(initial)
-        body = {'choices': [{'message': {'content': '{"location":"TABLE","reason":"On table"}'}}]}
-        observation = {'type': 'observation', 'request_id': 1, 'specialist': 'drop', 'source_frame': 35,
+        body = {'choices': [{'message': {'content': '{"grasp_state":"HELD_ROTATED","reason":"Plug rotated in fingers"}'}}]}
+        observation = {'type': 'observation', 'request_id': 1, 'specialist': 'rotation', 'source_frame': 35,
                        'captured_time_s': 1.2, 'sent_time_s': 1.3, 'received_time_s': 1.5, 'latency_s': .2,
-                       'normal': False, 'round_id': 1, 'slot': 0, 'verdict': 'POSITIVE', 'reason': 'On table',
+                       'normal': False, 'round_id': 1, 'slot': 0, 'verdict': 'POSITIVE', 'reason': 'Plug rotated in fingers',
+                       'grasp_state': 'HELD_ROTATED',
                        'raw': body['choices'][0]['message']['content'], 'response': body, 'response_text': json.dumps(body)}
         report.log(observation)
         report.log(late)
         report.finish(late)
         readable = json.loads((output/'output-traj-1.json').read_text())
         assert readable['requests'][0]['source_frame'] == 36
-        assert readable['requests'][0]['model_output']['location'] == 'TABLE'
+        assert readable['result']['failure_type'] == 'ROTATION_FAILURE'
+        assert readable['requests'][0]['grasp_state'] == 'HELD_ROTATED'
+        assert readable['requests'][0]['model_output']['grasp_state'] == 'HELD_ROTATED'
         assert readable['requests'][0]['response'] == body
         raw = [json.loads(line) for line in (output/'output-traj-1.log').read_text().splitlines()]
         assert observation in raw

@@ -1,0 +1,21 @@
+{
+  "traj-9.MOV": {
+    "ROTATION_FAILURE": {
+      "onset_interval_s": [13.4, 13.8],
+      "reviewed_source_frames": [396, 402, 408, 414, 420, 426],
+      "note": "Approximate visual onset of the abnormal grasp: adapter pivots while retained by the fingers; exposed metallic pins point down in front of the socket. Interval reflects visual ambiguity, not an angle measurement."
+    },
+    "DROP_FAILURE": {
+      "onset_interval_s": [32.6, 32.8],
+      "reviewed_source_frames": [954, 960, 966, 972, 978, 984],
+      "note": "Adapter remains held at 32.6 s and is visibly falling below the empty fingers at 32.8 s."
+    }
+  },
+  "traj-82.MOV": {
+    "DROP_FAILURE": {
+      "onset_interval_s": [20.9, 21.0],
+      "reviewed_source_frames": [621, 624, 627, 630, 633, 636],
+      "note": "Reviewed against current file: fingers open and adapter falls at 21.0 s. This supersedes the older experiment-6 onset estimate for this evaluation only."
+    }
+  }
+}

@@ -1,0 +1,996 @@
+{
+  "episodes": 48,
+  "correct": 48,
+  "success_correct": 41,
+  "fail_correct": 7,
+  "drop_detected": 7,
+  "rotation_detected": 0,
+  "false_failures": 0,
+  "false_successes": 0,
+  "unresolved": 0,
+  "request_errors": 1,
+  "requests": 3252,
+  "results": [
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 16.310307208997983,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0,
+        "rotation": 0
+      },
+      "verification_round": 1,
+      "evidence_source_time_s": 11.233333333333333,
+      "video": "traj-1.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 55,
+      "request_errors": 0,
+      "request_latency_median_s": 1.7098601670004427,
+      "request_latency_p95_s": 2.3923522500008403,
+      "normal_hz": 0.6114763934140697
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 19.59555170800013,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0,
+        "rotation": 0
+      },
+      "verification_round": 1,
+      "evidence_source_time_s": 14.766666666666667,
+      "video": "traj-2.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 60,
+      "request_errors": 0,
+      "request_latency_median_s": 1.92133612500038,
+      "request_latency_p95_s": 2.707297708002443,
+      "normal_hz": 0.6165364049833575
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 20.919322000001557,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0,
+        "rotation": 0
+      },
+      "verification_round": 1,
+      "evidence_source_time_s": 15.766666666666667,
+      "video": "traj-3.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 66,
+      "request_errors": 0,
+      "request_latency_median_s": 1.600464582998029,
+      "request_latency_p95_s": 2.550158582998847,
+      "normal_hz": 0.6384226449151329
+    },
+    {
+      "status": "FAIL",
+      "failure_type": "DROP_FAILURE",
+      "failure_description": "the adapter is lying on the tabletop next to the white stand",
+      "decision_time_s": 30.9355712079996,
+      "evidence_counts": {
+        "success": 0,
+        "drop": 10,
+        "rotation": 0
+      },
+      "verification_round": 1,
+      "confirmed_failure_types": [
+        "DROP_FAILURE"
+      ],
+      "evidence_source_time_s": 25.766666666666666,
+      "video": "traj-4.MOV",
+      "expected_status": "FAIL",
+      "requests": 82,
+      "request_errors": 1,
+      "request_latency_median_s": 1.570468271002028,
+      "request_latency_p95_s": 2.541682999999466,
+      "normal_hz": 0.6192495084809858
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 18.863105959000677,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0,
+        "rotation": 0
+      },
+      "verification_round": 1,
+      "evidence_source_time_s": 14.5,
+      "video": "traj-5.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 60,
+      "request_errors": 0,
+      "request_latency_median_s": 1.6324011454998981,
+      "request_latency_p95_s": 2.414728916999593,
+      "normal_hz": 0.6238567483913737
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 16.97466175000227,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0,
+        "rotation": 0
+      },
+      "verification_round": 1,
+      "evidence_source_time_s": 13.833333333333334,
+      "video": "traj-6.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 57,
+      "request_errors": 0,
+      "request_latency_median_s": 1.6335111249973124,
+      "request_latency_p95_s": 2.5289547499996843,
+      "normal_hz": 0.6339289981916816
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 21.443718791997526,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0,
+        "rotation": 0
+      },
+      "verification_round": 1,
+      "evidence_source_time_s": 17.3,
+      "video": "traj-7.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 66,
+      "request_errors": 0,
+      "request_latency_median_s": 1.5611186454989365,
+      "request_latency_p95_s": 2.4182370829985302,
+      "normal_hz": 0.6405875768195659
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 18.78545212500103,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0,
+        "rotation": 0
+      },
+      "verification_round": 1,
+      "evidence_source_time_s": 14.7,
+      "video": "traj-8.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 60,
+      "request_errors": 0,
+      "request_latency_median_s": 1.6394600420007919,
+      "request_latency_p95_s": 2.499927625001874,
+      "normal_hz": 0.6319188115711021
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 20.48640549999982,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0,
+        "rotation": 0
+      },
+      "verification_round": 1,
+      "evidence_source_time_s": 15.633333333333333,
+      "video": "traj-9.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 65,
+      "request_errors": 0,
+      "request_latency_median_s": 1.5858326669986127,
+      "request_latency_p95_s": 2.4542537920024188,
+      "normal_hz": 0.6466624221178293
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 19.061331542001426,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0,
+        "rotation": 0
+      },
+      "verification_round": 1,
+      "evidence_source_time_s": 14.833333333333334,
+      "video": "traj-10.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 60,
+      "request_errors": 0,
+      "request_latency_median_s": 1.6685920625004655,
+      "request_latency_p95_s": 2.400042792000022,
+      "normal_hz": 0.6133250368856052
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 20.723425250002038,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0,
+        "rotation": 0
+      },
+      "verification_round": 1,
+      "evidence_source_time_s": 16.3,
+      "video": "traj-11.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 63,
+      "request_errors": 0,
+      "request_latency_median_s": 1.6997269579987915,
+      "request_latency_p95_s": 2.439768791999086,
+      "normal_hz": 0.6115507495429445
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 20.186331083001278,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0,
+        "rotation": 0
+      },
+      "verification_round": 1,
+      "evidence_source_time_s": 16.066666666666666,
+      "video": "traj-12.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 63,
+      "request_errors": 0,
+      "request_latency_median_s": 1.628761415999179,
+      "request_latency_p95_s": 2.3705460419987503,
+      "normal_hz": 0.6301121518001238
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 23.245395499998267,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0,
+        "rotation": 0
+      },
+      "verification_round": 1,
+      "evidence_source_time_s": 19.066666666666666,
+      "video": "traj-13.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 69,
+      "request_errors": 0,
+      "request_latency_median_s": 1.564526250000199,
+      "request_latency_p95_s": 2.456555542001297,
+      "normal_hz": 0.6411668710863071
+    },
+    {
+      "status": "FAIL",
+      "failure_type": "DROP_FAILURE",
+      "failure_description": "the adapter is lying on the tabletop in front of the power strip",
+      "decision_time_s": 28.820290208997903,
+      "evidence_counts": {
+        "success": 0,
+        "drop": 10,
+        "rotation": 0
+      },
+      "verification_round": 1,
+      "confirmed_failure_types": [
+        "DROP_FAILURE"
+      ],
+      "evidence_source_time_s": 22.533333333333335,
+      "video": "traj-14.MOV",
+      "expected_status": "FAIL",
+      "requests": 80,
+      "request_errors": 0,
+      "request_latency_median_s": 1.5906765414983965,
+      "request_latency_p95_s": 2.51500733300054,
+      "normal_hz": 0.6286271242879005
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 21.817210542001703,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0,
+        "rotation": 0
+      },
+      "verification_round": 1,
+      "evidence_source_time_s": 18.466666666666665,
+      "video": "traj-15.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 66,
+      "request_errors": 0,
+      "request_latency_median_s": 1.6013327915025002,
+      "request_latency_p95_s": 2.486460708998493,
+      "normal_hz": 0.6314009269344574
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 21.01858925000124,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0,
+        "rotation": 0
+      },
+      "verification_round": 1,
+      "evidence_source_time_s": 16.066666666666666,
+      "video": "traj-16.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 66,
+      "request_errors": 0,
+      "request_latency_median_s": 1.6438921455010131,
+      "request_latency_p95_s": 2.2844866669984185,
+      "normal_hz": 0.6295495791246216
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 30.082092791999457,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0,
+        "rotation": 0
+      },
+      "verification_round": 1,
+      "evidence_source_time_s": 25.733333333333334,
+      "video": "traj-17.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 81,
+      "request_errors": 0,
+      "request_latency_median_s": 1.6130262919978122,
+      "request_latency_p95_s": 2.5070681249999325,
+      "normal_hz": 0.6267309496614982
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 28.262443375002476,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0,
+        "rotation": 0
+      },
+      "verification_round": 2,
+      "evidence_source_time_s": 14.266666666666667,
+      "video": "traj-18.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 90,
+      "request_errors": 0,
+      "request_latency_median_s": 2.063540709001245,
+      "request_latency_p95_s": 11.40200704200106,
+      "normal_hz": 0.42269985786323633
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 29.594865957995353,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0,
+        "rotation": 0
+      },
+      "verification_round": 2,
+      "evidence_source_time_s": 16.333333333333332,
+      "video": "traj-19.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 91,
+      "request_errors": 0,
+      "request_latency_median_s": 1.6999387909963843,
+      "request_latency_p95_s": 11.423647750001692,
+      "normal_hz": 0.41005852435522344
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 20.612202834003256,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0,
+        "rotation": 0
+      },
+      "verification_round": 1,
+      "evidence_source_time_s": 16.8,
+      "video": "traj-20.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 63,
+      "request_errors": 0,
+      "request_latency_median_s": 1.74264058299741,
+      "request_latency_p95_s": 2.618363916000817,
+      "normal_hz": 0.6234361052167524
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 22.431649750004,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0,
+        "rotation": 0
+      },
+      "verification_round": 1,
+      "evidence_source_time_s": 18.933333333333334,
+      "video": "traj-21.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 66,
+      "request_errors": 0,
+      "request_latency_median_s": 1.6487643954969826,
+      "request_latency_p95_s": 2.52099795799586,
+      "normal_hz": 0.6125546143854701
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 18.85458633399685,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0,
+        "rotation": 0
+      },
+      "verification_round": 1,
+      "evidence_source_time_s": 15.633333333333333,
+      "video": "traj-22.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 60,
+      "request_errors": 0,
+      "request_latency_median_s": 1.6052714370052854,
+      "request_latency_p95_s": 2.481280957996205,
+      "normal_hz": 0.6257517266171351
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 30.877785666001728,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0,
+        "rotation": 0
+      },
+      "verification_round": 1,
+      "evidence_source_time_s": 21.166666666666668,
+      "video": "traj-23.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 69,
+      "request_errors": 0,
+      "request_latency_median_s": 1.599048916999891,
+      "request_latency_p95_s": 9.970576500003517,
+      "normal_hz": 0.6343962394259663
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 21.221218875005434,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0,
+        "rotation": 0
+      },
+      "verification_round": 1,
+      "evidence_source_time_s": 16.3,
+      "video": "traj-24.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 63,
+      "request_errors": 0,
+      "request_latency_median_s": 1.7750881669999217,
+      "request_latency_p95_s": 2.4884515419980744,
+      "normal_hz": 0.6185522300056073
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 18.668186583003262,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0,
+        "rotation": 0
+      },
+      "verification_round": 1,
+      "evidence_source_time_s": 15.766666666666667,
+      "video": "traj-25.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 60,
+      "request_errors": 0,
+      "request_latency_median_s": 1.6723839579972264,
+      "request_latency_p95_s": 2.5408592500025406,
+      "normal_hz": 0.6305839141620824
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 28.534122582997952,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0,
+        "rotation": 0
+      },
+      "verification_round": 1,
+      "evidence_source_time_s": 18.366666666666667,
+      "video": "traj-26.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 63,
+      "request_errors": 0,
+      "request_latency_median_s": 1.7514633750033681,
+      "request_latency_p95_s": 10.398933042000863,
+      "normal_hz": 0.6241568002291875
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 18.5665468340012,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0,
+        "rotation": 0
+      },
+      "verification_round": 1,
+      "evidence_source_time_s": 15.566666666666666,
+      "video": "traj-27.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 60,
+      "request_errors": 0,
+      "request_latency_median_s": 1.581191791996389,
+      "request_latency_p95_s": 2.527603499998804,
+      "normal_hz": 0.6358487368950542
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 31.477356125004007,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0,
+        "rotation": 0
+      },
+      "verification_round": 1,
+      "evidence_source_time_s": 28.566666666666666,
+      "video": "traj-28.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 84,
+      "request_errors": 0,
+      "request_latency_median_s": 1.6017832920006185,
+      "request_latency_p95_s": 2.4292105410058866,
+      "normal_hz": 0.6273226412119746
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 18.715911750005034,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0,
+        "rotation": 0
+      },
+      "verification_round": 1,
+      "evidence_source_time_s": 13.9,
+      "video": "traj-29.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 57,
+      "request_errors": 0,
+      "request_latency_median_s": 2.1645494170006714,
+      "request_latency_p95_s": 2.9394631670002127,
+      "normal_hz": 0.5961037417556416
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 25.8264866669997,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0,
+        "rotation": 0
+      },
+      "verification_round": 1,
+      "evidence_source_time_s": 19.366666666666667,
+      "video": "traj-30.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 66,
+      "request_errors": 0,
+      "request_latency_median_s": 1.6028192499979923,
+      "request_latency_p95_s": 6.414899624993268,
+      "normal_hz": 0.633048178590625
+    },
+    {
+      "status": "FAIL",
+      "failure_type": "DROP_FAILURE",
+      "failure_description": "the adapter is standing on the tabletop in front of the power strip",
+      "decision_time_s": 31.723004459003278,
+      "evidence_counts": {
+        "success": 0,
+        "drop": 10,
+        "rotation": 0
+      },
+      "verification_round": 1,
+      "confirmed_failure_types": [
+        "DROP_FAILURE"
+      ],
+      "evidence_source_time_s": 27.833333333333332,
+      "video": "traj-31.MOV",
+      "expected_status": "FAIL",
+      "requests": 84,
+      "request_errors": 0,
+      "request_latency_median_s": 1.571908000001713,
+      "request_latency_p95_s": 2.4860539579967735,
+      "normal_hz": 0.6258329146155613
+    },
+    {
+      "status": "FAIL",
+      "failure_type": "DROP_FAILURE",
+      "failure_description": "the adapter is lying on the tabletop in front of the power strip",
+      "decision_time_s": 22.091336083998613,
+      "evidence_counts": {
+        "success": 0,
+        "drop": 10,
+        "rotation": 0
+      },
+      "verification_round": 1,
+      "confirmed_failure_types": [
+        "DROP_FAILURE"
+      ],
+      "evidence_source_time_s": 17.366666666666667,
+      "video": "traj-32.MOV",
+      "expected_status": "FAIL",
+      "requests": 68,
+      "request_errors": 0,
+      "request_latency_median_s": 1.5791925619996618,
+      "request_latency_p95_s": 2.0769024999972316,
+      "normal_hz": 0.647059015670649
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 24.15844150000339,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0,
+        "rotation": 0
+      },
+      "verification_round": 1,
+      "evidence_source_time_s": 19.533333333333335,
+      "video": "traj-33.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 69,
+      "request_errors": 0,
+      "request_latency_median_s": 1.67437420799979,
+      "request_latency_p95_s": 2.7887942500019562,
+      "normal_hz": 0.6201914822318653
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 27.75342683299823,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0,
+        "rotation": 0
+      },
+      "verification_round": 1,
+      "evidence_source_time_s": 16.8,
+      "video": "traj-34.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 60,
+      "request_errors": 0,
+      "request_latency_median_s": 6.123456854002143,
+      "request_latency_p95_s": 11.498037833996932,
+      "normal_hz": 0.6298593451651
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 26.75605295800051,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0,
+        "rotation": 0
+      },
+      "verification_round": 1,
+      "evidence_source_time_s": 15.666666666666666,
+      "video": "traj-35.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 57,
+      "request_errors": 0,
+      "request_latency_median_s": 10.705063749999681,
+      "request_latency_p95_s": 11.503983000002336,
+      "normal_hz": 0.6101941440721682
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 21.5275030000048,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0,
+        "rotation": 0
+      },
+      "verification_round": 1,
+      "evidence_source_time_s": 18.733333333333334,
+      "video": "traj-36.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 66,
+      "request_errors": 0,
+      "request_latency_median_s": 1.5757909170024504,
+      "request_latency_p95_s": 2.4179621250004857,
+      "normal_hz": 0.6390464348141629
+    },
+    {
+      "status": "FAIL",
+      "failure_type": "DROP_FAILURE",
+      "failure_description": "The adapter is standing on the tabletop in front of the power strip.",
+      "decision_time_s": 28.799516916995344,
+      "evidence_counts": {
+        "success": 0,
+        "drop": 10,
+        "rotation": 0
+      },
+      "verification_round": 1,
+      "confirmed_failure_types": [
+        "DROP_FAILURE"
+      ],
+      "evidence_source_time_s": 22.533333333333335,
+      "video": "traj-37.MOV",
+      "expected_status": "FAIL",
+      "requests": 80,
+      "request_errors": 0,
+      "request_latency_median_s": 1.5569931870013534,
+      "request_latency_p95_s": 2.292507416997978,
+      "normal_hz": 0.6396854453596604
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 34.02235266700154,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0,
+        "rotation": 0
+      },
+      "verification_round": 1,
+      "evidence_source_time_s": 23.033333333333335,
+      "video": "traj-38.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 72,
+      "request_errors": 0,
+      "request_latency_median_s": 1.6035291249972943,
+      "request_latency_p95_s": 11.505985916999634,
+      "normal_hz": 0.632816399625872
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 20.188653334000264,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0,
+        "rotation": 0
+      },
+      "verification_round": 1,
+      "evidence_source_time_s": 16.666666666666668,
+      "video": "traj-39.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 63,
+      "request_errors": 0,
+      "request_latency_median_s": 1.6720494590044837,
+      "request_latency_p95_s": 2.467984916002024,
+      "normal_hz": 0.6305272339759438
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 24.533021082999767,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0,
+        "rotation": 0
+      },
+      "verification_round": 1,
+      "evidence_source_time_s": 21.333333333333332,
+      "video": "traj-40.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 69,
+      "request_errors": 0,
+      "request_latency_median_s": 1.6650244999982533,
+      "request_latency_p95_s": 2.456504750000022,
+      "normal_hz": 0.6088887559482554
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 19.72721858400473,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0,
+        "rotation": 0
+      },
+      "verification_round": 1,
+      "evidence_source_time_s": 14.333333333333334,
+      "video": "traj-41.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 62,
+      "request_errors": 0,
+      "request_latency_median_s": 1.7038290630007396,
+      "request_latency_p95_s": 2.711712374999479,
+      "normal_hz": 0.6220763559988098
+    },
+    {
+      "status": "FAIL",
+      "failure_type": "DROP_FAILURE",
+      "failure_description": "the adapter is standing on the tabletop in front of the power strip",
+      "decision_time_s": 32.078113333001966,
+      "evidence_counts": {
+        "success": 0,
+        "drop": 10,
+        "rotation": 0
+      },
+      "verification_round": 1,
+      "confirmed_failure_types": [
+        "DROP_FAILURE"
+      ],
+      "evidence_source_time_s": 26.633333333333333,
+      "video": "traj-42.MOV",
+      "expected_status": "FAIL",
+      "requests": 86,
+      "request_errors": 0,
+      "request_latency_median_s": 1.6018295209978533,
+      "request_latency_p95_s": 2.3473521670021,
+      "normal_hz": 0.6242219550167538
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 18.67641579100018,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0,
+        "rotation": 0
+      },
+      "verification_round": 1,
+      "evidence_source_time_s": 15.633333333333333,
+      "video": "traj-43.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 60,
+      "request_errors": 0,
+      "request_latency_median_s": 1.6284015830024146,
+      "request_latency_p95_s": 2.5060723749993485,
+      "normal_hz": 0.6294800719513693
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 18.86679758399987,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0,
+        "rotation": 0
+      },
+      "verification_round": 1,
+      "evidence_source_time_s": 15.233333333333333,
+      "video": "traj-44.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 60,
+      "request_errors": 0,
+      "request_latency_median_s": 1.6802158124992275,
+      "request_latency_p95_s": 2.4481952499991166,
+      "normal_hz": 0.6222034982495332
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 20.445592333002423,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0,
+        "rotation": 0
+      },
+      "verification_round": 1,
+      "evidence_source_time_s": 17.366666666666667,
+      "video": "traj-45.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 63,
+      "request_errors": 0,
+      "request_latency_median_s": 1.643618082998728,
+      "request_latency_p95_s": 2.5662885410056333,
+      "normal_hz": 0.6276689556741061
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 30.778378709001117,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0,
+        "rotation": 0
+      },
+      "verification_round": 1,
+      "evidence_source_time_s": 19.833333333333332,
+      "video": "traj-46.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 66,
+      "request_errors": 0,
+      "request_latency_median_s": 1.5860094794988981,
+      "request_latency_p95_s": 11.37866975000361,
+      "normal_hz": 0.6336797639445838
+    },
+    {
+      "status": "FAIL",
+      "failure_type": "DROP_FAILURE",
+      "failure_description": "the adapter is lying on the tabletop in front of the power strip",
+      "decision_time_s": 34.920257999998285,
+      "evidence_counts": {
+        "success": 0,
+        "drop": 10,
+        "rotation": 0
+      },
+      "verification_round": 1,
+      "confirmed_failure_types": [
+        "DROP_FAILURE"
+      ],
+      "evidence_source_time_s": 30.9,
+      "video": "traj-47.MOV",
+      "expected_status": "FAIL",
+      "requests": 90,
+      "request_errors": 0,
+      "request_latency_median_s": 1.603533833502297,
+      "request_latency_p95_s": 2.364700958998583,
+      "normal_hz": 0.6206575428326222
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 30.828818000001775,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0,
+        "rotation": 0
+      },
+      "verification_round": 1,
+      "evidence_source_time_s": 19.866666666666667,
+      "video": "traj-48.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 66,
+      "request_errors": 0,
+      "request_latency_median_s": 1.607322687501437,
+      "request_latency_p95_s": 11.435206499998458,
+      "normal_hz": 0.6330497148027067
+    }
+  ]
+}

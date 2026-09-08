@@ -1,0 +1,38 @@
+{
+  "workflow_check": "passed",
+  "standalone_copy_check": "passed: own code/config/prompts/references copied to a temporary directory and executed with uv --offline --script check.py",
+  "development_image_checks": {
+    "matched_votes": 121,
+    "observations": 123,
+    "request_errors": 0,
+    "exceptions": [
+      "Airborne drop is deliberately mapped to UNCERTAIN.",
+      "One blurred rotation frame is misclassified as not held."
+    ]
+  },
+  "streaming_development_pilot": {
+    "episodes": 4,
+    "correct_original_labels": 4,
+    "request_errors": 0,
+    "scheduler_violations": 0
+  },
+  "stand_regression": "August 27 traj-36 now correctly reaches SUCCESS; early adapter-on-stand views are STAND or UNKNOWN.",
+  "frozen_candidate_manifest": "candidate-sha256.json",
+  "production_changes": false,
+  "robot_api_calls": "none; controller handoffs are simulated",
+  "runtime": {
+    "python": "3.13.13 (main, Jun  2 2026, 22:33:40) [Clang 22.1.3 ]",
+    "opencv": "5.0.0",
+    "httpx": "0.28.1"
+  },
+  "development_complete": {
+    "episodes": 105,
+    "original_labels_matched": 104,
+    "request_errors": 0,
+    "scheduler_violations": 0,
+    "unresolved": 0,
+    "policy_review_pending": [
+      "traj-93.MOV"
+    ]
+  }
+}

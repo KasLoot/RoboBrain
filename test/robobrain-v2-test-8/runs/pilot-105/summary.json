@@ -1,0 +1,221 @@
+{
+  "episodes": 10,
+  "correct": 10,
+  "success_correct": 8,
+  "fail_correct": 2,
+  "drop_detected": 1,
+  "rotation_detected": 1,
+  "false_failures": 0,
+  "false_successes": 0,
+  "unresolved": 0,
+  "request_errors": 0,
+  "requests": 727,
+  "results": [
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 20.67295812500015,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0,
+        "rotation": 0
+      },
+      "verification_round": 1,
+      "evidence_source_time_s": 17.033333333333335,
+      "video": "traj-1.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 66,
+      "request_errors": 0,
+      "request_latency_median_s": 1.5653262919986446,
+      "request_latency_p95_s": 2.4098934169996937,
+      "normal_hz": 0.668750122079709
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 25.944474624997383,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0,
+        "rotation": 0
+      },
+      "verification_round": 2,
+      "evidence_source_time_s": 15.066666666666666,
+      "video": "traj-2.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 85,
+      "request_errors": 0,
+      "request_latency_median_s": 2.049269249997451,
+      "request_latency_p95_s": 11.293800916999317,
+      "normal_hz": 0.3914021522807737
+    },
+    {
+      "status": "FAIL",
+      "failure_type": "ROTATION_FAILURE",
+      "failure_description": "The adapter is still grasped by the fingers, but the metallic pins are dangling downward in front of the socket.",
+      "decision_time_s": 39.912636042001395,
+      "evidence_counts": {
+        "success": 0,
+        "drop": 0,
+        "rotation": 10
+      },
+      "verification_round": 2,
+      "confirmed_failure_types": [
+        "ROTATION_FAILURE"
+      ],
+      "evidence_source_time_s": 28.833333333333332,
+      "video": "traj-9.MOV",
+      "expected_status": "FAIL",
+      "requests": 90,
+      "request_errors": 0,
+      "request_latency_median_s": 10.821412562498153,
+      "request_latency_p95_s": 11.554604583001492,
+      "normal_hz": 0.39415741950568
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 27.474515624999185,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0,
+        "rotation": 0
+      },
+      "verification_round": 2,
+      "evidence_source_time_s": 17.533333333333335,
+      "video": "traj-11.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 89,
+      "request_errors": 0,
+      "request_latency_median_s": 1.8169568330013135,
+      "request_latency_p95_s": 11.404011083999649,
+      "normal_hz": 0.42120856406960155
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 20.178293290999136,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0,
+        "rotation": 0
+      },
+      "verification_round": 1,
+      "evidence_source_time_s": 16.033333333333335,
+      "video": "traj-15.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 63,
+      "request_errors": 0,
+      "request_latency_median_s": 1.6201978339995549,
+      "request_latency_p95_s": 2.51285229199857,
+      "normal_hz": 0.6374394282361187
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 18.635334333001083,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0,
+        "rotation": 0
+      },
+      "verification_round": 1,
+      "evidence_source_time_s": 15.066666666666666,
+      "video": "traj-44.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 60,
+      "request_errors": 0,
+      "request_latency_median_s": 1.6644588539984397,
+      "request_latency_p95_s": 2.464760250000836,
+      "normal_hz": 0.6317162093261652
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 20.91161212500083,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0,
+        "rotation": 0
+      },
+      "verification_round": 1,
+      "evidence_source_time_s": 15.633333333333333,
+      "video": "traj-58.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 64,
+      "request_errors": 0,
+      "request_latency_median_s": 1.6671822290009004,
+      "request_latency_p95_s": 2.3699725000005856,
+      "normal_hz": 0.6175515476241958
+    },
+    {
+      "status": "FAIL",
+      "failure_type": "DROP_FAILURE",
+      "failure_description": "The adapter is standing on the tabletop near the power strip, not in a socket or on the stand.",
+      "decision_time_s": 27.138059124998108,
+      "evidence_counts": {
+        "success": 0,
+        "drop": 10,
+        "rotation": 0
+      },
+      "verification_round": 2,
+      "confirmed_failure_types": [
+        "DROP_FAILURE"
+      ],
+      "evidence_source_time_s": 23.466666666666665,
+      "video": "traj-82.MOV",
+      "expected_status": "FAIL",
+      "requests": 84,
+      "request_errors": 0,
+      "request_latency_median_s": 2.211797583498992,
+      "request_latency_p95_s": 11.246941792000143,
+      "normal_hz": 0.3684518400018853
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 20.39558925000165,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0,
+        "rotation": 0
+      },
+      "verification_round": 1,
+      "evidence_source_time_s": 16.1,
+      "video": "traj-94.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 63,
+      "request_errors": 0,
+      "request_latency_median_s": 1.6319740830003866,
+      "request_latency_p95_s": 2.4642936249983904,
+      "normal_hz": 0.6313485202745717
+    },
+    {
+      "status": "SUCCESS",
+      "failure_type": null,
+      "failure_description": null,
+      "decision_time_s": 28.935219709001103,
+      "evidence_counts": {
+        "success": 10,
+        "drop": 0,
+        "rotation": 0
+      },
+      "verification_round": 1,
+      "evidence_source_time_s": 18.1,
+      "video": "traj-105.MOV",
+      "expected_status": "SUCCESS",
+      "requests": 63,
+      "request_errors": 0,
+      "request_latency_median_s": 1.567355791998125,
+      "request_latency_p95_s": 11.332708625002851,
+      "normal_hz": 0.6407031301492203
+    }
+  ]
+}

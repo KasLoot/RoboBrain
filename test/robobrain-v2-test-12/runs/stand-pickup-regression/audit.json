@@ -1,0 +1,37 @@
+{
+  "episodes": 1,
+  "correct_episode_labels": 1,
+  "success_correct": 1,
+  "fail_correct": 0,
+  "drop_detected": 0,
+  "rotation_detected": 0,
+  "false_failures": 0,
+  "false_successes": 0,
+  "unresolved": 0,
+  "completed_requests": 66,
+  "request_errors": 0,
+  "request_latency_median_s": 1.586276292000548,
+  "request_latency_p95_s": 11.357824291000725,
+  "normal_hz_median": 0.638621228144317,
+  "verification_rounds": 1,
+  "verification_duration_median_s": 11.793228833001194,
+  "verification_sample_interval_median_s": 0.10030466700118268,
+  "verification_sample_interval_p95_s": 0.1018599169983645,
+  "scheduler_violations": [],
+  "reviewed_failure_timing": [],
+  "evidence": [
+    {
+      "video": "traj-36.MOV",
+      "status": "SUCCESS",
+      "source_frame": 591,
+      "source_time_s": 19.7,
+      "decision_time_s": 30.619381708998844,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ]
+    }
+  ]
+}

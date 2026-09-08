@@ -1,6 +1,6 @@
 # RoboBrain
 
-RoboBrain monitors plug insertion using separate SUCCESS and DROP specialists, followed by a bounded verification round.
+RoboBrain monitors plug insertion using separate SUCCESS, DROP and ROTATION specialists, followed by a bounded verification round.
 
 <!-- GitHub removes custom video elements. Linked GIFs keep both demos visible in the README. -->
 
@@ -64,22 +64,26 @@ The canvas and recording use the same overlay. The current source frame appears 
 ```text
 Operating Status (frame x):
 Status: ON_GOING | SUCCESS | FAIL
-Failure type: NONE | DROP_FAILURE
+Failure type: NONE | DROP_FAILURE | ROTATION_FAILURE
 ```
 
 The entire heading is blue; only “Operating Status” is bold. Frame numbers in the overlay and readable JSON are **one-based source-frame numbers**. The heading identifies the most recently completed normal observation or the evidence used for a verified decision. Before the first completed batch it shows frame 0. The raw LOG keeps zero-based source indices. The current source-frame number stays on the last source frame after EOF.
 
 ## Monitoring behavior
 
-The camera publishes to its buffer at 30 fps independently of model latency, including after EOF. Both specialists receive separate simultaneous requests. Normal pairs run as soon as the preceding pair finishes. Thinking is disabled and temperature is zero.
+The camera publishes to its buffer at 30 fps independently of model latency, including after EOF. All three specialists receive separate simultaneous requests. Normal batches run as soon as the preceding batch finishes. Thinking is disabled and temperature is zero.
 
-A positive observation starts one verification round with ten paired observations over one second. The next normal pair is reused as observation zero; the original triggering observation is excluded. Both specialists participate. All twenty request outcomes finish before the round resolves. Each specialist needs **more than five positive votes**; conflicting or insufficient evidence keeps ON_GOING. Normal monitoring continues during verification, and additional rounds cannot overlap or queue up.
+A positive observation starts one verification round with ten observation timestamps over one second. The next normal batch is reused as observation zero; the original triggering observation is excluded. All three specialists participate, and all **thirty request outcomes** finish before the round resolves. Each specialist needs **more than five positive votes**; conflicting success/failure confirmations or insufficient evidence keep ON_GOING. Normal monitoring continues during verification, and additional rounds cannot overlap or queue up.
 
-SUCCESS requires a seated plug after gripper release. DROP_FAILURE requires the plug to be on the table or falling, rather than on the stand, in the gripper or in the socket. Rotation-only failure detection is outside this version's scope. Terminal decisions remain latched until the next episode.
+SUCCESS requires a seated plug after gripper release. DROP_FAILURE requires positive evidence that the plug rests on the bare table, including beside or behind its stand. FALLING and UNKNOWN observations abstain. ROTATION_FAILURE requires sustained evidence that the plug has rotated or slipped while still held in the gripper during insertion. Terminal decisions remain latched until the next episode. If both failure specialists confirm, the result records both types and displays DROP_FAILURE as the primary type.
 
-The default episode watchdog is 90 seconds. An unresolved episode stays ON_GOING, never an inferred failure. Override it with `--episode-timeout SECONDS`. Request errors and cancellations are UNCERTAIN and do not supply positive evidence; five consecutive failed normal pairs stop the run with an endpoint error.
+All specialists use `Specialist(system_prompt, config)` in `src/robobrain/monitor.py`. Their observation fields, vote mappings, failure types, crops, reference images and thresholds are configured in JSON. The default HTTP connection limit is 36 to accommodate verification and continued normal monitoring.
 
-Default settings are in `src/robobrain/config.json`. Use `--config custom-config.json` or `--base-url URL` to override them. The SUCCESS crop is 470 × 400 pixels and the DROP crop is 1290 × 760 pixels; application-side model images are never resized or annotated. Dataset annotations are not required and are not used by the production monitor.
+The default episode watchdog is 90 seconds. An unresolved episode stays ON_GOING, never an inferred failure. Override it with `--episode-timeout SECONDS`. Request errors and cancellations are UNCERTAIN and do not supply positive evidence; five consecutive failed normal batches stop the run with an endpoint error.
+
+Default settings are in `src/robobrain/config.json`. Use this file as the template for `--config custom-config.json`, or use `--base-url URL` to change the endpoint. The native crops are SUCCESS 470 × 400, DROP 1290 × 760, and ROTATION 520 × 540 pixels; application-side model images are never resized or annotated. Dataset annotations are not required and are not used by the production monitor.
+
+Recorded control-action events describe the proposed insertion, release, recovery and reset handoffs. They are marked `SIMULATED`; no real robot or recovery API is connected.
 
 ## Checks
 
@@ -87,8 +91,8 @@ Default settings are in `src/robobrain/config.json`. Use `--config custom-config
 uv run python tests/check_robobrain.py
 ```
 
-These checks exercise verification thresholds and conflicts, concurrency and rearming, disabled thinking, native image dimensions, malformed responses, cancellation, 30 fps continuation, overlay formatting, complete source preservation, late status timing, audio retention, and raw/readable logs. Recording checks require `ffmpeg` and `ffprobe`.
+These checks exercise all three specialists, verification thresholds and conflicts, concurrency and rearming, disabled thinking, native image dimensions, malformed responses, cancellation, simulated control handoffs, 30 fps continuation, overlay formatting, complete source preservation, late status timing, audio retention, and raw/readable logs. Recording checks require `ffmpeg` and `ffprobe`.
 
 ## Note
 
-This is the sixth iteration, from `test/robobrain-v2-test-6`
+Production uses the detector from [experiment 12](test/robobrain-v2-test-12/README.md). Its [three-dataset evaluation](results/rotation-specialist-v12/README.md) achieved **197/198 correct outcomes**: 104/105, 45/45 and 48/48. Dataset 1 traj-93 remains a known false ROTATION_FAILURE caused by gripper occlusion and is included as a system error. Verification rounds reached about 13 seconds on the tested endpoint. The demo videos above were recorded with the earlier success/drop version.

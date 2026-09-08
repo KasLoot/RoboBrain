@@ -1,0 +1,95 @@
+{
+  "episodes": 4,
+  "correct_episode_labels": 4,
+  "success_correct": 2,
+  "fail_correct": 2,
+  "drop_detected": 1,
+  "rotation_detected": 1,
+  "false_failures": 0,
+  "false_successes": 0,
+  "unresolved": 0,
+  "completed_requests": 264,
+  "request_errors": 0,
+  "request_latency_median_s": 1.6348348749997967,
+  "request_latency_p95_s": 11.242247957998188,
+  "normal_hz_median": 0.63932579818135,
+  "verification_rounds": 4,
+  "verification_duration_median_s": 3.2587511249985255,
+  "verification_sample_interval_median_s": 0.09998258400082705,
+  "verification_sample_interval_p95_s": 0.13035124999805703,
+  "scheduler_violations": [],
+  "reviewed_failure_timing": [
+    {
+      "video": "traj-9.MOV",
+      "failure_type": "ROTATION_FAILURE",
+      "premature": false,
+      "latency_interval_s": [
+        15.335805500001879,
+        15.735805500001879
+      ]
+    },
+    {
+      "video": "traj-82.MOV",
+      "failure_type": "DROP_FAILURE",
+      "premature": false,
+      "latency_interval_s": [
+        5.721905750000587,
+        5.821905750000589
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "video": "traj-1.MOV",
+      "status": "SUCCESS",
+      "source_frame": 511,
+      "source_time_s": 17.033333333333335,
+      "decision_time_s": 21.660578708000685,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ]
+    },
+    {
+      "video": "traj-2.MOV",
+      "status": "SUCCESS",
+      "source_frame": 452,
+      "source_time_s": 15.066666666666666,
+      "decision_time_s": 19.398487208000006,
+      "crop": [
+        1000,
+        230,
+        1470,
+        630
+      ]
+    },
+    {
+      "video": "traj-9.MOV",
+      "status": "FAIL",
+      "source_frame": 507,
+      "source_time_s": 16.9,
+      "decision_time_s": 29.13580550000188,
+      "crop": [
+        950,
+        140,
+        1470,
+        680
+      ]
+    },
+    {
+      "video": "traj-82.MOV",
+      "status": "FAIL",
+      "source_frame": 704,
+      "source_time_s": 23.466666666666665,
+      "decision_time_s": 26.721905750000587,
+      "crop": [
+        330,
+        100,
+        1620,
+        860
+      ]
+    }
+  ]
+}

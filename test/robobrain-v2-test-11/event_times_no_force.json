@@ -1,0 +1,95 @@
+{
+  "traj-4.MOV": {
+    "DROP_FAILURE": {
+      "onset_interval_s": [
+        25.366666666666667,
+        25.566666666666666
+      ],
+      "reviewed_source_frames": [
+        753,
+        761,
+        767,
+        773
+      ],
+      "note": "Adapter leaves the fingers and falls in front of the socket; subsequently rests beside the stand."
+    }
+  },
+  "traj-14.MOV": {
+    "DROP_FAILURE": {
+      "onset_interval_s": [
+        22.133333333333333,
+        22.333333333333332
+      ],
+      "reviewed_source_frames": [
+        664,
+        670
+      ],
+      "note": "Retained or touching fingers at the earlier bound; clearly detached and falling by the later bound. Subsequent frames show tabletop landing."
+    }
+  },
+  "traj-31.MOV": {
+    "DROP_FAILURE": {
+      "onset_interval_s": [
+        26.366666666666667,
+        26.633333333333333
+      ],
+      "reviewed_source_frames": [
+        791,
+        799
+      ],
+      "note": "Retained or touching fingers at the earlier bound; clearly detached and falling by the later bound. Subsequent frames show tabletop landing."
+    }
+  },
+  "traj-32.MOV": {
+    "DROP_FAILURE": {
+      "onset_interval_s": [
+        16.966666666666665,
+        17.166666666666668
+      ],
+      "reviewed_source_frames": [
+        509,
+        515
+      ],
+      "note": "Still retained or touching the fingers at the earlier bound; clearly detached and falling at the later bound."
+    }
+  },
+  "traj-37.MOV": {
+    "DROP_FAILURE": {
+      "onset_interval_s": [
+        22.133333333333333,
+        22.333333333333332
+      ],
+      "reviewed_source_frames": [
+        664,
+        670
+      ],
+      "note": "Still retained or touching the fingers at the earlier bound; clearly detached and falling at the later bound."
+    }
+  },
+  "traj-42.MOV": {
+    "DROP_FAILURE": {
+      "onset_interval_s": [
+        26.233333333333334,
+        26.433333333333334
+      ],
+      "reviewed_source_frames": [
+        787,
+        793
+      ],
+      "note": "Adapter retained or still against fingers at the earlier bound; detached and falling at the later bound, followed by tabletop landing."
+    }
+  },
+  "traj-47.MOV": {
+    "DROP_FAILURE": {
+      "onset_interval_s": [
+        29.7,
+        29.966666666666665
+      ],
+      "reviewed_source_frames": [
+        891,
+        899
+      ],
+      "note": "Adapter retained or still against fingers at the earlier bound; detached and falling at the later bound, followed by tabletop landing."
+    }
+  }
+}

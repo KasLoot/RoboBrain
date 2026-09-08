@@ -1,0 +1,116 @@
+{
+  "base_url": "http://127.0.0.1:9000/v1",
+  "model": "/workspace/models/gemma-4-26B-A4B-it",
+  "fps": 30,
+  "evidence_horizon": 10,
+  "horizon_duration": 1.0,
+  "evidence_threshold": {
+    "success": 5,
+    "drop": 5,
+    "rotation": 5
+  },
+  "request_timeout": 20.0,
+  "episode_timeout": 90.0,
+  "max_tokens": 96,
+  "crops": {
+    "success": [
+      1000,
+      230,
+      1470,
+      630
+    ],
+    "drop": [
+      330,
+      100,
+      1620,
+      860
+    ],
+    "rotation": [
+      950,
+      140,
+      1470,
+      680
+    ]
+  },
+  "references": {
+    "success": [
+      {
+        "file": "success_released.jpg",
+        "label": "REFERENCE POSITIVE: adapter seated in the socket, with the released gripper hovering above it."
+      },
+      {
+        "file": "success_held.jpg",
+        "label": "REFERENCE NEGATIVE: gripper still gripping/pressing the adapter at the socket."
+      }
+    ],
+    "drop": [
+      {
+        "file": "drop_on_stand.jpg",
+        "label": "REFERENCE location=STAND: the small USB adapter stands on top of a larger white supporting block. The block rests on the table; the adapter itself is NOT on the bare tabletop."
+      },
+      {
+        "file": "drop_on_table.jpg",
+        "label": "REFERENCE location=TABLE: adapter on the table in front of the power strip, with no support from stand or socket."
+      },
+      {
+        "file": "drop_seated.jpg",
+        "label": "REFERENCE location=SOCKET: adapter seated in the rightmost socket after release; the white block on the left is the empty stand."
+      }
+    ],
+    "rotation": [
+      {
+        "file": "rotation_aligned.jpg",
+        "label": "REFERENCE HELD_NORMAL: adapter grasped normally during insertion. Its body protrudes from the socket normally."
+      },
+      {
+        "file": "rotation_slipped.jpg",
+        "label": "REFERENCE HELD_ROTATED: adapter still grasped but rotated/slipped inside the fingers; metal pins dangle down in front of the socket."
+      },
+      {
+        "file": "rotation_released.jpg",
+        "label": "REFERENCE NOT_HELD: adapter remains seated in the socket. The open, empty gripping fingers hover nearby. The visible rectangular holes are USB ports, not electrical pins."
+      }
+    ]
+  },
+  "specialists": {
+    "success": {
+      "field": "verdict",
+      "values": {
+        "POSITIVE": "POSITIVE",
+        "NEGATIVE": "NEGATIVE",
+        "UNCERTAIN": "UNCERTAIN"
+      },
+      "failure_type": null
+    },
+    "drop": {
+      "field": "location",
+      "values": {
+        "STAND": "NEGATIVE",
+        "GRIPPER": "NEGATIVE",
+        "SOCKET": "NEGATIVE",
+        "TABLE": "POSITIVE",
+        "FALLING": "UNCERTAIN",
+        "UNKNOWN": "UNCERTAIN"
+      },
+      "failure_type": "DROP_FAILURE"
+    },
+    "rotation": {
+      "field": "grasp_state",
+      "values": {
+        "HELD_NORMAL": "NEGATIVE",
+        "HELD_ROTATED": "POSITIVE",
+        "NOT_HELD": "NEGATIVE",
+        "NOT_INSERTING": "NEGATIVE",
+        "UNKNOWN": "UNCERTAIN"
+      },
+      "failure_type": "ROTATION_FAILURE"
+    }
+  },
+  "max_connections": 36,
+  "enabled_specialists": [
+    "success",
+    "drop",
+    "rotation"
+  ],
+  "source_code_sha256": "ff38278f8a45ece8875a923f281ebfe6357195f734e098cfdb53775848fd32a4"
+}

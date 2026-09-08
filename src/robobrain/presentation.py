@@ -117,7 +117,8 @@ class EpisodeReport:
                     "verification_sample": event["slot"] + 1 if event.get("slot") is not None else None,
                     "verdict": event["verdict"], "reason": event["reason"],
                 }
-                for key in ("location", "cancelled", "error", "http_status", "response", "response_text"):
+                field = self.config["specialists"][event["specialist"]]["field"]
+                for key in (field, "cancelled", "error", "http_status", "response", "response_text"):
                     if key in event:
                         request[key] = event[key]
                 if event.get("raw") is not None:

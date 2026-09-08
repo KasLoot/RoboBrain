@@ -1,0 +1,13 @@
+{
+  "file": "drop_on_stand.jpg",
+  "dataset": "video/insert_plug-full_model-aug-28-105trail-1x",
+  "video": "traj-1.MOV",
+  "source_frame": 0,
+  "crop": [
+    330,
+    100,
+    1620,
+    860
+  ],
+  "resized": false
+}

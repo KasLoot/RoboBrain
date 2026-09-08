@@ -1,4 +1,4 @@
-"""Monitor prerecorded robot episodes with independent success and drop specialists."""
+"""Monitor robot episodes with independent success, drop and rotation specialists."""
 
 import argparse
 import asyncio
@@ -13,7 +13,7 @@ import time
 import cv2
 import httpx
 
-from .monitor import Backend, HERE, SimulatedCamera, load_config, monitor
+from .monitor import Backend, HERE, ReplayController, SimulatedCamera, load_config, monitor
 from .presentation import EpisodeReport, LiveView, annotate_frame, render_recording
 
 DEFAULT_VIDEOS = Path("video/insert_plug-full_model-aug-28-105trail-1x")
@@ -44,13 +44,14 @@ def select_videos(source, episodes):
 
 
 async def run_episodes(args, config, dataset, videos, view, stop_event):
-    limits = httpx.Limits(max_connections=24, max_keepalive_connections=24)
+    limits = httpx.Limits(max_connections=config["max_connections"], max_keepalive_connections=config["max_connections"])
     async with httpx.AsyncClient(limits=limits, trust_env=False) as client:
         response = await client.get(config["base_url"].rstrip("/") + "/models", timeout=config["request_timeout"])
         response.raise_for_status()
         if config["model"] not in {m["id"] for m in response.json()["data"]}:
             raise ValueError("Configured model is not available at the endpoint")
         backend = Backend(config, client)
+        controller = ReplayController()
         for index, video in enumerate(videos, 1):
             if stop_event.is_set():
                 break
@@ -70,7 +71,10 @@ async def run_episodes(args, config, dataset, videos, view, stop_event):
                     raise ValueError(f"Configured crops do not fit {video.name}: {width}x{height}")
                 view.show(camera, f"{dataset}/{video.name}")
                 report = EpisodeReport(video, dataset, config, directory, view)
+                attempt = f"{dataset}/{video.stem}"
+                controller.start(attempt, report.log)
                 result = await monitor(camera, backend, config, report.log, stop_event)
+                controller.finish(attempt, result, report.log)
                 print(f"  {result['status']} | Failure type: {result.get('failure_type') or 'NONE'}"
                       f" | {result['decision_time_s']:.2f}s", flush=True)
                 if args.canvas:
