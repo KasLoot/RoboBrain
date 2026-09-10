@@ -204,7 +204,7 @@ def main():
     parser.add_argument("--overwrite", action="store_true", help="Replace existing recordings for the selected episodes")
     parser.add_argument("--config", type=Path, default=HERE / "config.json", help="Monitor configuration JSON")
     parser.add_argument("--base-url", help="Override the vLLM endpoint (default: http://127.0.0.1:9000/v1)")
-    parser.add_argument("--episode-timeout", type=float, help="Override the episode watchdog in seconds (default: 90)")
+    parser.add_argument("--episode-timeout", type=float, help="Video-episode watchdog in seconds (default: 90; camera runs continue until stopped)")
     args = parser.parse_args()
     try:
         config = load_config(args.config, args.base_url)
@@ -216,6 +216,8 @@ def main():
         if args.camera:
             if args.episodes or len(args.camera) > 2:
                 parser.error("--camera supports one or two devices and cannot be combined with --episodes")
+            if args.episode_timeout is not None:
+                parser.error("--episode-timeout applies to --videos; camera monitoring continues until stopped")
             return run_application(args, config, "camera", args.camera, runner=run_cameras)
         dataset, videos = select_videos(args.videos, args.episodes)
         args.ffmpeg = shutil.which("ffmpeg") if args.record else None

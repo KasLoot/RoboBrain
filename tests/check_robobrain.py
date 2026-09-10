@@ -113,6 +113,7 @@ async def checks():
             self.positive = positive
         async def batch(self, frame, started_at, log, **tags):
             self.active += 1
+            positive = self.positive
             try:
                 # Out-of-order completion; the final verification batch is slowest.
                 await asyncio.sleep(.18 if tags.get("slot") == 9 else .04)
@@ -121,7 +122,10 @@ async def checks():
                     row = {"type": "observation", "specialist": specialist, "source_time_s": frame.source_index / 30,
                            "reason": "visible evidence",
                            "captured_time_s": frame.observed_at - started_at, **tags,
-                           "verdict": "POSITIVE" if specialist == self.positive or (self.conflict_first and tags.get("round_id") == 1) else "NEGATIVE"}
+                           "verdict": "POSITIVE" if specialist == positive or positive == 'conflict' or (self.conflict_first and tags.get("round_id") == 1)
+                           else "UNCERTAIN" if positive in (None, 'error') else "NEGATIVE"}
+                    if positive == 'error':
+                        row['error'] = 'Test endpoint unavailable'
                     log(row)
                     rows.append(row)
                 return rows
@@ -196,6 +200,61 @@ async def checks():
     await stopper
     assert result['status'] == 'ON_GOING' and result['stop_reason'] == 'user_stop' and backend.active == 0
 
+    # One continuous run: verify, hold, clear on disappearance, and verify again.
+    # A tiny episode timeout proves continuous runs do not use the watchdog.
+    continuous_config = {**load_config(), 'horizon_duration': .4, 'episode_timeout': .02}
+    backend, stop, events, latest = FakeBackend(), threading.Event(), [], {}
+    def record_event(event):
+        events.append(event)
+        if event['type'] == 'status':
+            latest.clear()
+            latest.update(event)
+    running = asyncio.create_task(monitor(FakeCamera(), backend, continuous_config, record_event, stop, continuous=True))
+    async def wait_status(status):
+        while latest.get('status') != status:
+            assert not running.done(), 'Continuous monitoring ended before Stop'
+            await asyncio.sleep(.01)
+    try:
+        async with asyncio.timeout(8):
+            await wait_status('SUCCESS')
+            confirmed_frame = latest['source_frame']
+            await asyncio.sleep(.2)
+            assert not running.done() and latest['status'] == 'SUCCESS'
+            assert latest['source_frame'] == confirmed_frame
+            assert sum(e['type'] == 'verification_started' for e in events) == 1
+            backend.positive = None  # No hand is UNCERTAIN in the gesture prompts.
+            await wait_status('ON_GOING')
+            assert latest['failure_type'] is None and 'evidence_counts' not in latest
+            backend.positive = 'rotation'
+            await wait_status('FAIL')
+            assert latest['failure_type'] == 'ROTATION_FAILURE' and not running.done()
+            backend.positive = 'success'
+            await wait_status('ON_GOING')
+            assert latest['failure_type'] is None and latest['failure_description'] is None
+            assert 'confirmed_failure_types' not in latest
+            await wait_status('SUCCESS')
+            assert latest['failure_type'] is None
+            backend.positive = 'conflict'
+            while not any(e['type'] == 'verification_finished' and e['status'] == 'ON_GOING' for e in events):
+                await asyncio.sleep(.01)
+            assert latest['status'] == 'ON_GOING' and not running.done()
+            rounds = [e for e in events if e['type'] == 'verification_finished']
+            assert [e['status'] for e in rounds] == ['SUCCESS', 'FAIL', 'SUCCESS', 'ON_GOING']
+    finally:
+        stop.set()
+        result = await running
+    assert result['stop_reason'] == 'user_stop' and backend.active == 0
+    backend = FakeBackend(positive='error')
+    try:
+        await asyncio.wait_for(monitor(FakeCamera(), backend, continuous_config, lambda e: None,
+                                       continuous=True), 1)
+    except RuntimeError as exc:
+        assert 'Five consecutive' in str(exc)
+    else:
+        raise AssertionError('Continuous monitoring did not stop on endpoint errors')
+    assert backend.active == 0
+    print('Continuous checks passed: held events, disappearance, success/failure transitions, conflicts, no watchdog, Stop and errors.')
+
 
 def recording_checks():
     ffmpeg, ffprobe = shutil.which('ffmpeg'), shutil.which('ffprobe')
@@ -211,6 +270,20 @@ def recording_checks():
     assert calls['Operating Status'][6] > calls[' (frame 4):'][6]
     assert 'Status: FAIL' in calls and 'Failure type: ROTATION_FAILURE' in calls
     assert np.all(image == 170) and not np.array_equal(image, annotated)
+
+    for height, width in ((240, 320), (1080, 1920), (1080, 3840)):
+        image = np.full((height, width, 3), 170, np.uint8)
+        for show_frame_numbers in (False, True):
+            for status, failure in (('ON_GOING', None), ('SUCCESS', None), ('FAIL', 'WRONG_POSITIONING')):
+                state = {'status': status, 'failure_type': failure, 'source_frame': 3}
+                with patch('robobrain.presentation.cv2.putText'):
+                    background = annotate_frame(image, 9, state, show_frame_numbers=show_frame_numbers)
+                annotated = annotate_frame(image, 9, state, show_frame_numbers=show_frame_numbers)
+                text_pixels = np.any(annotated != background, axis=2)
+                panel_pixels = np.any(background != image, axis=2)
+                assert text_pixels.any() and np.all(panel_pixels[text_pixels]), (
+                    f'Text outside its background: {width}x{height}, {show_frame_numbers=}, {status}'
+                )
 
     with tempfile.TemporaryDirectory() as directory:
         root = Path(directory)
@@ -242,6 +315,15 @@ def recording_checks():
         with patch('robobrain.presentation.annotate_frame', side_effect=inspect_frame):
             render_recording(video, root/'early.MOV', [initial, early], early, ffmpeg, threading.Event())
         assert len(displayed) == 36, 'Early decisions must not truncate the original clip'
+
+        stopped = threading.Event()
+        stopped.set()
+        displayed.clear()
+        with patch('robobrain.presentation.annotate_frame', side_effect=inspect_frame):
+            render_recording(video, root/'stopped.MOV', [initial, late],
+                             {**late, 'decision_time_s': 2.}, ffmpeg, stopped)
+        assert len(displayed) == 60, 'Stopping after EOF must retain the held view through the stop time'
+        assert all(row == (35, 'FAIL') for row in displayed[48:])
 
         output = root/'output'/'dataset'/'traj-1'
         report = EpisodeReport(video, 'dataset', load_config(), output, LiveView())

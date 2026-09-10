@@ -127,6 +127,9 @@ def api_checks(root):
                 assert started.status_code == 200 and started.json()['busy']
                 assert client.put('/api/tasks/' + task['id'], json=task).status_code == 409
                 assert client.post('/api/run', json={'task_id': task['id']}).status_code == 409
+                time.sleep(.45)
+                assert client.get('/api/state').json()['busy'], 'UI run stopped at the old episode timeout'
+                assert client.post('/api/run/stop').status_code == 200
                 deadline = time.monotonic() + 15
                 while time.monotonic() < deadline:
                     state = client.get('/api/state').json()
@@ -134,7 +137,7 @@ def api_checks(root):
                         break
                     time.sleep(.05)
                 assert state['phase'] == 'finished', state
-                assert state['result']['status'] == 'ON_GOING' and state['result']['stop_reason'] == 'episode_timeout'
+                assert state['result']['status'] == 'ON_GOING' and state['result']['stop_reason'] == 'user_stop'
                 assert not state['error'], state
                 if not record:
                     assert not state['output'] and not (root / 'runs').exists()
@@ -147,11 +150,44 @@ def api_checks(root):
                     assert report['task_template']['id'] == task['id']
                     assert set(report['requests'][0]['source_frames']) == {'camera1', 'camera2'}
                     assert report['requests'][0]['response']['choices']
+            with patch('robobrain.runtime.subprocess.Popen', side_effect=OSError('Test encoder unavailable')):
+                client.post('/api/run', json={'task_id': task['id'], 'record': True})
+                deadline = time.monotonic() + 5
+                while time.monotonic() < deadline:
+                    state = client.get('/api/state').json()
+                    if not state['busy']:
+                        break
+                    time.sleep(.02)
+                assert state['phase'] == 'error' and 'Test encoder unavailable' in state['error']
+                assert state['result']['stop_reason'] == 'recording_error' and not state['sources']
             task['config']['episode_timeout'] = 10
             positive = True
             client.put('/api/tasks/' + task['id'], json=task)
             client.post('/api/run', json={'task_id': task['id'], 'record': False})
-            time.sleep(.15)
+            deadline = time.monotonic() + 5
+            while time.monotonic() < deadline:
+                state = client.get('/api/state').json()
+                if state['result']['status'] == 'SUCCESS':
+                    break
+                time.sleep(.02)
+            assert state['result']['status'] == 'SUCCESS' and state['phase'] == 'running' and state['busy']
+            assert client.put('/api/tasks/' + task['id'], json=task).status_code == 409
+            positive = False
+            deadline = time.monotonic() + 5
+            while time.monotonic() < deadline:
+                state = client.get('/api/state').json()
+                if state['result']['status'] == 'ON_GOING':
+                    break
+                time.sleep(.02)
+            assert state['result']['status'] == 'ON_GOING' and state['busy']
+            positive = True
+            deadline = time.monotonic() + 5
+            while time.monotonic() < deadline:
+                state = client.get('/api/state').json()
+                if state['verification'] and state['verification']['active']:
+                    break
+                time.sleep(.02)
+            assert state['verification']['active']
             assert client.post('/api/run/stop').status_code == 200
             deadline = time.monotonic() + 5
             while client.get('/api/state').json()['busy'] and time.monotonic() < deadline:
@@ -180,6 +216,14 @@ def api_checks(root):
             assert indexes[0] == [0, 0] and indexes[-1] == [11, 17] and len(indexes) == 18
             client.put('/api/tasks/' + task['id'], json=task)
             client.post('/api/run', json={'task_id': task['id'], 'record': True})
+            deadline = time.monotonic() + 5
+            while time.monotonic() < deadline:
+                state = client.get('/api/state').json()
+                if state['elapsed_s'] >= .8:
+                    break
+                time.sleep(.02)
+            assert state['phase'] == 'running', 'Continuous replay stopped automatically'
+            assert client.post('/api/run/stop').status_code == 200
             deadline = time.monotonic() + 15
             while time.monotonic() < deadline:
                 state = client.get('/api/state').json()
@@ -191,7 +235,7 @@ def api_checks(root):
             streams = json.loads(subprocess.check_output(['ffprobe','-v','error','-show_streams','-of','json',str(movie)]))['streams']
             assert len([s for s in streams if s['codec_type'] == 'audio']) == 2
             video = next(s for s in streams if s['codec_type'] == 'video')
-            assert (video['width'], video['height']) == (800, 360) and int(video['nb_frames']) >= 18
+            assert (video['width'], video['height']) == (800, 360) and int(video['nb_frames']) >= 24
             assert client.delete('/api/tasks/' + task['id']).status_code == 200
             assert len(client.get('/api/tasks').json()) == 1
     assert 'camera1' in FakeCamera.closed and 'camera2' in FakeCamera.closed

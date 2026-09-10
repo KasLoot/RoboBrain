@@ -47,13 +47,13 @@ def annotate_frame(image, source_frame, status, *, show_frame_numbers=True):
     title = "Operating Status"
     suffix = f" (frame {status.get('source_frame', -1) + 1}):" if show_frame_numbers else ":"
     lines = [f"Status: {status['status']}", f"Failure type: {status.get('failure_type') or 'NONE'}"]
-    title_width = size(title, bold)[0]
+    title_width, title_height = size(title, bold)
     text_width = max(title_width + size(suffix, 1)[0], *(size(line)[0] for line in lines))
-    line_height = max(text_height, size(title, bold)[1]) + max(8, round(18 * scale))
+    line_height = title_height + max(8, round(18 * scale))
     left = max(0, width - margin - text_width - 2 * padding)
     top = height - margin - 3 * line_height - padding
     panel(left, top, width - margin, height - margin)
-    x, y = left + padding, top + padding + text_height
+    x, y = left + padding, top + padding + title_height
     cv2.putText(frame, title, (x, y), font, scale, blue, bold, cv2.LINE_AA)
     cv2.putText(frame, suffix, (x + title_width, y), font, scale, blue, 1, cv2.LINE_AA)
     for index, line in enumerate(lines, 1):
@@ -90,6 +90,7 @@ class EpisodeReport:
     def __init__(self, video, dataset, config, directory, view, *, input_info=None, task_template=None):
         self.video, self.dataset, self.config = video, dataset, config
         self.directory, self.view = directory, view
+        # ponytail: recorded events stay in memory; stream JSON from the log for multi-day runs.
         self.events = []
         self.stream = None
         self.input_info, self.task_template = input_info, task_template
@@ -214,8 +215,8 @@ def render_recording(video, destination, events, result, ffmpeg, stop_event, *, 
                     if ok:
                         image = following
                         index += 1
-                end = math.ceil((result["decision_time_s"] + 1.) * fps)
-                while written < end and not stop_event.is_set():
+                end = limit if interrupted_at_start else math.ceil((result["decision_time_s"] + 1.) * fps)
+                while written < end and (interrupted_at_start or not stop_event.is_set()):
                     write_frame(image, index)
                 process.stdin.close()
                 return_code = process.wait(timeout=60)

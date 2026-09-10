@@ -70,8 +70,9 @@ def prepare(task, store, frames):
 
 class Recorder:
     """One disk writer, independent of inference; a 30 fps presentation timeline."""
-    def __init__(self, inputs, sources, destination, view, ffmpeg):
+    def __init__(self, inputs, sources, destination, view, ffmpeg, stop_monitoring):
         self.inputs, self.sources, self.destination, self.view, self.ffmpeg = inputs, sources, destination, view, ffmpeg
+        self.stop_monitoring = stop_monitoring
         self.stop_event = threading.Event()
         self.error = None
         self.frames = 0
@@ -99,6 +100,7 @@ class Recorder:
                             raise RuntimeError("Camera dimensions changed during recording")
                     except Exception as exc:
                         self.error = f"Recording interrupted: {exc}"
+                        self.stop_monitoring.set()
                         break
                     with self.view.lock:
                         status = dict(self.view.status)
@@ -115,6 +117,7 @@ class Recorder:
                 self.temporary.replace(self.destination)
         except Exception as exc:
             self.error = f"Recording failed: {exc}"
+            self.stop_monitoring.set()
         finally:
             if process is not None and process.poll() is None:
                 process.kill()
@@ -288,17 +291,17 @@ class Runtime:
                 directory = self.store.root / "runs" / task["id"] / run_id if self.recording else None
                 self.view.show(inputs, task["name"])
                 report = EpisodeReport(Path(run_id), task["name"], config, directory, self.view,
-                                       input_info={"mode": task["input_mode"], "sources": sources}, task_template=task)
+                                       input_info={"mode": task["input_mode"], "monitoring": "continuous", "sources": sources}, task_template=task)
                 def log(event):
                     report.log(event)
                     self.log(event)
                 if self.recording and task["input_mode"] == "camera":
-                    recorder = Recorder(inputs, sources, directory / f"output-{run_id}.MOV", self.view, ffmpeg)
+                    recorder = Recorder(inputs, sources, directory / f"output-{run_id}.MOV", self.view, ffmpeg, self.stop_event)
                 self.phase = "running" if not self.stop_event.is_set() else "stopping"
                 controller = ReplayController()
                 controller.start(run_id, log)
                 backend = Backend(config, client, specialists=specialists)
-                result = await monitor(inputs, backend, config, log, self.stop_event)
+                result = await monitor(inputs, backend, config, log, self.stop_event, continuous=True)
                 controller.finish(run_id, result, log)
                 self.phase = "finalizing"
                 if self.recording and not self.stop_event.is_set():
@@ -307,6 +310,8 @@ class Runtime:
                             break
                         await asyncio.sleep(.05)
         except Exception as exc:
+            result.update(self.result)
+            result.pop("type", None)
             self.error = str(exc) or type(exc).__name__
             if isinstance(exc, httpx.HTTPError):
                 self.error = f"Model endpoint unavailable: {self.error}. Check the vLLM server and SSH forward."
@@ -328,9 +333,13 @@ class Runtime:
                         capture=CompositeVideo(paths, {s["id"]: s["name"] for s in sources}),
                         audio_sources=list(paths.values()), show_frame_numbers=False)
             except Exception as exc:
-                self.error = str(exc)
+                recording_error = str(exc)
+                self.error = self.error or recording_error
+                if result.get("stop_reason") != "runtime_error":
+                    result["stop_reason"] = "recording_error"
+                result["error"] = self.error
                 if report:
-                    report.log({"type": "recording_error", "message": self.error})
+                    report.log({"type": "recording_error", "message": recording_error})
             finally:
                 try:
                     if report:

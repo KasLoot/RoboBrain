@@ -348,17 +348,19 @@ async def verify(camera, backend, config, first_batch, started_at, triggered_at,
         await asyncio.gather(*tasks, return_exceptions=True)
 
 
-async def monitor(camera, backend, config, log, stop_event=None):
+async def monitor(camera, backend, config, log, stop_event=None, *, continuous=False):
+    """Continuous sessions re-arm visual events; batch episodes stop on a decision."""
     started_at = camera.started_at
     normal = asyncio.create_task(backend.batch(camera.get(), started_at, log, normal=True))
     verification = None
     round_id, rearm_after = 0, -1.0
+    confirmed = set()
     consecutive_errors = 0
     result = {"status": "ON_GOING", "failure_type": None, "failure_description": None,
               "source_frame": -1}
     try:
         log({"type": "status", **result, "decision_time_s": 0.0})
-        async with asyncio.timeout(config["episode_timeout"]):
+        async with asyncio.timeout(None if continuous else config["episode_timeout"]):
             while True:
                 if stop_event is not None and stop_event.is_set():
                     result.update(decision_time_s=time.monotonic() - started_at, stop_reason="user_stop")
@@ -375,9 +377,14 @@ async def monitor(camera, backend, config, log, stop_event=None):
                          "time_s": time.monotonic() - started_at})
                     verification = None
                     rearm_after = time.monotonic() - started_at
-                    if status != "ON_GOING":
+                    if status != "ON_GOING" or continuous:
                         result.update(status=status, decision_time_s=rearm_after,
-                                      evidence_counts=counts, verification_round=round_id)
+                                      evidence_counts=counts, verification_round=round_id,
+                                      failure_type=None, failure_description=None)
+                        result.pop("confirmed_failure_types", None)
+                        confirmed = ({name for name, count in counts.items()
+                                      if count > backend.specialists[name].threshold}
+                                     if status != "ON_GOING" else set())
                         if status == "FAIL":
                             primary = failures[0]
                             positives = [o for o in observations if o["specialist"] == primary.name and o["verdict"] == "POSITIVE"]
@@ -387,18 +394,28 @@ async def monitor(camera, backend, config, log, stop_event=None):
                         result["evidence_source_time_s"] = max(o["source_time_s"] for o in observations)
                         result["source_frame"] = round(result["evidence_source_time_s"] * 30)
                         log({"type": "status", **result})
-                        return result
+                        if not continuous:
+                            return result
                 if normal in done:
                     batch = normal.result()
                     consecutive_errors = consecutive_errors + 1 if all("error" in o for o in batch) else 0
                     if consecutive_errors >= 5:
                         raise RuntimeError("Five consecutive normal batches failed; check the model endpoint")
-                    result["source_frame"] = round(batch[0]["source_time_s"] * 30)
-                    log({"type": "status", **result, "decision_time_s": time.monotonic() - started_at})
+                    fresh = batch[0]["captured_time_s"] >= rearm_after
+                    positive_specialists = {o["specialist"] for o in batch if o["verdict"] == "POSITIVE"}
+                    # A fresh normal observation can clear a displayed event;
+                    # only a complete verification round can confirm a new one.
+                    if continuous and confirmed and fresh and not confirmed.issubset(positive_specialists):
+                        confirmed.clear()
+                        result = {"status": "ON_GOING", "failure_type": None,
+                                  "failure_description": None, "source_frame": -1}
+                    if result["status"] == "ON_GOING":
+                        result["source_frame"] = round(batch[0]["source_time_s"] * 30)
+                        log({"type": "status", **result, "decision_time_s": time.monotonic() - started_at})
                     trigger = (
                         verification is None
-                        and batch[0]["captured_time_s"] >= rearm_after
-                        and any(o["verdict"] == "POSITIVE" for o in batch)
+                        and fresh
+                        and bool(positive_specialists - confirmed if continuous else positive_specialists)
                     )
                     frame = camera.get()
                     if trigger:

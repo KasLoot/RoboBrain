@@ -84,9 +84,19 @@ function validateEditor() {
   }
 }
 
+function specialistIssues(s) {
+  const blocks = s.blocks.filter(b => b.enabled);
+  return [
+    (!s.definition || !Object.keys(s.definition).length) && 'Missing configuration JSON',
+    !blocks.some(b => b.type === 'text' && b.text.trim()) && 'Missing system prompt',
+    !blocks.some(b => b.type === 'camera') && 'Missing camera/video block',
+    blocks.some(b => b.type === 'image' && !b.asset) && 'Reference image not uploaded'
+  ].filter(Boolean);
+}
+
 function readyToRun() {
   const active = task?.specialists.filter(s => s.enabled) || [];
-  return active.length > 0 && active.every(s => s.definition && s.blocks.some(b => b.enabled && b.type === 'text' && b.text.trim()) && s.blocks.some(b => b.enabled && b.type === 'camera') && s.blocks.filter(b => b.enabled && b.type === 'image').every(b => b.asset));
+  return active.length > 0 && active.every(s => specialistIssues(s).length === 0);
 }
 
 function markDirty() {
@@ -114,7 +124,7 @@ const link = (view, id = task?.id) => '#task/' + id + '/' + view;
 const edit = () => `data-edit ${state.busy?'disabled':''}`;
 
 function badges(s) {
-  const ready = s.definition && s.blocks.some(b => b.enabled && b.type === 'text' && b.text.trim()) && s.blocks.some(b => b.enabled && b.type === 'camera');
+  const ready = specialistIssues(s).length === 0;
   return `<span class="badge ${!s.enabled?'neutral':ready?'good':'warning'}">${!s.enabled?'Disabled':ready?'Configured':'Draft'}</span>`;
 }
 
@@ -236,7 +246,7 @@ function updateMonitor() {
   const phases = {
     idle: 'Ready to start',
     starting: 'Connecting inputs and checking the model…',
-    running: 'Monitoring',
+    running: 'Monitoring continuously',
     stopping: 'Stopping monitoring…',
     finalizing: 'Finalizing run…',
     finished: 'Run finished',
@@ -635,7 +645,7 @@ app.addEventListener('click', async e => {
       return;
     }
     if (action === 'settings') {
-      const keys = ['base_url', 'model', 'fps', 'evidence_horizon', 'horizon_duration', 'request_timeout', 'episode_timeout', 'max_tokens', 'max_connections'];
+      const keys = ['base_url', 'model', 'fps', 'evidence_horizon', 'horizon_duration', 'request_timeout', 'max_tokens', 'max_connections'];
       ask('Model & monitoring settings', `<p class="hint">Existing RoboBrain configuration. Values change only when you save them.</p>${keys.map(k=>`<label>${esc(k.replaceAll('_',' '))}<input name="${k}" value="${esc(task.config[k])}" ${['base_url','model'].includes(k)?'':'type="number" step="any"'} required></label>`).join('')}<button type="button" id="check-model">Check saved model connection</button>`, async f => {
         keys.forEach(k => task.config[k] = ['base_url', 'model'].includes(k) ? f.get(k) : Number(f.get(k)));
         markDirty();
