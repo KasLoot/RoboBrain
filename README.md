@@ -10,23 +10,44 @@ RoboBrain monitors plug insertion using separate SUCCESS, DROP and ROTATION spec
 
 Click either animated preview to open the full MP4 video with audio.
 
-## Run
+## Browser UI
+
+```sh
+uv sync
+uv run robobrain ui
+```
+
+Open **http://127.0.0.1:8765**. The UI runs locally on the computer connected to the cameras. Use `--port PORT` or `--data DIRECTORY` after `ui` to change the port or workspace directory.
+
+The first launch creates **Insert plug**, copying the existing prompt text, reference image bytes, and configuration without modifying the packaged originals. Tasks can be created, renamed, duplicated, deleted, and saved for later runs. Open a task to access Specialists, Prompt Designer, and Monitor.
+
+- **Prompt Designer:** add text, reference-image, and camera/video blocks; edit aliases; enable or reorder blocks; select each block's source and crop. Crops use original-image pixels, with exclusive right/bottom edges. Drag a rectangle or enter coordinates, then Apply and Save. New specialists are empty drafts: paste the existing detector configuration format (`field`, `values`, `failure_type`). No decision roles are inferred. Existing prompts and response mappings are retained.
+- **Monitor:** choose Cameras or Video simulation. Enable one or both sources. On macOS use camera indices (`0`, `1`); on Linux use an index or `/dev/video…` / `/dev/v4l/by-id/…`. Check the preview to identify the intended device. Capture width, height and FPS are requests; displayed dimensions are those actually delivered. Allow macOS camera access for the application launching Python.
+- **Two views:** each physical camera is opened once and shared by all specialist blocks. Specialists may use either source or both. Insert plug initially keeps its original single-view assignments; enabling another camera does not silently change its model requests. For two-view replay, upload an explicitly paired video into each source. Runs restart videos from the beginning using the existing 30 fps simulator.
+- **Run lock:** save before Start. Task switching and configuration mutations are locked from startup through recording finalization, including backend requests from other tabs. Pages remain readable. Stop cancels monitoring and finalizes outputs; it does not control a robot. Refreshing the browser reconnects to the existing run.
+- **Record:** off by default and fixed for the run. When checked, save one annotated H.264 MOV at 30 fps, a raw LOG, and a readable JSON under `.robobrain/runs/TASK_ID/RUN_ID/`. Two sources appear side by side at native dimensions, padded to a shared canvas. Video-source audio is retained when present; live cameras supply video only. The UI and its recordings omit the `(frame x)` status heading. Reports retain per-source frame metadata. With Record off, no run artifacts are saved.
+
+Templates and assets are saved in `.robobrain/` (ignored by Git). Back up this directory to keep your templates. Deleting tasks retains shared assets and past recordings. Image uploads accept JPEG/PNG up to 50 MB / 40 megapixels; video uploads accept MOV/MP4/AVI/MKV up to 2 GB.
+
+The UI calls the same monitoring, verification, parsing, thresholds, and decision functions as the CLI. Camera capture uses isolated processes and shared frame buffers for bounded cleanup and reliable reopening on macOS.
+
+## CLI
 
 From this repository:
 
 ```sh
 uv sync
-uv run robobrain --record --canvas
+uv run robobrain --videos video/insert_plug-full_model-aug-28-105trail-1x --record --canvas
 ```
 
 Or activate the environment created by `uv`:
 
 ```sh
 source .venv/bin/activate
-robobrain --record --canvas
+robobrain --videos video/insert_plug-full_model-aug-28-105trail-1x --record --canvas
 ```
 
-The default input is `video/insert_plug-full_model-aug-28-105trail-1x`. Episodes run in numeric order. The default model endpoint is `http://127.0.0.1:9000/v1`, using `/workspace/models/gemma-4-26B-A4B-it`. Keep the vLLM server and its SSH forward running. The recommended server has a 1120-token visual budget.
+Specify exactly one of `--videos` or `--camera`; providing both or neither exits with a usage error. Episodes run in numeric order. The default model endpoint is `http://127.0.0.1:9000/v1`, using `/workspace/models/gemma-4-26B-A4B-it`. Keep the vLLM server and its SSH forward running. The recommended server has a 1120-token visual budget.
 
 Recording requires `ffmpeg` on PATH. The live canvas requires a desktop and GUI-enabled OpenCV; omit `--canvas` for headless operation. FFmpeg and a working OpenCV GUI are available on the development machine.
 
@@ -34,11 +55,20 @@ Select another dataset, particular episodes, or a single video:
 
 ```sh
 uv run robobrain --videos video/insert_plug-no_force-aug-28-1x --record --canvas
-uv run robobrain --episodes 82 94 --record --canvas
+uv run robobrain --videos video/insert_plug-full_model-aug-28-105trail-1x --episodes 82 94 --record --canvas
 uv run robobrain --videos video/insert_plug-no_force-aug-28-1x/traj-32.MOV --record
 ```
 
-The two flags are independent. `--record` saves files, `--canvas` shows the live feed, and omitting both prints each episode's final status. Press **Q**, **Esc**, or close the canvas to stop the run. **Ctrl+C** also stops it. The current episode's logs and a playable recording are finalized; an interrupted recording can be shorter than the full source.
+Live camera CLI examples:
+
+```sh
+uv run robobrain --camera 0 --canvas
+uv run robobrain --camera 0 --camera 1 --record --canvas
+```
+
+`--episodes` is only valid with video input. Camera CLI runs use the existing specialists on the first camera; use the UI to assign different or additional views. Camera recordings are saved below `--output/camera/runs/`.
+
+The `--record` and `--canvas` flags are independent. `--record` saves files, `--canvas` shows the live feed, and omitting both prints each episode's final status. Press **Q**, **Esc**, or close the canvas to stop the run. **Ctrl+C** also stops it. The current episode's logs and a playable recording are finalized; an interrupted recording can be shorter than the full source.
 
 Existing episode output folders are protected. Use `--overwrite` to replace selected recordings, or `--output another-directory` to choose a different output root. `uv run robobrain --help` lists all options.
 
@@ -89,6 +119,13 @@ Recorded control-action events describe the proposed insertion, release, recover
 
 ```sh
 uv run python tests/check_robobrain.py
+uv run python tests/check_ui.py
+```
+
+The optional hardware check opens, reads, releases, and reopens the selected cameras:
+
+```sh
+uv run python tests/check_cameras.py --devices 0 1
 ```
 
 These checks exercise all three specialists, verification thresholds and conflicts, concurrency and rearming, disabled thinking, native image dimensions, malformed responses, cancellation, simulated control handoffs, 30 fps continuation, overlay formatting, complete source preservation, late status timing, audio retention, and raw/readable logs. Recording checks require `ffmpeg` and `ffprobe`.

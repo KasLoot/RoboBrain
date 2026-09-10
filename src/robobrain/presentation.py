@@ -19,7 +19,7 @@ def write_json(path, value):
         temporary.unlink(missing_ok=True)
 
 
-def annotate_frame(image, source_frame, status):
+def annotate_frame(image, source_frame, status, *, show_frame_numbers=True):
     """Use one-based source frames; zero means no completed observation yet."""
     frame = image.copy()  # Overlays must never reach the inference buffer.
     height, width = frame.shape[:2]
@@ -37,14 +37,15 @@ def annotate_frame(image, source_frame, status):
         region = frame[max(0, top):min(height, bottom), max(0, left):min(width, right)]
         cv2.convertScaleAbs(region, alpha=.3, dst=region)
 
-    label = f"Frame {source_frame + 1}"
+    label = f"Frame {source_frame + 1}" if show_frame_numbers else ""
     label_width, text_height = size(label)
     left = width - margin - label_width - 2 * padding
-    panel(left, margin, width - margin, margin + text_height + 2 * padding + regular)
-    cv2.putText(frame, label, (left + padding, margin + padding + text_height),
-                font, scale, white, regular, cv2.LINE_AA)
+    if show_frame_numbers:
+        panel(left, margin, width - margin, margin + text_height + 2 * padding + regular)
+        cv2.putText(frame, label, (left + padding, margin + padding + text_height),
+                    font, scale, white, regular, cv2.LINE_AA)
     title = "Operating Status"
-    suffix = f" (frame {status.get('source_frame', -1) + 1}):"
+    suffix = f" (frame {status.get('source_frame', -1) + 1}):" if show_frame_numbers else ":"
     lines = [f"Status: {status['status']}", f"Failure type: {status.get('failure_type') or 'NONE'}"]
     title_width = size(title, bold)[0]
     text_width = max(title_width + size(suffix, 1)[0], *(size(line)[0] for line in lines))
@@ -86,11 +87,12 @@ class LiveView:
 
 
 class EpisodeReport:
-    def __init__(self, video, dataset, config, directory, view):
+    def __init__(self, video, dataset, config, directory, view, *, input_info=None, task_template=None):
         self.video, self.dataset, self.config = video, dataset, config
         self.directory, self.view = directory, view
         self.events = []
         self.stream = None
+        self.input_info, self.task_template = input_info, task_template
         if directory:
             directory.mkdir(parents=True, exist_ok=True)
             self.stream = (directory / f"output-{video.stem}.log").open("w", encoding="utf-8", buffering=1)
@@ -126,6 +128,9 @@ class EpisodeReport:
                         request["model_output"] = json.loads(event["raw"])
                     except (ValueError, TypeError):
                         request["model_output"] = event["raw"]
+                if "source_frames" in event:
+                    request["source_frames"] = {name: {**value, "source_frame": value["source_frame"] + 1}
+                                                for name, value in event["source_frames"].items()}
                 requests.append(request)
             elif event["type"] != "request_started":
                 readable = dict(event)
@@ -144,15 +149,20 @@ class EpisodeReport:
             "cancelled_requests": sum(r.get("cancelled", False) for r in requests),
             "requests": sorted(requests, key=lambda r: r["request_id"]), "events": other_events,
         }
+        if self.input_info is not None:
+            document.pop("input_video")
+            document["sources"] = self.input_info
+            document["task_template"] = self.task_template
+            document["frame_numbering"] += " Live camera source_frame uses the 30 fps run timeline; source_frames contains physical per-camera indices."
         try:
             write_json(self.directory / f"output-{self.video.stem}.json", document)
         finally:
             self.stream.close()
 
 
-def render_recording(video, destination, events, result, ffmpeg, stop_event):
+def render_recording(video, destination, events, result, ffmpeg, stop_event, *, capture=None, audio_sources=None, show_frame_numbers=True):
     """Render all source frames and late decisions at 30 fps; retain original audio."""
-    cap = cv2.VideoCapture(str(video))
+    cap = capture if capture is not None else cv2.VideoCapture(str(video))
     temporary = process = None
     written, fps, position = 0, 30, 0
     states = sorted((e for e in events if e["type"] == "status"), key=lambda e: e["decision_time_s"])
@@ -168,11 +178,17 @@ def render_recording(video, destination, events, result, ffmpeg, stop_event):
             temporary = Path(file.name)
         command = [ffmpeg, "-hide_banner", "-loglevel", "error", "-nostdin", "-y",
                    "-f", "rawvideo", "-pixel_format", "bgr24", "-video_size", f"{width}x{height}",
-                   "-framerate", str(fps), "-i", "pipe:0", "-i", str(video),
-                   "-map", "0:v:0", "-map", "1:a?", "-c:v", "libx264", "-preset", "veryfast",
+                   "-framerate", str(fps), "-i", "pipe:0"]
+        audio_sources = [video] if audio_sources is None else audio_sources
+        for source in audio_sources:
+            command.extend(["-i", str(source)])
+        command.extend(["-map", "0:v:0"])
+        for index in range(len(audio_sources)):
+            command.extend(["-map", f"{index + 1}:a?"])
+        command.extend(["-c:v", "libx264", "-preset", "veryfast",
                    "-crf", "18", "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "192k",
                    "-af", "apad", "-shortest",
-                   "-movflags", "+faststart", str(temporary)]
+                   "-movflags", "+faststart", str(temporary)])
         with tempfile.TemporaryFile() as errors:
             process = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.DEVNULL, stderr=errors)
 
@@ -183,7 +199,8 @@ def render_recording(video, destination, events, result, ffmpeg, stop_event):
                 while position < len(states) and states[position]["decision_time_s"] <= written / fps:
                     state = states[position]
                     position += 1
-                process.stdin.write(annotate_frame(current, source_index, state).tobytes())
+                annotated = annotate_frame(current, source_index, state) if show_frame_numbers else annotate_frame(current, source_index, state, show_frame_numbers=False)
+                process.stdin.write(annotated.tobytes())
                 written += 1
 
             index = 0

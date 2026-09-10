@@ -63,6 +63,20 @@ class Specialist:
     def confirmed(self, observations):
         return self.evidence_count(observations) > self.threshold
 
+    def current_content(self, frame):
+        """UI input assembly only; the legacy request remains identical."""
+        if "input_blocks" not in self.config:
+            return [{"type": "text", "text": "Current camera observation:"}, image_content(frame.image, self.crop)]
+        content = []
+        for block in self.config["input_blocks"]:
+            if "content" in block:
+                content.extend(block["content"])
+            else:
+                image = frame.views[block["source"]].image
+                crop = block["crop"] or [0, 0, image.shape[1], image.shape[0]]
+                content.extend([{"type": "text", "text": block["alias"]}, image_content(image, crop)])
+        return content
+
     async def observe(self, frame, backend, started_at, log, **tags):
         specialist = self.name
         observation = {
@@ -73,6 +87,11 @@ class Specialist:
             "captured_time_s": frame.observed_at - started_at,
             **tags,
         }
+        if hasattr(frame, "views"):
+            observation["source_frames"] = {
+                name: {"source_frame": view.source_index, "captured_time_s": view.observed_at - started_at}
+                for name, view in frame.views.items()
+            }
         sent = time.monotonic()
         log({**observation, "type": "request_started", "sent_time_s": sent - started_at})
         try:
@@ -86,8 +105,7 @@ class Specialist:
                         {"role": "system", "content": self.prompt},
                         {"role": "user", "content": [
                             *self.references,
-                            {"type": "text", "text": "Current camera observation:"},
-                            image_content(frame.image, self.crop),
+                            *self.current_content(frame),
                         ]},
                     ],
                     "response_format": {"type": "json_schema", "json_schema": {
@@ -127,7 +145,7 @@ class Specialist:
 
 
 def load_config(path=HERE / "config.json", base_url=None):
-    config = json.loads(Path(path).read_text())
+    config = json.loads(json.dumps(path)) if isinstance(path, dict) else json.loads(Path(path).read_text())
     if not isinstance(config, dict):
         raise ValueError("Configuration must be a JSON object")
     if base_url:
@@ -257,9 +275,12 @@ def image_content(image, crop):
 
 class Backend:
     """Shared transport; specialists never own independent verification schedulers."""
-    def __init__(self, config, client):
+    def __init__(self, config, client, *, specialists=None):
         self.config, self.client = config, client
         self.request_ids = itertools.count(1)
+        if specialists is not None:
+            self.specialists = specialists
+            return
         self.specialists = {}
         for name in config["enabled_specialists"]:
             settings = {**config, **config["specialists"][name], "name": name,

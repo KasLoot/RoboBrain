@@ -9,6 +9,7 @@ import shutil
 import sys
 import threading
 import time
+import tempfile
 
 import cv2
 import httpx
@@ -111,13 +112,32 @@ async def run_episodes(args, config, dataset, videos, view, stop_event):
                 raise error
 
 
-def run_application(args, config, dataset, videos):
+async def run_cameras(args, config, dataset, devices, view, stop_event):
+    from .runtime import Runtime
+    from .workspace import Workspace
+    with tempfile.TemporaryDirectory(prefix="robobrain-camera-") as temporary:
+        store = Workspace(args.output / "camera" if args.record else temporary)
+        task = store.seed(config)
+        task["sources"] = [{"id": f"camera{i+1}", "name": f"Camera {i+1}", "enabled": True,
+                            "device": device, "video": None, "width": 1920, "height": 1080, "fps": 30}
+                           for i, device in enumerate(devices)]
+        runtime = Runtime(store, view=view, stop_event=stop_event)
+        runtime.start(task, args.record)
+        await runtime.job
+        if runtime.error:
+            raise RuntimeError(runtime.error)
+        print(f"{runtime.result['status']} | Failure type: {runtime.result.get('failure_type') or 'NONE'}", flush=True)
+        for path in runtime.output:
+            print(store.root / path, flush=True)
+
+
+def run_application(args, config, dataset, videos, runner=run_episodes):
     """HighGUI stays on the main thread, including on macOS/Cocoa."""
     view, stop_event, errors = LiveView(), threading.Event(), []
 
     def worker():
         try:
-            asyncio.run(run_episodes(args, config, dataset, videos, view, stop_event))
+            asyncio.run(runner(args, config, dataset, videos, view, stop_event))
         except Exception as exc:
             errors.append(exc)
 
@@ -169,8 +189,14 @@ def run_application(args, config, dataset, videos):
 
 
 def main():
+    if len(sys.argv) > 1 and sys.argv[1] == "ui":
+        from .web import main as ui_main
+        del sys.argv[1]
+        return ui_main()
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--videos", type=Path, default=DEFAULT_VIDEOS, help="Dataset directory or single clip (default: original 105-episode dataset)")
+    inputs = parser.add_mutually_exclusive_group(required=True)
+    inputs.add_argument("--videos", type=Path, help="Dataset directory or single clip")
+    inputs.add_argument("--camera", action="append", help="Camera index or Linux device path; repeat for a second camera")
     parser.add_argument("--episodes", type=int, nargs="+", help="Selected trajectory numbers, e.g. --episodes 9 94")
     parser.add_argument("--record", action="store_true", help="Write an annotated MOV, raw log and readable JSON for each episode")
     parser.add_argument("--canvas", action="store_true", help="Show the live annotated camera; Q/Esc or closing the window stops the run")
@@ -186,8 +212,12 @@ def main():
             if not 0 < args.episode_timeout < float("inf"):
                 raise ValueError("--episode-timeout must be finite and positive")
             config["episode_timeout"] = args.episode_timeout
-        dataset, videos = select_videos(args.videos, args.episodes)
         args.output = args.output.expanduser().resolve()
+        if args.camera:
+            if args.episodes or len(args.camera) > 2:
+                parser.error("--camera supports one or two devices and cannot be combined with --episodes")
+            return run_application(args, config, "camera", args.camera, runner=run_cameras)
+        dataset, videos = select_videos(args.videos, args.episodes)
         args.ffmpeg = shutil.which("ffmpeg") if args.record else None
         if args.record and not args.ffmpeg:
             raise ValueError("--record requires ffmpeg on PATH to preserve the original audio")
