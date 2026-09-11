@@ -246,7 +246,7 @@ function updateMonitor() {
   const phases = {
     idle: 'Ready to start',
     starting: 'Connecting inputs and checking the model…',
-    running: 'Monitoring continuously',
+    running: task.config.evidence_horizon === 0 ? 'Monitoring continuously · Verification disabled' : 'Monitoring continuously',
     stopping: 'Stopping monitoring…',
     finalizing: 'Finalizing run…',
     finished: 'Run finished',
@@ -646,7 +646,7 @@ app.addEventListener('click', async e => {
     }
     if (action === 'settings') {
       const keys = ['base_url', 'model', 'fps', 'evidence_horizon', 'horizon_duration', 'request_timeout', 'max_tokens', 'max_connections'];
-      ask('Model & monitoring settings', `<p class="hint">Existing RoboBrain configuration. Values change only when you save them.</p>${keys.map(k=>`<label>${esc(k.replaceAll('_',' '))}<input name="${k}" value="${esc(task.config[k])}" ${['base_url','model'].includes(k)?'':'type="number" step="any"'} required></label>`).join('')}<button type="button" id="check-model">Check saved model connection</button>`, async f => {
+      ask('Model & monitoring settings', `<p class="hint">Existing RoboBrain configuration. Values change only when you save them.</p><p class="hint">Set evidence horizon to 0 to disable verification and decide from each completed normal batch. Horizon duration and specialist thresholds are ignored in this mode.</p>${keys.map(k=>`<label>${esc(k.replaceAll('_',' '))}<input name="${k}" value="${esc(task.config[k])}" ${['base_url','model'].includes(k)?'':k==='evidence_horizon'?'type="number" step="1" min="0"':'type="number" step="any"'} required></label>`).join('')}<button type="button" id="check-model">Check saved model connection</button>`, async f => {
         keys.forEach(k => task.config[k] = ['base_url', 'model'].includes(k) ? f.get(k) : Number(f.get(k)));
         markDirty();
         await saveTask();

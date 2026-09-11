@@ -162,8 +162,8 @@ def load_config(path=HERE / "config.json", base_url=None):
     if endpoint.scheme not in ("http", "https") or not endpoint.host:
         raise ValueError("base_url must be a valid HTTP(S) URL")
     n = config["evidence_horizon"]
-    if type(n) is not int or n < 1:
-        raise ValueError("evidence_horizon must be a positive integer")
+    if type(n) is not int or n < 0:
+        raise ValueError("evidence_horizon must be a nonnegative integer (0 disables verification)")
     for name in ("horizon_duration", "request_timeout", "episode_timeout"):
         if type(config[name]) not in (int, float) or not 0 < config[name] < float("inf"):
             raise ValueError(f"{name} must be finite and positive")
@@ -180,8 +180,10 @@ def load_config(path=HERE / "config.json", base_url=None):
     config["enabled_specialists"] = list(definitions)
     for specialist in config["enabled_specialists"]:
         threshold = config["evidence_threshold"][specialist]
-        if type(threshold) is not int or not 0 <= threshold < n:
-            raise ValueError("Each evidence_threshold must be an integer in [0, N)")
+        if type(threshold) is not int or threshold < 0:
+            raise ValueError("Each evidence_threshold must be a nonnegative integer")
+        if n and threshold >= n:
+            raise ValueError("Each evidence_threshold must be less than evidence_horizon when verification is enabled")
         x1, y1, x2, y2 = config["crops"][specialist]
         if not all(type(x) is int for x in (x1, y1, x2, y2)) or not (0 <= x1 < x2 and 0 <= y1 < y2):
             raise ValueError(f"Invalid {specialist} crop")
@@ -296,12 +298,13 @@ class Backend:
 
 
 def decide(observations, config, specialists):
-    expected = {(i, name) for i in range(config["evidence_horizon"]) for name in specialists}
-    keys = [(o["slot"], o["specialist"]) for o in observations]
+    n = config["evidence_horizon"]
+    expected = {(i, name) for i in (range(n) if n else (None,)) for name in specialists}
+    keys = [(o.get("slot"), o["specialist"]) for o in observations]
     if len(keys) != len(expected) or set(keys) != expected:
-        raise ValueError("Verification requires one response per slot and specialist")
+        raise ValueError("Decision requires one response per expected slot and specialist")
     counts = {name: specialist.evidence_count(observations) for name, specialist in specialists.items()}
-    confirmed = [s for s in specialists.values() if s.confirmed(observations)]
+    confirmed = [s for s in specialists.values() if (s.confirmed(observations) if n else counts[s.name] > 0)]
     successes = [s for s in confirmed if s.failure_type is None]
     failures = [s for s in confirmed if s.failure_type is not None]
     status = "SUCCESS" if successes and not failures else "FAIL" if failures and not successes else "ON_GOING"
@@ -401,6 +404,22 @@ async def monitor(camera, backend, config, log, stop_event=None, *, continuous=F
                     consecutive_errors = consecutive_errors + 1 if all("error" in o for o in batch) else 0
                     if consecutive_errors >= 5:
                         raise RuntimeError("Five consecutive normal batches failed; check the model endpoint")
+                    if config["evidence_horizon"] == 0:
+                        status, counts, failures = decide(batch, config, backend.specialists)
+                        evidence_time = max(o["source_time_s"] for o in batch)
+                        result = {"status": status, "failure_type": None, "failure_description": None,
+                                  "decision_time_s": time.monotonic() - started_at, "evidence_counts": counts,
+                                  "evidence_source_time_s": evidence_time, "source_frame": round(evidence_time * 30)}
+                        if status == "FAIL":
+                            primary = failures[0]
+                            result.update(failure_type=primary.failure_type,
+                                          confirmed_failure_types=[s.failure_type for s in failures],
+                                          failure_description=next(o["reason"] for o in batch if o["specialist"] == primary.name))
+                        log({"type": "status", **result})
+                        if not continuous and status != "ON_GOING":
+                            return result
+                        normal = asyncio.create_task(backend.batch(camera.get(), started_at, log, normal=True))
+                        continue
                     fresh = batch[0]["captured_time_s"] >= rearm_after
                     positive_specialists = {o["specialist"] for o in batch if o["verdict"] == "POSITIVE"}
                     # A fresh normal observation can clear a displayed event;

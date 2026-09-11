@@ -255,6 +255,73 @@ async def checks():
     assert backend.active == 0
     print('Continuous checks passed: held events, disappearance, success/failure transitions, conflicts, no watchdog, Stop and errors.')
 
+    direct_config = load_config({**load_config(), 'evidence_horizon': 0, 'horizon_duration': 30})
+    assert direct_config['evidence_threshold'] == load_config()['evidence_threshold']
+    for invalid in (-1, .5, True):
+        try:
+            load_config({**direct_config, 'evidence_horizon': invalid})
+        except ValueError:
+            pass
+        else:
+            raise AssertionError('Invalid evidence horizon accepted')
+    for successes, drops, rotations, expected in ((1, 0, 0, 'SUCCESS'), (0, 1, 1, 'FAIL'),
+                                                 (1, 1, 0, 'ON_GOING'), (0, 0, 0, 'ON_GOING')):
+        batch = [{**o, 'slot': None} for o in evidence(successes, drops, rotations)[:3]]
+        status, counts, failures = decide(batch, direct_config, specs)
+        assert status == expected and counts == dict(zip(SPECIALISTS, (successes, drops, rotations)))
+        if drops and rotations:
+            assert [s.failure_type for s in failures] == ['DROP_FAILURE', 'ROTATION_FAILURE']
+    for invalid in (batch[:-1], batch + [batch[0]], [{**o, 'slot': 0} for o in batch]):
+        try:
+            decide(invalid, direct_config, specs)
+        except ValueError:
+            pass
+        else:
+            raise AssertionError('Missing, duplicate or verification observations accepted as a normal batch')
+
+    backend, events = FakeBackend(), []
+    result = await asyncio.wait_for(monitor(FakeCamera(), backend, direct_config, events.append), 1)
+    assert result['status'] == 'SUCCESS' and backend.active == 0
+    assert len([e for e in events if e['type'] == 'observation']) == 3, 'The first batch must decide immediately'
+    assert not any(e['type'].startswith('verification_') for e in events)
+
+    scenarios = [('success', 'SUCCESS', None), ('success', 'SUCCESS', None), (None, 'ON_GOING', None),
+                 ('rotation', 'FAIL', 'ROTATION_FAILURE'), ('negative', 'ON_GOING', None),
+                 ('drop', 'FAIL', 'DROP_FAILURE'), ('success', 'SUCCESS', None), ('conflict', 'ON_GOING', None)]
+    backend, stop, events, decisions = FakeBackend(), threading.Event(), [], []
+    def record_direct(event):
+        events.append(event)
+        if event['type'] == 'status' and 'evidence_counts' in event and 'stop_reason' not in event:
+            decisions.append(event)
+            if len(decisions) == len(scenarios):
+                stop.set()
+            else:
+                backend.positive = scenarios[len(decisions)][0]
+    result = await asyncio.wait_for(monitor(FakeCamera(), backend, {**direct_config, 'episode_timeout': .01},
+                                           record_direct, stop, continuous=True), 2)
+    assert [(e['status'], e['failure_type']) for e in decisions] == [(s, f) for _, s, f in scenarios]
+    for event in decisions:
+        assert 'verification_round' not in event
+        if event['status'] == 'FAIL':
+            assert event['failure_description'] == 'visible evidence'
+            assert event['confirmed_failure_types'] == [event['failure_type']]
+        else:
+            assert event['failure_description'] is None and 'confirmed_failure_types' not in event
+    observations = [e for e in events if e['type'] == 'observation']
+    assert len(observations) == 3 * len(scenarios)
+    assert all(e['normal'] and e.get('round_id') is None and e.get('slot') is None for e in observations)
+    assert not any(e['type'].startswith('verification_') for e in events)
+    assert result['stop_reason'] == 'user_stop' and backend.active == 0
+    backend = FakeBackend(positive='error')
+    try:
+        await asyncio.wait_for(monitor(FakeCamera(), backend, direct_config, lambda e: None, continuous=True), 1)
+    except RuntimeError as exc:
+        assert 'Five consecutive' in str(exc)
+    else:
+        raise AssertionError('Zero-horizon monitoring did not stop on endpoint errors')
+    assert backend.active == 0
+    print('Zero-horizon checks passed: first-batch decisions, unchanged thresholds, conflicts, continuous transitions, Stop and errors; no verification requests.')
+
 
 def recording_checks():
     ffmpeg, ffprobe = shutil.which('ffmpeg'), shutil.which('ffprobe')

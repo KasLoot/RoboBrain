@@ -194,6 +194,29 @@ def api_checks(root):
                 time.sleep(.05)
             assert client.get('/api/state').json()['result']['stop_reason'] == 'user_stop'
             assert client.get('/api/state').json()['verification']['cancelled']
+            task['config']['evidence_horizon'] = 0
+            assert client.put('/api/tasks/' + task['id'], json=task).status_code == 200
+            assert client.post('/api/run', json={'task_id': task['id'], 'record': True}).status_code == 200
+            deadline = time.monotonic() + 5
+            while time.monotonic() < deadline:
+                state = client.get('/api/state').json()
+                if state['result']['status'] == 'SUCCESS':
+                    break
+                time.sleep(.02)
+            assert state['result']['status'] == 'SUCCESS' and state['busy'], state
+            assert state['verification'] is None and not any(e['type'].startswith('verification_') for e in state['events'])
+            assert client.post('/api/run/stop').status_code == 200
+            deadline = time.monotonic() + 15
+            while client.get('/api/state').json()['busy'] and time.monotonic() < deadline:
+                time.sleep(.05)
+            state = client.get('/api/state').json()
+            assert state['phase'] == 'finished' and not state['error'], state
+            assert sorted(Path(p).suffix for p in state['output']) == ['.MOV', '.json', '.log']
+            report = json.loads(next(root / p for p in state['output'] if p.endswith('.json')).read_text())
+            assert report['configuration']['evidence_horizon'] == 0 and report['result']['status'] == 'SUCCESS'
+            assert all(r['normal_monitoring'] and r['verification_round'] is None for r in report['requests'])
+            assert not any(e['type'].startswith('verification_') for e in report['events'])
+            task['config']['evidence_horizon'] = 10
             positive = False
             task['input_mode'] = 'video'
             task['config']['episode_timeout'] = .3
