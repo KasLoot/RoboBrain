@@ -13,22 +13,27 @@ from fastapi import FastAPI, File, HTTPException, Request, UploadFile
 from fastapi.responses import FileResponse, JSONResponse, Response, StreamingResponse
 
 from .runtime import Runtime, prepare
+from .endpoints import endpoint_error, model_info
 from .sources import Inputs
+from .task_builder import CreateDraft, Settings, TaskBuilder, Turn
 from .workspace import Workspace
 
 
 def create_app(data_dir=Path(".robobrain")):
     store = Workspace(data_dir)
     runtime = Runtime(store)
+    builder = TaskBuilder(store)
 
     @asynccontextmanager
     async def lifespan(app):
         yield
+        await builder.cancel()
         await runtime.close()
 
     app = FastAPI(title="RoboBrain", docs_url=None, redoc_url=None, lifespan=lifespan)
     app.state.store = store
     app.state.runtime = runtime
+    app.state.builder = builder
 
     @app.middleware("http")
     async def local_access(request, call_next):
@@ -39,12 +44,14 @@ def create_app(data_dir=Path(".robobrain")):
             origin = request.headers.get("origin")
             if request.headers.get("x-robobrain") != "1" or (origin and urlsplit(origin).netloc != request.url.netloc):
                 return JSONResponse({"detail": "Only the local RoboBrain interface may change this workspace"}, status_code=403)
-        if mutation and request.url.path != "/api/run/stop":
+        if mutation and request.url.path not in {"/api/run/stop", "/api/builder/cancel"}:
             # One active run is an explicit product constraint. Serialize Start
             # with saves/connections so a stale browser cannot race the run lock.
             async with runtime.action_lock:
                 if runtime.busy:
                     return JSONResponse({"detail": "Configuration is locked until the run and recording finish"}, status_code=409)
+                if builder.busy:
+                    return JSONResponse({"detail": "Wait for Task Builder or cancel its response before changing configuration"}, status_code=409)
                 response = await call_next(request)
         else:
             response = await call_next(request)
@@ -90,15 +97,43 @@ def create_app(data_dir=Path(".robobrain")):
 
     @app.get("/api/state")
     async def state():
-        return runtime.state()
+        return {**runtime.state(), "builder_busy": builder.busy}
 
     @app.get("/api/events")
     async def events(request: Request):
         async def stream():
             while not await request.is_disconnected():
-                yield "data: " + json.dumps(runtime.state()) + "\n\n"
+                yield "data: " + json.dumps({**runtime.state(), "builder_busy": builder.busy}) + "\n\n"
                 await asyncio.sleep(.25)
         return StreamingResponse(stream(), media_type="text/event-stream", headers={"X-Accel-Buffering": "no"})
+
+    @app.get("/api/builder")
+    async def builder_state():
+        return builder.state()
+
+    @app.put("/api/builder/settings")
+    async def builder_settings(settings: Settings):
+        return builder.configure(settings)
+
+    @app.post("/api/builder/check")
+    async def builder_check():
+        return await builder.check()
+
+    @app.post("/api/builder/respond")
+    async def builder_respond(turn: Turn):
+        return builder.start(turn)
+
+    @app.post("/api/builder/cancel")
+    async def builder_cancel():
+        return await builder.cancel()
+
+    @app.post("/api/builder/reset")
+    async def builder_reset():
+        return builder.reset()
+
+    @app.post("/api/builder/create")
+    async def builder_create(body: CreateDraft):
+        return builder.create(body)
 
     @app.post("/api/tasks/{task_id}/sources/{source_id}/connect")
     async def connect(task_id: str, source_id: str):
@@ -145,14 +180,10 @@ def create_app(data_dir=Path(".robobrain")):
         config = task["config"]
         try:
             async with httpx.AsyncClient(trust_env=False, timeout=8) as client:
-                response = await client.get(config["base_url"].rstrip("/") + "/models")
-                response.raise_for_status()
-                available = {m["id"] for m in response.json()["data"]}
-                if config["model"] not in available:
-                    raise ValueError("Configured model is not available")
+                info = await model_info(client, config["base_url"], config["model"], require_vision=True)
         except httpx.HTTPError as exc:
-            raise ValueError(f"Model connection failed: {exc}. Check the server and SSH tunnel.") from exc
-        return {"ok": True, "model": config["model"]}
+            raise ValueError(endpoint_error(config["base_url"], exc)) from exc
+        return {"ok": True, **info}
 
     @app.get("/api/tasks/{task_id}/request/{specialist_id}")
     async def request_preview(task_id: str, specialist_id: str):

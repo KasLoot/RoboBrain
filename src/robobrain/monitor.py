@@ -13,6 +13,8 @@ import time
 import cv2
 import httpx
 
+from .endpoints import cloud_model, model_info, native_ollama, ollama_headers
+
 HERE = Path(__file__).resolve().parent
 VERDICTS = ("POSITIVE", "NEGATIVE", "UNCERTAIN")
 
@@ -95,39 +97,24 @@ class Specialist:
         sent = time.monotonic()
         log({**observation, "type": "request_started", "sent_time_s": sent - started_at})
         try:
-            response = await backend.client.post(
-                self.config["base_url"].rstrip("/") + "/chat/completions",
-                json={
-                    "model": self.config["model"], "temperature": 0,
-                    "max_tokens": self.config["max_tokens"],
-                    "chat_template_kwargs": {"enable_thinking": False},
-                    "messages": [
-                        {"role": "system", "content": self.prompt},
-                        {"role": "user", "content": [
-                            *self.references,
-                            *self.current_content(frame),
-                        ]},
-                    ],
-                    "response_format": {"type": "json_schema", "json_schema": {
-                        "name": "visual_observation", "strict": True,
-                        "schema": self.schema,
-                    }},
-                },
-                timeout=self.config["request_timeout"],
-            )
+            response = await backend.complete(self, frame)
             observation["http_status"] = response.status_code
             observation["response_text"] = response.text
             response.raise_for_status()
             body = response.json()
             observation["response"] = body
-            message = body["choices"][0]["message"]
+            message = body["message"] if backend.native else body["choices"][0]["message"]
             if not isinstance(message, dict):
                 raise ValueError("Invalid assistant message")
             observation["raw"] = message.get("content")
-            if message.get("reasoning") or message.get("reasoning_content"):
-                raise ValueError("Endpoint emitted reasoning despite enable_thinking=False")
+            if message.get("reasoning") or message.get("reasoning_content") or message.get("thinking"):
+                raise ValueError("Endpoint emitted reasoning despite thinking being disabled")
+            if backend.native and (body.get("done") is not True or body.get("done_reason") == "length"):
+                raise ValueError("Ollama response is incomplete or reached the output token limit")
             observation.update(self.parse(message["content"]))
-            observation["usage"] = body.get("usage", {})
+            observation["usage"] = ({"prompt_tokens": body.get("prompt_eval_count", 0),
+                                     "completion_tokens": body.get("eval_count", 0)}
+                                    if backend.native else body.get("usage", {}))
         except asyncio.CancelledError:
             observation.update(verdict="UNCERTAIN", reason="Request cancelled", cancelled=True)
             raise
@@ -279,6 +266,8 @@ class Backend:
     """Shared transport; specialists never own independent verification schedulers."""
     def __init__(self, config, client, *, specialists=None):
         self.config, self.client = config, client
+        self.native = native_ollama(config["base_url"])
+        self.model, self.info = config["model"], {}
         self.request_ids = itertools.count(1)
         if specialists is not None:
             self.specialists = specialists
@@ -289,6 +278,48 @@ class Backend:
                         "crop": config["crops"][name], "threshold": config["evidence_threshold"][name],
                         "reference_images": config.get("references", {}).get(name, [])}
             self.specialists[name] = Specialist((HERE / "prompts" / f"{name}.md").read_text(), settings)
+
+    async def check_model(self):
+        self.info = await model_info(self.client, self.config["base_url"], self.config["model"],
+                                     self.config["request_timeout"], require_vision=True)
+        self.model = self.info["model"]
+        return self.info
+
+    async def complete(self, specialist, frame):
+        content = [*specialist.references, *specialist.current_content(frame)]
+        base_url = self.config["base_url"].rstrip("/")
+        if self.native:
+            text, images = [], []
+            for part in content:
+                if part["type"] == "text":
+                    text.append(part["text"])
+                else:
+                    header, separator, encoded = part["image_url"]["url"].partition(",")
+                    if not separator or not header.startswith("data:image/") or not header.endswith(";base64"):
+                        raise ValueError("Ollama requires embedded base64 images")
+                    images.append(encoded)
+                    text.append(f"[Image {len(images)}]")
+            payload = {"model": self.model, "stream": False,
+                       "messages": [{"role": "system", "content": specialist.prompt},
+                                    {"role": "user", "content": "\n\n".join(text), "images": images}],
+                       "options": {"temperature": 0, "num_predict": self.config["max_tokens"]}}
+            if self.info.get("thinking", True):
+                payload["think"] = False
+            if cloud_model(base_url, self.model):
+                # Cloud cannot enforce a schema; preserve the same output contract in the request and validate locally.
+                payload["messages"][-1]["content"] += "\n\nReturn only JSON matching this response schema, without Markdown:\n" + json.dumps(specialist.schema)
+            else:
+                payload["format"] = specialist.schema
+            path = "/chat"
+        else:
+            payload = {"model": self.model, "temperature": 0, "max_tokens": self.config["max_tokens"],
+                       "chat_template_kwargs": {"enable_thinking": False},
+                       "messages": [{"role": "system", "content": specialist.prompt}, {"role": "user", "content": content}],
+                       "response_format": {"type": "json_schema", "json_schema": {
+                           "name": "visual_observation", "strict": True, "schema": specialist.schema}}}
+            path = "/chat/completions"
+        return await self.client.post(base_url + path, json=payload, headers=ollama_headers(base_url),
+                                      timeout=self.config["request_timeout"])
 
     async def batch(self, frame, started_at, log, *, normal, round_id=None, slot=None):
         return await asyncio.gather(*(

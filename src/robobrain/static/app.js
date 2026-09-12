@@ -19,6 +19,7 @@ let tasks = [],
   pending = false,
   page = 'tasks',
   lastHash = '#tasks';
+let builder = null, builderAttachments = [], builderText = '', builderDirty = false, builderPolling = false;
 let state = {
     busy: false,
     phase: 'idle',
@@ -138,7 +139,7 @@ function menu(kind, id, name) {
 
 function renderTasks() {
   nav.innerHTML = '';
-  app.innerHTML = `<div class="page-head"><div><div class="eyebrow">Workspace</div><h1>Tasks</h1><p>Saved setups, ready for another run.</p></div><button class="primary" data-action="new-task" ${edit()}>＋ New task</button></div><div class="grid">${tasks.map(t=>`<article class="card task-card"><div class="card-top"><span class="badge">Task template</span>${menu('task',t.id,t.name)}</div><h2>${esc(t.name)}</h2><p>${t.specialists.length} specialists · ${t.specialists.filter(s=>s.enabled).length} enabled</p><a class="button task-open" href="${link('specialists',t.id)}">Open task <span>→</span></a></article>`).join('')||'<div class="empty card"><h2>No tasks yet</h2><p>Create a task to start building its specialists.</p></div>'}</div>`;
+  app.innerHTML = `<div class="page-head"><div><div class="eyebrow">Workspace</div><h1>Tasks</h1><p>Saved setups, ready for another run.</p></div><div class="actions"><button class="primary" data-action="open-builder" ${edit()}>✦ Create with AI</button><button data-action="new-task" ${edit()}>＋ New task</button></div></div><div class="grid">${tasks.map(t=>`<article class="card task-card"><div class="card-top"><span class="badge">Task template</span>${menu('task',t.id,t.name)}</div><h2>${esc(t.name)}</h2><p>${t.specialists.length} specialists · ${t.specialists.filter(s=>s.enabled).length} enabled</p><a class="button task-open" href="${link('specialists',t.id)}">Open task <span>→</span></a></article>`).join('')||'<div class="empty card"><h2>No tasks yet</h2><p>Create a task to start building its specialists.</p></div>'}</div>`;
 }
 
 function renderSpecialists() {
@@ -182,6 +183,17 @@ async function route() {
   document.querySelectorAll('img[data-object-url]').forEach(img => URL.revokeObjectURL(img.dataset.objectUrl));
   const parts = location.hash.slice(1).split('/'),
     nextId = parts[0] === 'task' ? parts[1] : null;
+  if (page === 'builder' && parts[0] !== 'builder' && builderDirty) {
+    location.hash = lastHash;
+    ask('Unsaved builder edits', '<p>Your last chat and generated draft are saved. Discard edits that have not been sent or used to create a task?</p>', async () => {
+      builderDirty = false;
+      builder = null;
+      builderAttachments = [];
+      builderText = '';
+      location.hash = parts.join('/');
+    }, 'Discard edits');
+    return;
+  }
   if (state.busy && nextId && nextId !== state.task_id) {
     toast('Task switching is locked during a run.');
     location.hash = lastHash;
@@ -201,11 +213,15 @@ async function route() {
     location.hash = '#tasks';
     return;
   }
-  page = nextId ? (parts[2] || 'specialists') : 'tasks';
+  page = parts[0] === 'builder' ? 'builder' : nextId ? (parts[2] || 'specialists') : 'tasks';
   specialist = page === 'designer' ? task.specialists.find(s => s.id === parts[3]) : null;
   lastHash = location.hash || '#tasks';
-  nav.innerHTML = task && page !== 'tasks' ? `<a class="${page!=='monitor'?'active':''}" href="${link('specialists')}">Specialists</a><a class="${page==='monitor'?'active':''}" href="${link('monitor')}">Monitor</a>` : '';
-  if (page === 'tasks') renderTasks();
+  nav.innerHTML = task && !['tasks', 'builder'].includes(page) ? `<a class="${page!=='monitor'?'active':''}" href="${link('specialists')}">Specialists</a><a class="${page==='monitor'?'active':''}" href="${link('monitor')}">Monitor</a>` : '';
+  if (page === 'builder') {
+    task = null;
+    if (!builder) builder = await api('/builder');
+    renderBuilder();
+  } else if (page === 'tasks') renderTasks();
   else if (page === 'designer') renderDesigner();
   else if (page === 'monitor') renderMonitor();
   else renderSpecialists();
@@ -214,8 +230,11 @@ async function route() {
 }
 
 function updateLocks() {
-  document.querySelectorAll('[data-edit]').forEach(el => el.disabled = state.busy || pending);
-  dialog.querySelectorAll('input,textarea,select,button[type="submit"]').forEach(el => el.disabled = state.busy || pending);
+  const locked = state.busy || state.builder_busy || builder?.busy || pending;
+  document.querySelectorAll('[data-edit]').forEach(el => el.disabled = locked);
+  const openBuilder = app.querySelector('[data-action="open-builder"]');
+  if (openBuilder) openBuilder.disabled = state.busy || pending;
+  dialog.querySelectorAll('input,textarea,select,button[type="submit"]').forEach(el => el.disabled = locked);
   document.querySelectorAll('#save-state').forEach(el => {
     el.textContent = dirty ? 'Unsaved changes' : 'Saved';
     el.className = dirty ? 'unsaved' : 'hint';
@@ -229,9 +248,16 @@ function updateLocks() {
   }
   document.querySelectorAll('.task-open').forEach(el => el.setAttribute('aria-disabled', String(state.busy && !el.hash.includes('/' + state.task_id + '/'))));
   if (page === 'monitor') {
-    document.querySelector('#start').disabled = state.busy || dirty || pending || !readyToRun();
+    document.querySelector('#start').disabled = locked || dirty || !readyToRun();
     document.querySelector('#stop').disabled = !state.busy || state.phase === 'stopping';
     document.querySelector('#record').checked = state.busy ? state.recording : record;
+  }
+  if (page === 'builder' && builder) {
+    document.querySelectorAll('.builder-preview input,.builder-preview textarea,.builder-preview select').forEach(el => el.disabled = locked || builder.created);
+    for (const action of ['builder-send', 'builder-generate']) {
+      const button = app.querySelector(`[data-action="${action}"]`);
+      if (button) button.disabled = locked || builder.created || (!builderText.trim() && !builderAttachments.length && (action === 'builder-send' || !builder.messages.length));
+    }
   }
 }
 
@@ -398,9 +424,144 @@ async function uploadFile(file, kind, sourceId) {
   await route();
   toast('Uploaded. Save the task to keep the assignment.');
 }
+function renderBuilder() {
+  const draft = builder.draft, inputs = builder.inputs;
+  app.innerHTML = `<div class="page-head"><div><a class="breadcrumb" href="#tasks">Tasks</a><h1>Task Builder</h1><p>Describe your task. Review the specialists. Create a saved setup.</p></div><div class="actions"><button data-action="builder-settings" ${edit()}>Builder settings</button><button data-action="builder-reset" ${edit()}>New conversation</button></div></div>
+    <div id="lock-banner" class="lock-banner" ${state.busy?'':'hidden'}>Stop monitoring before using Task Builder.</div>
+    <div class="builder-layout"><section class="card builder-chat"><div class="section-head"><h2>Describe the task</h2><span class="badge">${esc(builder.settings.model)}</span></div>
+    ${!builder.key_configured&&builder.settings.base_url.includes('ollama.com')?'<p class="error-box">Set OLLAMA_API_KEY in the environment used to launch RoboBrain, then restart the UI server.</p>':''}
+    <div id="builder-messages" class="builder-messages" role="log" aria-label="Task design conversation" aria-live="polite"></div>
+    <div id="builder-error" class="error-box" role="alert" ${builder.error?'':'hidden'}>${esc(builder.error)}</div>
+    <div class="builder-composer"><label for="builder-message">Your message</label><textarea id="builder-message" rows="4" maxlength="12000" placeholder="For example: Move only the black wires from the white box onto the blue mat. Fail if a brick or a differently colored wire is placed on the mat." ${edit()}>${esc(builderText)}</textarea>
+    <div class="builder-attachments">${builderAttachments.map((a,i)=>`<div class="builder-attachment"><img src="/api/assets/${encodeURIComponent(a.asset)}" alt="${esc(a.label)}"><div><label>Image label<input data-builder-attachment="${i}" value="${esc(a.label)}" maxlength="500" required ${edit()}></label><label class="switch"><input type="checkbox" data-builder-reference="${i}" ${a.reference?'checked':''} ${edit()}> Use as specialist reference</label></div><button data-action="builder-remove-image" data-id="${i}" aria-label="Remove ${esc(a.label)}" ${edit()}>×</button></div>`).join('')}</div>
+    <label class="builder-upload"><input type="file" id="builder-images" accept="image/jpeg,image/png" multiple ${edit()}>Attach scene or reference images</label>
+    <p class="hint">Selected images are sent to the builder model with your message. Original reference files are kept locally.</p>
+    <div class="actions"><button data-action="builder-send" ${edit()}>Send message</button><button class="primary" data-action="builder-generate" ${edit()}>Generate draft</button><button data-action="builder-cancel" ${builder.busy?'':'hidden'}>Cancel response</button></div><p id="builder-status" class="hint" role="status"></p></div>
+    <details class="builder-inputs" ${builder.messages.length?'':'open'}><summary>Task inputs and monitoring settings</summary><label>Use monitoring settings from<select id="builder-base" ${edit()}><option value="">RoboBrain defaults</option>${tasks.map(t=>`<option value="${esc(t.id)}" ${inputs.base_task_id===t.id?'selected':''}>${esc(t.name)}</option>`).join('')}</select></label>
+    <label>Input type<select id="builder-mode" ${edit()}><option value="camera" ${inputs.input_mode==='camera'?'selected':''}>Live cameras</option><option value="video" ${inputs.input_mode==='video'?'selected':''}>Video simulation</option></select></label>
+    ${inputs.sources.map((s,i)=>`<div class="builder-source"><label class="switch"><input type="checkbox" data-builder-source-enabled="${i}" ${s.enabled?'checked':''} ${edit()}>${esc(s.name)}</label>${inputs.input_mode==='camera'?`<label>Camera device<input data-builder-device="${i}" value="${esc(s.device)}" placeholder="0 or /dev/video0" ${edit()}></label>`:`<label>Video<input type="file" accept=".mov,.mp4,.avi,.mkv" data-builder-video="${i}" ${edit()}><small>${esc(s.video||'Choose a video')}</small></label>`}</div>`).join('')}<p class="hint">Sources use full-frame crops. Connect and check their previews on Monitor after creating the task. The builder model is configured separately.</p></details></section>
+    <section class="card builder-preview"><div class="section-head"><h2>Task preview</h2><span class="badge">${draft?'Ready to review':'Draft'}</span></div>${draft?`<label>Task name<input data-builder-name value="${esc(draft.name)}" maxlength="120" required ${edit()}></label><p>${esc(draft.summary)}</p>${draft.specialists.map((s,i)=>`<fieldset class="builder-specialist"><legend>Specialist ${i+1}</legend><label>Name<input data-builder-spec="${i}" data-builder-field="name" value="${esc(s.name)}" maxlength="120" required ${edit()}></label><label>Failure type <small>Leave blank for the success specialist</small><input data-builder-spec="${i}" data-builder-field="failure_type" value="${esc(s.failure_type||'')}" placeholder="Success specialist" ${edit()}></label><label>System prompt<textarea rows="9" data-builder-spec="${i}" data-builder-field="prompt" minlength="40" maxlength="20000" required ${edit()}>${esc(s.prompt)}</textarea></label><label>Camera / video views<select multiple data-builder-spec="${i}" data-builder-list="camera_sources" ${edit()}>${inputs.sources.filter(x=>x.enabled).map(x=>`<option value="${esc(x.id)}" ${s.camera_sources.includes(x.id)?'selected':''}>${esc(x.name)}</option>`).join('')}</select></label>${builder.attachments.some(a=>a.reference)?`<label>Reference images<select multiple data-builder-spec="${i}" data-builder-list="reference_assets" ${edit()}>${builder.attachments.filter(a=>a.reference).map(a=>`<option value="${esc(a.asset)}" ${s.reference_assets.includes(a.asset)?'selected':''}>${esc(a.label)}</option>`).join('')}</select></label>`:''}<details><summary>Configuration JSON</summary><pre data-builder-config="${i}">${esc(JSON.stringify({field:'verdict',values:{POSITIVE:'POSITIVE',NEGATIVE:'NEGATIVE',UNCERTAIN:'UNCERTAIN'},failure_type:s.failure_type},null,2))}</pre></details></fieldset>`).join('')}<p class="hint">Prompts, names, views and reference assignments are editable here. All settings remain editable in Prompt Designer after creation.</p>${builder.created?`<a class="button" href="${link('specialists',builder.task_id)}">Open created task →</a>`:`<button class="primary" data-action="builder-create" ${edit()}>Create task</button>`}`:'<div class="builder-placeholder"><span aria-hidden="true">✦</span><h3>Your specialists will appear here</h3><p>Explain what success looks like and which failures matter. Attach images to clarify targets and distractors, then generate a draft.</p></div>'}</section></div>`;
+  renderBuilderConversation();
+  updateLocks();
+}
+
+function renderBuilderConversation() {
+  if (page !== 'builder') return;
+  const log = document.querySelector('#builder-messages');
+  const atBottom = log.scrollTop + log.clientHeight >= log.scrollHeight - 80;
+  log.innerHTML = builder.messages.map(m=>`<article class="builder-message ${m.role==='user'?'from-user':''}"><strong>${m.role==='user'?'You':'Task Builder'}</strong><div>${esc(m.content)}</div>${(m.attachments||[]).map(a=>`<img src="/api/assets/${encodeURIComponent(a.asset)}" alt="${esc(a.label)}">`).join('')}</article>`).join('') + (builder.partial?`<article class="builder-message"><strong>Task Builder</strong><div>${esc(builder.partial)}</div></article>`:'');
+  if (atBottom) log.scrollTop = log.scrollHeight;
+  const phases = {connecting:'Connecting to the builder model',chatting:'Writing a response',generating:'Generating specialists',repairing:'Correcting the draft format',ready:'Draft ready to review',idle:'Ready',cancelled:'Response cancelled',error:'Response failed'};
+  const usage = builder.usage.reduce((sum,u)=>sum+(u.eval_count||0),0);
+  document.querySelector('#builder-status').textContent = `${phases[builder.phase]||builder.phase}${builder.busy?' · '+Math.round(builder.elapsed_s||0)+' s':''}${usage?' · '+usage.toLocaleString()+' output tokens used':''}`;
+}
+
+async function pollBuilder() {
+  if (!builder?.busy || builderPolling) return;
+  builderPolling = true;
+  try {
+    builder = await api('/builder');
+    state.builder_busy = builder.busy;
+    if (page === 'builder') {
+      if (builder.busy) renderBuilderConversation();
+      else renderBuilder();
+    }
+    updateLocks();
+  } catch (error) {
+    if (page === 'builder') document.querySelector('#builder-status').textContent = 'Reconnecting to Task Builder…';
+  } finally { builderPolling = false; }
+}
+
+async function uploadBuilder(file, videoIndex) {
+  if (!file || pending || builder.busy || state.busy) return;
+  const video = videoIndex !== undefined;
+  if (!video && builderAttachments.length >= 8) throw new Error('Attach at most eight images per message.');
+  pending = true;
+  updateLocks();
+  try {
+    const form = new FormData();
+    form.append('file', file);
+    const result = await api('/assets/' + (video?'video':'image'), 'POST', form);
+    if (video) {
+      builder.inputs.sources[videoIndex].video = result.asset;
+      builder.draft = null;
+    } else builderAttachments.push({asset:result.asset,label:file.name,reference:false});
+    builderDirty = true;
+  } finally { pending = false; renderBuilder(); }
+}
+
+async function builderAction(action, id) {
+  if (action === 'open-builder') { location.hash = '#builder'; return; }
+  if (action === 'builder-cancel') {
+    builder = await api('/builder/cancel', 'POST');
+    state.builder_busy = false;
+    renderBuilder();
+    return;
+  }
+  if (action === 'builder-reset') {
+    ask('New builder conversation', '<p>Start a fresh conversation and discard the current draft? Created tasks are kept.</p>', async () => {
+      builder = await api('/builder/reset', 'POST');
+      builderText = ''; builderAttachments = []; builderDirty = false;
+      renderBuilder();
+    }, 'Start new conversation');
+    return;
+  }
+  if (action === 'builder-settings') {
+    const s = builder.settings;
+    ask('Task Builder settings', `<p class="hint">These settings only affect task creation. Changing the endpoint or model starts a new conversation. The cloud API key comes from OLLAMA_API_KEY on the server.</p><label>Ollama base URL<input name="base_url" value="${esc(s.base_url)}" required></label><label>Model<input name="model" value="${esc(s.model)}" required></label><label class="switch"><input type="checkbox" name="think" ${s.think?'checked':''}> Enable model thinking</label><label>Maximum output tokens<input type="number" name="max_tokens" min="1024" max="32768" value="${s.max_tokens}" required></label><label>Response timeout (seconds)<input type="number" name="timeout" min="10" max="600" value="${s.timeout}" required></label><button type="button" id="builder-check">Check saved connection</button><p id="builder-connection" class="hint" role="status"></p>`, async f => {
+      builder = await api('/builder/settings', 'PUT', {base_url:f.get('base_url'),model:f.get('model'),think:f.has('think'),max_tokens:Number(f.get('max_tokens')),timeout:Number(f.get('timeout'))});
+      builderText = ''; builderAttachments = []; builderDirty = false;
+      renderBuilder();
+    });
+    dialog.querySelector('#builder-check').onclick = async e => {
+      e.target.disabled = true;
+      const status = dialog.querySelector('#builder-connection');
+      status.textContent = 'Checking connection…';
+      try {
+        const checked = await api('/builder/check', 'POST');
+        builder.connection = checked.connection;
+        status.textContent = `${checked.connection.model} is available · ${checked.connection.vision?'Image input supported':'Text input only'}`;
+      } catch(error) { status.textContent = error.message; }
+      finally { e.target.disabled = false; }
+    };
+    return;
+  }
+  if (action === 'builder-remove-image') {
+    builderAttachments.splice(Number(id),1); builderDirty = true; renderBuilder(); return;
+  }
+  pending = true;
+  updateLocks();
+  try {
+    if (action === 'builder-send' || action === 'builder-generate') {
+      builder = await api('/builder/respond', 'POST', {action:action==='builder-send'?'chat':'generate',text:builderText,attachments:builderAttachments,inputs:builder.inputs});
+      builderText = ''; builderAttachments = []; builderDirty = false;
+      state.builder_busy = builder.busy;
+      renderBuilder();
+    } else if (action === 'builder-create') {
+      validateEditor();
+      const created = await api('/builder/create', 'POST', {revision:builder.revision,draft:builder.draft});
+      builder.created = true; builderDirty = false;
+      tasks = await api('/tasks');
+      task = null;
+      location.hash = link('specialists',created.id);
+      toast('Task created with configured specialists.');
+    }
+  } finally { pending = false; updateLocks(); }
+}
+
 app.addEventListener('input', e => {
   const el = e.target;
   if (state.busy || pending) return;
+  if (el.id === 'builder-message') { builderText = el.value; builderDirty = true; updateLocks(); }
+  if (el.hasAttribute('data-builder-attachment')) { builderAttachments[Number(el.dataset.builderAttachment)].label = el.value; builderDirty = true; }
+  if (el.hasAttribute('data-builder-device')) { builder.inputs.sources[Number(el.dataset.builderDevice)].device = el.value; builder.draft = null; builderDirty = true; }
+  if (el.hasAttribute('data-builder-name')) { builder.draft.name = el.value; builderDirty = true; }
+  if (el.dataset.builderField) {
+    const spec = builder.draft.specialists[Number(el.dataset.builderSpec)];
+    spec[el.dataset.builderField] = el.dataset.builderField === 'failure_type' ? (el.value || null) : el.value;
+    builderDirty = true;
+    if (el.dataset.builderField === 'failure_type') document.querySelector(`[data-builder-config="${el.dataset.builderSpec}"]`).textContent = JSON.stringify({field:'verdict',values:{POSITIVE:'POSITIVE',NEGATIVE:'NEGATIVE',UNCERTAIN:'UNCERTAIN'},failure_type:spec.failure_type},null,2);
+  }
   if (el.id === 'definition') {
     try {
       specialist.definition = el.value.trim() ? JSON.parse(el.value) : null;
@@ -422,6 +583,23 @@ app.addEventListener('input', e => {
 app.addEventListener('change', async e => {
   const el = e.target;
   try {
+    if (page === 'builder') {
+      if (state.busy || pending || builder.busy) return;
+      if (el.id === 'builder-images') { for (const file of el.files) await uploadBuilder(file); return; }
+      if (el.hasAttribute('data-builder-video')) { await uploadBuilder(el.files[0],Number(el.dataset.builderVideo)); return; }
+      if (el.hasAttribute('data-builder-reference')) builderAttachments[Number(el.dataset.builderReference)].reference = el.checked;
+      if (el.dataset.builderList) builder.draft.specialists[Number(el.dataset.builderSpec)][el.dataset.builderList] = [...el.selectedOptions].map(o=>o.value);
+      if (el.id === 'builder-base') {
+        builder.inputs.base_task_id = el.value || null;
+        const base = tasks.find(t=>t.id===el.value);
+        if (base) { builder.inputs.sources = clone(base.sources); builder.inputs.input_mode = base.input_mode; }
+      }
+      if (el.id === 'builder-mode') builder.inputs.input_mode = el.value;
+      if (el.hasAttribute('data-builder-source-enabled')) builder.inputs.sources[Number(el.dataset.builderSourceEnabled)].enabled = el.checked;
+      if (el.id === 'builder-base' || el.id === 'builder-mode' || el.hasAttribute('data-builder-source-enabled') || el.hasAttribute('data-builder-device')) { builder.draft = null; renderBuilder(); }
+      builderDirty = true;
+      return;
+    }
     if (el.id === 'record') {
       record = el.checked;
       return;
@@ -488,6 +666,10 @@ app.addEventListener('click', async e => {
     id = button.dataset.id;
   if (state.busy && button.hasAttribute('data-edit')) return;
   try {
+    if (action === 'open-builder' || action.startsWith('builder-')) {
+      await builderAction(action,id);
+      return;
+    }
     if (action === 'save') {
       await saveTask();
       return;
@@ -646,14 +828,14 @@ app.addEventListener('click', async e => {
     }
     if (action === 'settings') {
       const keys = ['base_url', 'model', 'fps', 'evidence_horizon', 'horizon_duration', 'request_timeout', 'max_tokens', 'max_connections'];
-      ask('Model & monitoring settings', `<p class="hint">Existing RoboBrain configuration. Values change only when you save them.</p><p class="hint">Set evidence horizon to 0 to disable verification and decide from each completed normal batch. Horizon duration and specialist thresholds are ignored in this mode.</p>${keys.map(k=>`<label>${esc(k.replaceAll('_',' '))}<input name="${k}" value="${esc(task.config[k])}" ${['base_url','model'].includes(k)?'':k==='evidence_horizon'?'type="number" step="1" min="0"':'type="number" step="any"'} required></label>`).join('')}<button type="button" id="check-model">Check saved model connection</button>`, async f => {
+      ask('Model & monitoring settings', `<p class="hint">Use an OpenAI-compatible endpoint such as /v1, or an Ollama endpoint ending in /api. Ollama Cloud uses OLLAMA_API_KEY from the server environment. These settings are independent of Task Builder.</p><p class="hint">Set evidence horizon to 0 to disable verification and decide from each completed normal batch. Horizon duration and specialist thresholds are ignored in this mode.</p>${keys.map(k=>`<label>${esc(k.replaceAll('_',' '))}<input name="${k}" value="${esc(task.config[k])}" ${['base_url','model'].includes(k)?'':k==='evidence_horizon'?'type="number" step="1" min="0"':'type="number" step="any"'} required></label>`).join('')}<button type="button" id="check-model">Check saved model connection</button>`, async f => {
         keys.forEach(k => task.config[k] = ['base_url', 'model'].includes(k) ? f.get(k) : Number(f.get(k)));
         markDirty();
         await saveTask();
       }, 'Save settings');
       dialog.querySelector('#check-model').onclick = () => api('/model/check', 'POST', {
         task_id: task.id
-      }).then(() => toast('Model connection is ready')).catch(error => toast(error.message));
+      }).then(result => toast('Model connection is ready: ' + result.model)).catch(error => toast(error.message));
       return;
     }
     if (action === 'preview-request') {
@@ -709,7 +891,7 @@ app.addEventListener('click', async e => {
 });
 window.addEventListener('hashchange', () => route().catch(error => toast(error.message)));
 window.addEventListener('beforeunload', e => {
-  if (dirty) {
+  if (dirty || builderDirty) {
     e.preventDefault();
     e.returnValue = '';
   }
@@ -725,10 +907,10 @@ state = await api('/state');
 await route();
 const events = new EventSource('/api/events');
 events.onmessage = e => {
-  const oldBusy = state.busy;
+  const oldBusy = state.busy, oldBuilderBusy = state.builder_busy;
   state = JSON.parse(e.data);
-  document.querySelector('#connection').textContent = state.busy ? 'Run in progress' : 'Local workspace';
-  if (oldBusy !== state.busy) updateLocks();
+  document.querySelector('#connection').textContent = state.busy ? 'Run in progress' : state.builder_busy ? 'Task Builder working' : 'Local workspace';
+  if (oldBusy !== state.busy || oldBuilderBusy !== state.builder_busy) updateLocks();
   updateMonitor();
 };
 events.onerror = () => {
@@ -736,6 +918,7 @@ events.onerror = () => {
 };
 // Camera previews run independently of the slower status updates and inference.
 setInterval(refreshPreviews, 1000 / 30);
+setInterval(pollBuilder, 750);
 const context = document.modelContext;
 if (context?.registerTool) {
   const lifecycle = new AbortController();

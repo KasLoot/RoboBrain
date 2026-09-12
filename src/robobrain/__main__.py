@@ -16,6 +16,7 @@ import httpx
 
 from .monitor import Backend, HERE, ReplayController, SimulatedCamera, load_config, monitor
 from .presentation import EpisodeReport, LiveView, annotate_frame, render_recording
+from .endpoints import endpoint_error
 
 DEFAULT_VIDEOS = Path("video/insert_plug-full_model-aug-28-105trail-1x")
 WINDOW = "RoboBrain"
@@ -47,11 +48,8 @@ def select_videos(source, episodes):
 async def run_episodes(args, config, dataset, videos, view, stop_event):
     limits = httpx.Limits(max_connections=config["max_connections"], max_keepalive_connections=config["max_connections"])
     async with httpx.AsyncClient(limits=limits, trust_env=False) as client:
-        response = await client.get(config["base_url"].rstrip("/") + "/models", timeout=config["request_timeout"])
-        response.raise_for_status()
-        if config["model"] not in {m["id"] for m in response.json()["data"]}:
-            raise ValueError("Configured model is not available at the endpoint")
         backend = Backend(config, client)
+        await backend.check_model()
         controller = ReplayController()
         for index, video in enumerate(videos, 1):
             if stop_event.is_set():
@@ -234,7 +232,7 @@ def main():
     except (ValueError, RuntimeError, OSError, KeyError, httpx.HTTPError, cv2.error) as exc:
         detail = str(exc) or type(exc).__name__
         if isinstance(exc, httpx.HTTPError):
-            detail = f"Model endpoint unavailable ({config['base_url']}): {detail}. Check the server and SSH tunnel."
+            detail = endpoint_error(config["base_url"], exc)
         parser.exit(1, f"robobrain: {detail}\n")
 
 

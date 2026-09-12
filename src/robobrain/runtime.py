@@ -15,6 +15,7 @@ import time
 import cv2
 import httpx
 
+from .endpoints import endpoint_error
 from .monitor import Backend, ReplayController, SimulatedCamera, Specialist, image_content, load_config, monitor
 from .presentation import EpisodeReport, LiveView, annotate_frame, render_recording
 from .sources import CompositeVideo, Inputs, LiveCamera, composite
@@ -274,10 +275,8 @@ class Runtime:
             config, specialists = await asyncio.to_thread(prepare, task, self.store, inputs.get().views)
             limits = httpx.Limits(max_connections=config["max_connections"], max_keepalive_connections=config["max_connections"])
             async with httpx.AsyncClient(limits=limits, trust_env=False) as client:
-                response = await client.get(config["base_url"].rstrip("/") + "/models", timeout=config["request_timeout"])
-                response.raise_for_status()
-                if config["model"] not in {m["id"] for m in response.json()["data"]}:
-                    raise ValueError("Configured model is not available at the endpoint")
+                backend = Backend(config, client, specialists=specialists)
+                await backend.check_model()
                 if task["input_mode"] == "video":
                     # Rewind previewed videos; a run always starts a new episode.
                     await self.disconnect()
@@ -300,7 +299,6 @@ class Runtime:
                 self.phase = "running" if not self.stop_event.is_set() else "stopping"
                 controller = ReplayController()
                 controller.start(run_id, log)
-                backend = Backend(config, client, specialists=specialists)
                 result = await monitor(inputs, backend, config, log, self.stop_event, continuous=True)
                 controller.finish(run_id, result, log)
                 self.phase = "finalizing"
@@ -314,7 +312,7 @@ class Runtime:
             result.pop("type", None)
             self.error = str(exc) or type(exc).__name__
             if isinstance(exc, httpx.HTTPError):
-                self.error = f"Model endpoint unavailable: {self.error}. Check the vLLM server and SSH forward."
+                self.error = endpoint_error(task["config"]["base_url"], exc)
             result.update(stop_reason="runtime_error", error=self.error)
             if self.started_at:
                 result["decision_time_s"] = time.monotonic() - self.started_at

@@ -32,6 +32,22 @@ Templates and assets are saved in `.robobrain/` (ignored by Git). Back up this d
 
 The UI calls the same monitoring, verification, parsing, thresholds, and decision functions as the CLI. Camera capture uses isolated processes and shared frame buffers for bounded cleanup and reliable reopening on macOS.
 
+The monitoring model supports an **OpenAI-compatible endpoint** (for example `http://127.0.0.1:9000/v1`) or the **native Ollama API** (a base URL ending in `/api`). For Ollama Cloud, set the monitor base URL to `https://ollama.com/api` and model to `gemma4:31b-cloud` or `gemma4:31b`. Set `OLLAMA_API_KEY` in the environment used to launch the UI. The monitor resolves cloud aliases through `/tags`, checks image support with `/show`, and sends images through `/chat` with thinking disabled. Local Ollama, such as `http://localhost:11434/api`, is also supported. Builder and monitor model settings remain independent.
+
+Ollama Cloud does not currently enforce JSON schemas, so the monitor includes its existing response schema in the request and validates the reply locally. Malformed, truncated, or reasoning-bearing replies remain UNCERTAIN; no extra inference retries are added. Native image bytes, specialist mappings, concurrent batches, and verification scheduling are preserved.
+
+## Task Builder chatbot
+
+Choose **Create with AI** on Tasks to describe a task, attach JPEG/PNG scene images, and generate an editable draft. The builder defaults to **Kimi K3 on Ollama Cloud**, using a separate endpoint, model, thinking setting, timeout, and token budget from the monitoring VLM. Set `OLLAMA_API_KEY` in the environment used to launch `uv run robobrain ui`. The key stays on the backend and is not stored in task files or returned to the browser.
+
+Use **Send message** to discuss the task or **Generate draft** to produce configured specialists. Uploaded images are sent with the message; select **Use as specialist reference** for images the generated specialists may reuse. Chat images are encoded as JPEG with a maximum dimension of 2048 pixels; original uploads and monitoring references retain their original bytes. Up to eight images can be attached to one message and 24 to a conversation.
+
+Select camera devices or uploaded videos under **Task inputs and monitoring settings**. A saved task can supply its monitoring configuration and source settings. Generated sources use full-frame crops, and new specialists use threshold 5, bounded below a positive evidence horizon; horizon 0 keeps verification disabled. Review and edit names, prompts, failure types, source assignments, and reference selections before **Create task**. The new task appears in the regular Specialists and Monitor pages; connect inputs and inspect their previews before starting.
+
+**Builder settings** accepts `https://ollama.com/api` or a local Ollama `/api` endpoint. **Check saved connection** verifies the selected model and image support. Cloud aliases such as `kimi-k3:cloud` are resolved against the direct API catalog (`kimi-k3`). Changing the endpoint or model starts a fresh conversation. Ollama Cloud does not currently enforce JSON schemas, so the builder validates drafts locally and permits one correction attempt. Invalid or cancelled generations create no task. Creating the same draft twice returns the same task.
+
+The shared builder conversation and settings are stored under `.robobrain/task-builder/`; model thinking history is retained for provider compatibility but is not displayed in the UI. Chat and generated drafts survive a refresh. Manual preview edits and unsent messages are held in the browser until sent or used to create a task. Generation is cancellable; task changes and monitoring startup are locked while it runs, and the builder is locked during monitoring. The generation system prompt is in `src/robobrain/prompts/task_builder.md`.
+
 ## CLI
 
 From this repository:
@@ -123,6 +139,8 @@ Recorded control-action events describe the proposed insertion, release, recover
 ```sh
 uv run python tests/check_robobrain.py
 uv run python tests/check_ui.py
+uv run python tests/check_builder.py
+uv run python tests/check_endpoints.py
 node tests/check_frontend.mjs
 ```
 
