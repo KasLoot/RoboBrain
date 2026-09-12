@@ -13,6 +13,8 @@ import time
 import cv2
 import httpx
 
+from .endpoints import cloud_model, model_info, native_ollama, ollama_headers
+
 HERE = Path(__file__).resolve().parent
 VERDICTS = ("POSITIVE", "NEGATIVE", "UNCERTAIN")
 
@@ -63,6 +65,20 @@ class Specialist:
     def confirmed(self, observations):
         return self.evidence_count(observations) > self.threshold
 
+    def current_content(self, frame):
+        """UI input assembly only; the legacy request remains identical."""
+        if "input_blocks" not in self.config:
+            return [{"type": "text", "text": "Current camera observation:"}, image_content(frame.image, self.crop)]
+        content = []
+        for block in self.config["input_blocks"]:
+            if "content" in block:
+                content.extend(block["content"])
+            else:
+                image = frame.views[block["source"]].image
+                crop = block["crop"] or [0, 0, image.shape[1], image.shape[0]]
+                content.extend([{"type": "text", "text": block["alias"]}, image_content(image, crop)])
+        return content
+
     async def observe(self, frame, backend, started_at, log, **tags):
         specialist = self.name
         observation = {
@@ -73,43 +89,32 @@ class Specialist:
             "captured_time_s": frame.observed_at - started_at,
             **tags,
         }
+        if hasattr(frame, "views"):
+            observation["source_frames"] = {
+                name: {"source_frame": view.source_index, "captured_time_s": view.observed_at - started_at}
+                for name, view in frame.views.items()
+            }
         sent = time.monotonic()
         log({**observation, "type": "request_started", "sent_time_s": sent - started_at})
         try:
-            response = await backend.client.post(
-                self.config["base_url"].rstrip("/") + "/chat/completions",
-                json={
-                    "model": self.config["model"], "temperature": 0,
-                    "max_tokens": self.config["max_tokens"],
-                    "chat_template_kwargs": {"enable_thinking": False},
-                    "messages": [
-                        {"role": "system", "content": self.prompt},
-                        {"role": "user", "content": [
-                            *self.references,
-                            {"type": "text", "text": "Current camera observation:"},
-                            image_content(frame.image, self.crop),
-                        ]},
-                    ],
-                    "response_format": {"type": "json_schema", "json_schema": {
-                        "name": "visual_observation", "strict": True,
-                        "schema": self.schema,
-                    }},
-                },
-                timeout=self.config["request_timeout"],
-            )
+            response = await backend.complete(self, frame)
             observation["http_status"] = response.status_code
             observation["response_text"] = response.text
             response.raise_for_status()
             body = response.json()
             observation["response"] = body
-            message = body["choices"][0]["message"]
+            message = body["message"] if backend.native else body["choices"][0]["message"]
             if not isinstance(message, dict):
                 raise ValueError("Invalid assistant message")
             observation["raw"] = message.get("content")
-            if message.get("reasoning") or message.get("reasoning_content"):
-                raise ValueError("Endpoint emitted reasoning despite enable_thinking=False")
+            if message.get("reasoning") or message.get("reasoning_content") or message.get("thinking"):
+                raise ValueError("Endpoint emitted reasoning despite thinking being disabled")
+            if backend.native and (body.get("done") is not True or body.get("done_reason") == "length"):
+                raise ValueError("Ollama response is incomplete or reached the output token limit")
             observation.update(self.parse(message["content"]))
-            observation["usage"] = body.get("usage", {})
+            observation["usage"] = ({"prompt_tokens": body.get("prompt_eval_count", 0),
+                                     "completion_tokens": body.get("eval_count", 0)}
+                                    if backend.native else body.get("usage", {}))
         except asyncio.CancelledError:
             observation.update(verdict="UNCERTAIN", reason="Request cancelled", cancelled=True)
             raise
@@ -127,7 +132,7 @@ class Specialist:
 
 
 def load_config(path=HERE / "config.json", base_url=None):
-    config = json.loads(Path(path).read_text())
+    config = json.loads(json.dumps(path)) if isinstance(path, dict) else json.loads(Path(path).read_text())
     if not isinstance(config, dict):
         raise ValueError("Configuration must be a JSON object")
     if base_url:
@@ -144,8 +149,8 @@ def load_config(path=HERE / "config.json", base_url=None):
     if endpoint.scheme not in ("http", "https") or not endpoint.host:
         raise ValueError("base_url must be a valid HTTP(S) URL")
     n = config["evidence_horizon"]
-    if type(n) is not int or n < 1:
-        raise ValueError("evidence_horizon must be a positive integer")
+    if type(n) is not int or n < 0:
+        raise ValueError("evidence_horizon must be a nonnegative integer (0 disables verification)")
     for name in ("horizon_duration", "request_timeout", "episode_timeout"):
         if type(config[name]) not in (int, float) or not 0 < config[name] < float("inf"):
             raise ValueError(f"{name} must be finite and positive")
@@ -162,8 +167,10 @@ def load_config(path=HERE / "config.json", base_url=None):
     config["enabled_specialists"] = list(definitions)
     for specialist in config["enabled_specialists"]:
         threshold = config["evidence_threshold"][specialist]
-        if type(threshold) is not int or not 0 <= threshold < n:
-            raise ValueError("Each evidence_threshold must be an integer in [0, N)")
+        if type(threshold) is not int or threshold < 0:
+            raise ValueError("Each evidence_threshold must be a nonnegative integer")
+        if n and threshold >= n:
+            raise ValueError("Each evidence_threshold must be less than evidence_horizon when verification is enabled")
         x1, y1, x2, y2 = config["crops"][specialist]
         if not all(type(x) is int for x in (x1, y1, x2, y2)) or not (0 <= x1 < x2 and 0 <= y1 < y2):
             raise ValueError(f"Invalid {specialist} crop")
@@ -257,15 +264,62 @@ def image_content(image, crop):
 
 class Backend:
     """Shared transport; specialists never own independent verification schedulers."""
-    def __init__(self, config, client):
+    def __init__(self, config, client, *, specialists=None):
         self.config, self.client = config, client
+        self.native = native_ollama(config["base_url"])
+        self.model, self.info = config["model"], {}
         self.request_ids = itertools.count(1)
+        if specialists is not None:
+            self.specialists = specialists
+            return
         self.specialists = {}
         for name in config["enabled_specialists"]:
             settings = {**config, **config["specialists"][name], "name": name,
                         "crop": config["crops"][name], "threshold": config["evidence_threshold"][name],
                         "reference_images": config.get("references", {}).get(name, [])}
             self.specialists[name] = Specialist((HERE / "prompts" / f"{name}.md").read_text(), settings)
+
+    async def check_model(self):
+        self.info = await model_info(self.client, self.config["base_url"], self.config["model"],
+                                     self.config["request_timeout"], require_vision=True)
+        self.model = self.info["model"]
+        return self.info
+
+    async def complete(self, specialist, frame):
+        content = [*specialist.references, *specialist.current_content(frame)]
+        base_url = self.config["base_url"].rstrip("/")
+        if self.native:
+            text, images = [], []
+            for part in content:
+                if part["type"] == "text":
+                    text.append(part["text"])
+                else:
+                    header, separator, encoded = part["image_url"]["url"].partition(",")
+                    if not separator or not header.startswith("data:image/") or not header.endswith(";base64"):
+                        raise ValueError("Ollama requires embedded base64 images")
+                    images.append(encoded)
+                    text.append(f"[Image {len(images)}]")
+            payload = {"model": self.model, "stream": False,
+                       "messages": [{"role": "system", "content": specialist.prompt},
+                                    {"role": "user", "content": "\n\n".join(text), "images": images}],
+                       "options": {"temperature": 0, "num_predict": self.config["max_tokens"]}}
+            if self.info.get("thinking", True):
+                payload["think"] = False
+            if cloud_model(base_url, self.model):
+                # Cloud cannot enforce a schema; preserve the same output contract in the request and validate locally.
+                payload["messages"][-1]["content"] += "\n\nReturn only JSON matching this response schema, without Markdown:\n" + json.dumps(specialist.schema)
+            else:
+                payload["format"] = specialist.schema
+            path = "/chat"
+        else:
+            payload = {"model": self.model, "temperature": 0, "max_tokens": self.config["max_tokens"],
+                       "chat_template_kwargs": {"enable_thinking": False},
+                       "messages": [{"role": "system", "content": specialist.prompt}, {"role": "user", "content": content}],
+                       "response_format": {"type": "json_schema", "json_schema": {
+                           "name": "visual_observation", "strict": True, "schema": specialist.schema}}}
+            path = "/chat/completions"
+        return await self.client.post(base_url + path, json=payload, headers=ollama_headers(base_url),
+                                      timeout=self.config["request_timeout"])
 
     async def batch(self, frame, started_at, log, *, normal, round_id=None, slot=None):
         return await asyncio.gather(*(
@@ -275,12 +329,13 @@ class Backend:
 
 
 def decide(observations, config, specialists):
-    expected = {(i, name) for i in range(config["evidence_horizon"]) for name in specialists}
-    keys = [(o["slot"], o["specialist"]) for o in observations]
+    n = config["evidence_horizon"]
+    expected = {(i, name) for i in (range(n) if n else (None,)) for name in specialists}
+    keys = [(o.get("slot"), o["specialist"]) for o in observations]
     if len(keys) != len(expected) or set(keys) != expected:
-        raise ValueError("Verification requires one response per slot and specialist")
+        raise ValueError("Decision requires one response per expected slot and specialist")
     counts = {name: specialist.evidence_count(observations) for name, specialist in specialists.items()}
-    confirmed = [s for s in specialists.values() if s.confirmed(observations)]
+    confirmed = [s for s in specialists.values() if (s.confirmed(observations) if n else counts[s.name] > 0)]
     successes = [s for s in confirmed if s.failure_type is None]
     failures = [s for s in confirmed if s.failure_type is not None]
     status = "SUCCESS" if successes and not failures else "FAIL" if failures and not successes else "ON_GOING"
@@ -327,17 +382,19 @@ async def verify(camera, backend, config, first_batch, started_at, triggered_at,
         await asyncio.gather(*tasks, return_exceptions=True)
 
 
-async def monitor(camera, backend, config, log, stop_event=None):
+async def monitor(camera, backend, config, log, stop_event=None, *, continuous=False):
+    """Continuous sessions re-arm visual events; batch episodes stop on a decision."""
     started_at = camera.started_at
     normal = asyncio.create_task(backend.batch(camera.get(), started_at, log, normal=True))
     verification = None
     round_id, rearm_after = 0, -1.0
+    confirmed = set()
     consecutive_errors = 0
     result = {"status": "ON_GOING", "failure_type": None, "failure_description": None,
               "source_frame": -1}
     try:
         log({"type": "status", **result, "decision_time_s": 0.0})
-        async with asyncio.timeout(config["episode_timeout"]):
+        async with asyncio.timeout(None if continuous else config["episode_timeout"]):
             while True:
                 if stop_event is not None and stop_event.is_set():
                     result.update(decision_time_s=time.monotonic() - started_at, stop_reason="user_stop")
@@ -354,9 +411,14 @@ async def monitor(camera, backend, config, log, stop_event=None):
                          "time_s": time.monotonic() - started_at})
                     verification = None
                     rearm_after = time.monotonic() - started_at
-                    if status != "ON_GOING":
+                    if status != "ON_GOING" or continuous:
                         result.update(status=status, decision_time_s=rearm_after,
-                                      evidence_counts=counts, verification_round=round_id)
+                                      evidence_counts=counts, verification_round=round_id,
+                                      failure_type=None, failure_description=None)
+                        result.pop("confirmed_failure_types", None)
+                        confirmed = ({name for name, count in counts.items()
+                                      if count > backend.specialists[name].threshold}
+                                     if status != "ON_GOING" else set())
                         if status == "FAIL":
                             primary = failures[0]
                             positives = [o for o in observations if o["specialist"] == primary.name and o["verdict"] == "POSITIVE"]
@@ -366,18 +428,44 @@ async def monitor(camera, backend, config, log, stop_event=None):
                         result["evidence_source_time_s"] = max(o["source_time_s"] for o in observations)
                         result["source_frame"] = round(result["evidence_source_time_s"] * 30)
                         log({"type": "status", **result})
-                        return result
+                        if not continuous:
+                            return result
                 if normal in done:
                     batch = normal.result()
                     consecutive_errors = consecutive_errors + 1 if all("error" in o for o in batch) else 0
                     if consecutive_errors >= 5:
                         raise RuntimeError("Five consecutive normal batches failed; check the model endpoint")
-                    result["source_frame"] = round(batch[0]["source_time_s"] * 30)
-                    log({"type": "status", **result, "decision_time_s": time.monotonic() - started_at})
+                    if config["evidence_horizon"] == 0:
+                        status, counts, failures = decide(batch, config, backend.specialists)
+                        evidence_time = max(o["source_time_s"] for o in batch)
+                        result = {"status": status, "failure_type": None, "failure_description": None,
+                                  "decision_time_s": time.monotonic() - started_at, "evidence_counts": counts,
+                                  "evidence_source_time_s": evidence_time, "source_frame": round(evidence_time * 30)}
+                        if status == "FAIL":
+                            primary = failures[0]
+                            result.update(failure_type=primary.failure_type,
+                                          confirmed_failure_types=[s.failure_type for s in failures],
+                                          failure_description=next(o["reason"] for o in batch if o["specialist"] == primary.name))
+                        log({"type": "status", **result})
+                        if not continuous and status != "ON_GOING":
+                            return result
+                        normal = asyncio.create_task(backend.batch(camera.get(), started_at, log, normal=True))
+                        continue
+                    fresh = batch[0]["captured_time_s"] >= rearm_after
+                    positive_specialists = {o["specialist"] for o in batch if o["verdict"] == "POSITIVE"}
+                    # A fresh normal observation can clear a displayed event;
+                    # only a complete verification round can confirm a new one.
+                    if continuous and confirmed and fresh and not confirmed.issubset(positive_specialists):
+                        confirmed.clear()
+                        result = {"status": "ON_GOING", "failure_type": None,
+                                  "failure_description": None, "source_frame": -1}
+                    if result["status"] == "ON_GOING":
+                        result["source_frame"] = round(batch[0]["source_time_s"] * 30)
+                        log({"type": "status", **result, "decision_time_s": time.monotonic() - started_at})
                     trigger = (
                         verification is None
-                        and batch[0]["captured_time_s"] >= rearm_after
-                        and any(o["verdict"] == "POSITIVE" for o in batch)
+                        and fresh
+                        and bool(positive_specialists - confirmed if continuous else positive_specialists)
                     )
                     frame = camera.get()
                     if trigger:
