@@ -97,7 +97,7 @@ def checks(root):
             replies.extend(['not valid JSON', json.dumps(draft)])
             assert client.post('/api/builder/respond', json={**message,'action':'generate','text':'','attachments':[]}).status_code == 200
             state = wait()
-            assert state['phase'] == 'ready' and state['draft'] == draft, state
+            assert state['phase'] == 'ready' and state['draft'] == {**draft, 'progress': None}, state
             assert len(payloads) == 3 and len(store.tasks) == 2
             assert any(m.get('thinking') == 'Private model history.' for m in payloads[-1]['messages'])
             assert not any('not valid JSON' in m['content'] for m in state['messages'])

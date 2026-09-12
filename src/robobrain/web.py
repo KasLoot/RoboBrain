@@ -16,7 +16,8 @@ from .runtime import Runtime, prepare
 from .endpoints import endpoint_error, model_info
 from .sources import Inputs
 from .task_builder import CreateDraft, Settings, TaskBuilder, Turn
-from .workspace import Workspace
+from .progress import ProgressObserver
+from .workspace import ProgressDefinition, Workspace
 
 
 def create_app(data_dir=Path(".robobrain")):
@@ -196,6 +197,18 @@ def create_app(data_dir=Path(".robobrain")):
             raise ValueError("Enable this specialist to preview its request")
         specialist = specialists[specialist_id]
         return {"system": specialist.prompt, "content": await asyncio.to_thread(specialist.current_content, frame), "schema": specialist.schema}
+
+    @app.get("/api/tasks/{task_id}/progress/request")
+    async def progress_request_preview(task_id: str):
+        task = store.get(task_id)
+        if not task.get("progress") or not task["progress"]["nodes"]:
+            raise ValueError("Define progress nodes before previewing the request")
+        if runtime.preview_task_id != task_id or not runtime.readers:
+            raise ValueError("Connect the selected sources on Monitor first")
+        inputs = Inputs(dict(runtime.readers), task["input_mode"])
+        frame = inputs.get()
+        observer = await asyncio.to_thread(ProgressObserver, ProgressDefinition.model_validate(task["progress"]), store, frame.views)
+        return {"system": observer.prompt, "content": [*observer.references, *await asyncio.to_thread(observer.current_content, [(0., frame)])], "schema": observer.schema}
 
     @app.post("/api/run")
     async def run(body: dict):

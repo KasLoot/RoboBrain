@@ -15,7 +15,7 @@ from pydantic import ConfigDict, Field, field_validator
 from .monitor import HERE, Specialist, VERDICTS, load_config
 from .endpoints import model_info, ollama_headers
 from .presentation import write_json
-from .workspace import Model, Source, Task, new_id
+from .workspace import Model, ProgressDefinition, ProgressNode, Source, Task, new_id
 
 
 class Settings(Model):
@@ -74,11 +74,22 @@ class DraftSpecialist(Model):
         return value
 
 
+class DraftProgress(Model):
+    model_config = ConfigDict(extra="forbid", strict=True, str_strip_whitespace=True)
+    prompt: str = Field(min_length=1, max_length=20000)
+    nodes: list[ProgressNode] = Field(min_length=1, max_length=64)
+    camera_sources: list[str] = Field(min_length=1, max_length=2)
+    reference_assets: list[str] = Field(default_factory=list, max_length=24)
+    unit_label: str = Field(default="items", min_length=1, max_length=40)
+    history_frames: int = Field(default=1, ge=1, le=3)
+
+
 class Draft(Model):
     model_config = ConfigDict(extra="forbid", strict=True, str_strip_whitespace=True)
     name: str = Field(min_length=1, max_length=120)
     summary: str = Field(min_length=1, max_length=3000)
     specialists: list[DraftSpecialist] = Field(max_length=32)
+    progress: DraftProgress | None = None
 
 
 class CreateDraft(Model):
@@ -279,12 +290,11 @@ class TaskBuilder:
         n = config["evidence_horizon"]
         threshold = min(5, n - 1) if n else 5
         specialists = []
-        for index, spec in enumerate(draft.specialists, 1):
+
+        def blocks_for(spec):
             if (not set(spec.camera_sources) <= sources.keys() or len(set(spec.camera_sources)) != len(spec.camera_sources)
                     or not set(spec.reference_assets) <= references.keys() or len(set(spec.reference_assets)) != len(spec.reference_assets)):
                 raise ValueError("Use unique enabled source IDs and only images approved as specialist references")
-            name = f"specialist_{index}"
-            definition = {"field": "verdict", "values": {v: v for v in VERDICTS}, "failure_type": spec.failure_type}
             blocks = [{"id": "prompt", "type": "text", "alias": "System prompt", "text": spec.prompt}]
             for i, asset in enumerate(spec.reference_assets):
                 self.store.asset_path(asset)
@@ -292,6 +302,12 @@ class TaskBuilder:
             for source in spec.camera_sources:
                 blocks.append({"id": "view_" + source, "type": "camera", "source": source,
                                "alias": "Current view: " + sources[source]["name"], "crop": None})
+            return blocks
+
+        for index, spec in enumerate(draft.specialists, 1):
+            name = f"specialist_{index}"
+            definition = {"field": "verdict", "values": {v: v for v in VERDICTS}, "failure_type": spec.failure_type}
+            blocks = blocks_for(spec)
             config["specialists"][name] = definition
             config["evidence_threshold"][name] = threshold
             first = sources[spec.camera_sources[0]]
@@ -299,9 +315,12 @@ class TaskBuilder:
             Specialist(spec.prompt, {**definition, "name": name, "crop": config["crops"][name], "threshold": threshold})
             specialists.append({"id": name, "name": spec.name, "definition": definition, "threshold": threshold, "blocks": blocks})
         config = load_config(config)
+        progress = (ProgressDefinition(enabled=True, nodes=draft.progress.nodes, blocks=blocks_for(draft.progress),
+                                       unit_label=draft.progress.unit_label, history_frames=draft.progress.history_frames).model_dump()
+                    if draft.progress else None)
         return Task.model_validate({"id": self.data["task_id"], "name": draft.name, "config": config,
                                     "input_mode": inputs["input_mode"], "sources": inputs["sources"],
-                                    "specialists": specialists}).model_dump()
+                                    "specialists": specialists, "progress": progress}).model_dump()
 
     async def run(self, action):
         try:

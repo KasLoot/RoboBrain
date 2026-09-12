@@ -9,7 +9,7 @@ from typing import Literal
 from uuid import uuid4
 
 import cv2
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from .monitor import HERE
 from .presentation import write_json
@@ -64,6 +64,54 @@ class Detector(Model):
         return value
 
 
+class ProgressNode(Model):
+    id: str
+    label: str = Field(min_length=1, max_length=120)
+    criteria: str = Field(min_length=1, max_length=6000)
+    completed: int | None = Field(default=None, ge=0, strict=True)
+    total: int | None = Field(default=None, ge=1, strict=True)
+
+    @field_validator("id")
+    @classmethod
+    def valid_id(cls, value):
+        if not value.isidentifier() or value.upper() == "UNKNOWN":
+            raise ValueError("Node ID must be an identifier; UNKNOWN is reserved")
+        return value
+
+    @model_validator(mode="after")
+    def valid_count(self):
+        if (self.completed is None) != (self.total is None) or (self.total is not None and self.completed > self.total):
+            raise ValueError("Supply both completed and total, with 0 <= completed <= total")
+        if not self.label.strip() or not self.criteria.strip():
+            raise ValueError("Node label and observable criteria cannot be blank")
+        return self
+
+
+class ProgressDefinition(Model):
+    id: Literal["progress"] = "progress"
+    name: str = "Task progress"
+    enabled: bool = False
+    nodes: list[ProgressNode] = Field(default_factory=list, max_length=64)
+    blocks: list[Block] = Field(default_factory=list)
+    unit_label: str = Field(default="items", min_length=1, max_length=40)
+    interval_s: float = Field(default=1., ge=.05, le=60, allow_inf_nan=False)
+    confirmations: int = Field(default=2, ge=1, le=10, strict=True)
+    stale_after_s: float = Field(default=5., gt=0, le=600, allow_inf_nan=False)
+    history_frames: int = Field(default=1, ge=1, le=3, strict=True)
+    max_tokens: int = Field(default=192, ge=32, le=2048, strict=True)
+
+    @model_validator(mode="after")
+    def valid_nodes(self):
+        if len({n.id for n in self.nodes}) != len(self.nodes):
+            raise ValueError("Progress node IDs must be unique")
+        totals = {n.total for n in self.nodes if n.total is not None}
+        if len(totals) > 1 or (totals and any(n.total is None for n in self.nodes)):
+            raise ValueError("Count nodes must all use the same total; otherwise leave counts empty for every node")
+        if self.enabled and (not self.nodes or not any(b.enabled and b.type == "camera" for b in self.blocks)):
+            raise ValueError("Enabled progress needs predefined nodes and a camera/video block")
+        return self
+
+
 class Source(Model):
     id: str
     name: str
@@ -89,6 +137,7 @@ class Task(Model):
     input_mode: Literal["camera", "video"] = "camera"
     sources: list[Source] = Field(default_factory=list, max_length=2)
     specialists: list[Detector] = Field(default_factory=list, max_length=32)
+    progress: ProgressDefinition | None = None
 
     @field_validator("id")
     @classmethod
@@ -147,7 +196,7 @@ class Workspace:
             if len({e["id"] for e in entries}) != len(entries):
                 raise ValueError("IDs must be unique")
         sources = {s["id"] for s in task["sources"]}
-        for specialist in task["specialists"]:
+        for specialist in [*task["specialists"], *([task["progress"]] if task["progress"] else [])]:
             if len({b["id"] for b in specialist["blocks"]}) != len(specialist["blocks"]):
                 raise ValueError("Block IDs must be unique")
             for block in specialist["blocks"]:

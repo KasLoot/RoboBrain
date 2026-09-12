@@ -18,6 +18,7 @@ import httpx
 from .endpoints import endpoint_error
 from .monitor import Backend, ReplayController, SimulatedCamera, Specialist, image_content, load_config, monitor
 from .presentation import EpisodeReport, LiveView, annotate_frame, render_recording
+from .progress import ProgressRunner
 from .sources import CompositeVideo, Inputs, LiveCamera, composite
 from .workspace import new_id
 
@@ -105,7 +106,9 @@ class Recorder:
                         break
                     with self.view.lock:
                         status = dict(self.view.status)
-                    image = annotate_frame(image, snapshot.source_index, status, show_frame_numbers=False)
+                        progress = dict(self.view.progress) if self.view.progress else None
+                    image = annotate_frame(image, snapshot.source_index, status, show_frame_numbers=False,
+                                           progress=progress, elapsed_s=self.frames / 30)
                     process.stdin.write(image.tobytes())
                     self.frames += 1
                     deadline = self.inputs.started_at + self.frames / 30
@@ -161,6 +164,7 @@ class Runtime:
         self.started_at = None
         self.requests = self.responses = 0
         self.view = view if view is not None else LiveView()
+        self.progress = None
 
     @property
     def busy(self):
@@ -235,6 +239,7 @@ class Runtime:
                 "result": self.result, "error": self.error, "specialists": self.latest, "verification": self.verification,
                 "sources": sources, "recording": self.recording, "output": self.output,
                 "requests": self.requests, "responses": self.responses, "events": list(self.recent),
+                "progress": self.progress.state() if self.progress else None,
                 "elapsed_s": time.monotonic() - self.started_at if self.started_at and self.busy else self.result.get("decision_time_s", 0)}
 
     def start(self, task, record):
@@ -245,6 +250,7 @@ class Runtime:
         self.started_at = None
         self.result = {"status": "ON_GOING", "failure_type": None}
         self.requests = self.responses = 0
+        self.progress = None
         self.recent.clear()
         self.stop_event.clear()
         self.job = asyncio.create_task(self._run(copy.deepcopy(task)))
@@ -294,6 +300,9 @@ class Runtime:
                 def log(event):
                     report.log(event)
                     self.log(event)
+                if (task.get("progress") or {}).get("enabled"):
+                    self.progress = ProgressRunner(task["progress"], self.store, inputs, backend, log)
+                    self.progress.start()
                 if self.recording and task["input_mode"] == "camera":
                     recorder = Recorder(inputs, sources, directory / f"output-{run_id}.MOV", self.view, ffmpeg, self.stop_event)
                 self.phase = "running" if not self.stop_event.is_set() else "stopping"
@@ -320,6 +329,8 @@ class Runtime:
                 report.log({"type": "error", "message": self.error})
         finally:
             self.phase = "finalizing"
+            if self.progress:
+                await self.progress.close()
             recording = None
             try:
                 if recorder:

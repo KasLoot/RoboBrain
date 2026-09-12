@@ -19,7 +19,7 @@ uv run robobrain ui
 
 Open **http://127.0.0.1:8765**. The UI runs locally on the computer connected to the cameras. Use `--port PORT` or `--data DIRECTORY` after `ui` to change the port or workspace directory.
 
-The first launch creates **Insert plug**, copying the existing prompt text, reference image bytes, and configuration without modifying the packaged originals. Tasks can be created, renamed, duplicated, deleted, and saved for later runs. Open a task to access Specialists, Prompt Designer, and Monitor.
+The first launch creates **Insert plug**, copying the existing prompt text, reference image bytes, and configuration without modifying the packaged originals. Tasks can be created, renamed, duplicated, deleted, and saved for later runs. Open a task to access Specialists, Prompt Designer, Progress, and Monitor.
 
 - **Prompt Designer:** add text, reference-image, and camera/video blocks; edit aliases; enable or reorder blocks; select each block's source and crop. Crops use original-image pixels, with exclusive right/bottom edges. Drag a rectangle or enter coordinates, then Apply and Save. New specialists are empty drafts: paste the existing detector configuration format (`field`, `values`, `failure_type`). No decision roles are inferred. Existing prompts and response mappings are retained.
 - **Monitor:** choose Cameras or Video simulation. Enable one or both sources. On macOS use camera indices (`0`, `1`); on Linux use an index or `/dev/video…` / `/dev/v4l/by-id/…`. Check the preview to identify the intended device. Capture width, height and FPS are requests; displayed dimensions are those actually delivered. Allow macOS camera access for the application launching Python.
@@ -35,6 +35,41 @@ The UI calls the same monitoring, verification, parsing, thresholds, and decisio
 The monitoring model supports an **OpenAI-compatible endpoint** (for example `http://127.0.0.1:9000/v1`) or the **native Ollama API** (a base URL ending in `/api`). For Ollama Cloud, set the monitor base URL to `https://ollama.com/api` and model to `gemma4:31b-cloud` or `gemma4:31b`. Set `OLLAMA_API_KEY` in the environment used to launch the UI. The monitor resolves cloud aliases through `/tags`, checks image support with `/show`, and sends images through `/chat` with thinking disabled. Local Ollama, such as `http://localhost:11434/api`, is also supported. Builder and monitor model settings remain independent.
 
 Ollama Cloud does not currently enforce JSON schemas, so the monitor includes its existing response schema in the request and validates the reply locally. Malformed, truncated, or reasoning-bearing replies remain UNCERTAIN; no extra inference retries are added. Native image bytes, specialist mappings, concurrent batches, and verification scheduling are preserved.
+
+### Progress tracking
+
+Open a task's **Progress** page, add observable nodes, select camera/video blocks, enable progress, and **Save progress**. Each node has a unique ID, a display label, and criteria distinguishing it from every other node. The existing block editor supplies task context, reference images and crops. Old tasks keep progress disabled until configured; configuration is locked during a run.
+
+The VLM returns the same two fields for every task:
+
+```json
+{"reason": "All bricks are in the box; a wire remains outside the mat.", "node_id": "BRICKS_SORTED"}
+```
+
+`node_id` must be a configured ID or `UNKNOWN`. Evidence is emitted before the ID so the selection follows the visible observation. Nodes may be skipped or revisited. Reaching the final progress node never produces SUCCESS: the existing outcome specialists and verification remain responsible for SUCCESS/FAIL.
+
+For **Distribute Items**, progress counts two groups. The tested setup contains two brown bricks and two black cable assemblies:
+
+| Node ID | Observable arrangement | Completed / total |
+| --- | --- | --- |
+| `NEITHER_SORTED` | Fewer than both bricks in the white box AND fewer than both black cables on the blue mat | 0 / 2 |
+| `BRICKS_SORTED` | Both bricks resting inside the box; at least one black cable still awaiting placement | 1 / 2 |
+| `WIRES_SORTED` | Both black cables resting on the mat; at least one brick still awaiting placement | 1 / 2 |
+| `BOTH_SORTED` | Both bricks resting inside the box AND both black cables resting on the mat | 2 / 2 |
+
+One correctly placed brick and one correctly placed cable complete **zero groups**. Include known item counts in the progress context and node criteria, and ask for item-count evidence in `reason`. The item inventory and the displayed group total are different quantities. Change the inventory wording when the task's objects change; unknown or obscured objects cannot be assumed correctly placed.
+
+This example distinguishes the loose USB cable from the power adapter and its attached leads. Cable placement allows a small connector or short lead overhang while the main body/coil rests on the mat. State placement tolerances explicitly. An incomplete group needs a visibly unplaced member; inability to identify an overlapping cable alone means UNKNOWN, not proof that it is elsewhere.
+
+Use `groups` as the count unit. Counts are optional display metadata, never inferred from node order. For assembly stages such as held, aligned and inserted, leave both count fields empty on every node. A count-based definition must use the same total on every node. Define unclear or occluded views as `UNKNOWN` in the task context.
+
+Progress runs in a separate worker with one request in flight and no queued samples. It shares captured camera frames and the configured monitoring endpoint, so the additional inference can increase GPU latency. The sample interval is a minimum interval between request starts; slow requests delay the next sample. By default, two consecutive fresh observations of the same node confirm it. Duplicate physical frames do not count twice. Use one sampled frame for arrangements, or two to three timestamped samples for motion-dependent stages.
+
+Monitor shows the confirmed node, optional count/percentage, visible evidence, evidence age and recent transitions. Pending, unknown, stale or unavailable results retain the last confirmed node with an explicit label and hide its current percentage. Set **Stale after** above normal request latency; replies already older than that limit cannot confirm progress. Progress errors do not stop outcome detection. Recordings include the progress overlay, raw progress events in LOG, and a separate `progress` section in JSON; outcome request counts and decisions remain separate.
+
+Fresh conflicting candidates do not refresh the last confirmed node's evidence age. If no node can be confirmed within the freshness limit, that last known result is marked stale even while requests continue to succeed.
+
+Task Builder can also generate progress nodes when requested. Review the progress criteria, count definitions and source assignments in its draft before creating the task.
 
 ## Task Builder chatbot
 
@@ -141,6 +176,7 @@ uv run python tests/check_robobrain.py
 uv run python tests/check_ui.py
 uv run python tests/check_builder.py
 uv run python tests/check_endpoints.py
+uv run python tests/check_progress.py
 node tests/check_frontend.mjs
 ```
 
@@ -149,6 +185,8 @@ The optional hardware check opens, reads, releases, and reopens the selected cam
 ```sh
 uv run python tests/check_cameras.py --devices 0 1
 ```
+
+To check a task's progress prompt against labelled, unannotated camera images using its real model endpoint, run `uv run python tests/check_progress_model.py WORKSPACE CASES_JSON`. The script documents the small case-manifest format. Include partially completed groups; all-in/all-out scenes alone do not test whether every item is accounted for.
 
 These checks exercise all three specialists, verification thresholds and conflicts, concurrency and rearming, disabled thinking, native image dimensions, malformed responses, cancellation, simulated control handoffs, 30 fps continuation, overlay formatting, complete source preservation, late status timing, audio retention, and raw/readable logs. Recording checks require `ffmpeg` and `ffprobe`.
 

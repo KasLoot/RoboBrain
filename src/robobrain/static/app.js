@@ -117,7 +117,7 @@ async function saveTask() {
   }
   tasks = await api('/tasks');
   dirty = false;
-  specialist = sid ? task.specialists.find(s => s.id === sid) : null;
+  specialist = page === 'progress' ? task.progress : sid ? task.specialists.find(s => s.id === sid) : null;
   updateLocks();
   toast('Task saved');
 }
@@ -155,6 +155,7 @@ function renderDesigner() {
   selectedBlock = block?.id;
   app.innerHTML = header(specialist.name, 'Prompt Designer', `<span id="save-state"></span><button data-action="preview-request" id="preview-request">Preview model request</button><button class="primary" data-action="save" ${edit()}>Save specialist</button>`) + `<div class="designer"><aside class="block-list"><div class="section-head"><h2>Prompt blocks</h2><button data-action="new-block" ${edit()}>＋ New block</button></div><p class="hint">Text forms the system prompt. Images and current views follow the block order.</p>${specialist.blocks.map((b,i)=>`<article class="block ${b.id===selectedBlock?'selected':''} ${b.enabled?'':'muted'}"><button class="block-select" data-action="select-block" data-id="${esc(b.id)}"><span class="block-type">${b.type==='text'?'T':b.type==='image'?'▧':'◉'}</span><span><strong>${b.type==='camera'?'Camera / video':b.type[0].toUpperCase()+b.type.slice(1)}</strong><small>${esc(b.alias||'Untitled block')}</small></span></button><div class="block-preview">${b.type==='text'?esc(b.text.slice(0,150)||'Write your system prompt…'):b.type==='image'&&b.asset?`<img src="/api/assets/${encodeURIComponent(b.asset)}" alt="${esc(b.alias)}">`:b.type==='camera'?esc(task.sources.find(s=>s.id===b.source)?.name||'Select source'):'No image uploaded'}</div><div class="block-actions"><label class="switch"><input type="checkbox" data-block-enabled="${esc(b.id)}" ${b.enabled?'checked':''} ${edit()}> Enabled</label><div><button aria-label="Move block up" data-action="move-up" data-id="${esc(b.id)}" ${edit()} ${i===0?'disabled':''}>↑</button><button aria-label="Move block down" data-action="move-down" data-id="${esc(b.id)}" ${edit()} ${i===specialist.blocks.length-1?'disabled':''}>↓</button><button aria-label="Delete block" data-action="delete-block" data-id="${esc(b.id)}" ${edit()}>×</button></div></div></article>`).join('')}<details class="detector-config" ${!specialist.definition||!Object.keys(specialist.definition).length?'open':''}><summary>Existing detector configuration</summary><p class="hint">The same field, values and failure_type JSON used by RoboBrain. No decision rules are inferred from the name.</p><label>Configuration JSON<textarea id="definition" rows="10" spellcheck="false" ${edit()}>${specialist.definition?esc(JSON.stringify(specialist.definition,null,2)):''}</textarea></label><label>Existing evidence threshold<input type="number" min="0" id="threshold" value="${specialist.threshold}" ${edit()}></label></details></aside><section class="card inspector">${block?blockEditor(block):'<div class="empty"><h2>No block selected</h2><p>Add a text, image, or camera block.</p></div>'}</section></div>`;
   installCrop();
+  if (page === 'progress') renderProgressControls();
 }
 
 function blockEditor(b) {
@@ -214,15 +215,17 @@ async function route() {
     return;
   }
   page = parts[0] === 'builder' ? 'builder' : nextId ? (parts[2] || 'specialists') : 'tasks';
-  specialist = page === 'designer' ? task.specialists.find(s => s.id === parts[3]) : null;
+  if (page === 'progress' && !task.progress) task.progress = newProgress();
+  specialist = page === 'progress' ? task.progress : page === 'designer' ? task.specialists.find(s => s.id === parts[3]) : null;
   lastHash = location.hash || '#tasks';
-  nav.innerHTML = task && !['tasks', 'builder'].includes(page) ? `<a class="${page!=='monitor'?'active':''}" href="${link('specialists')}">Specialists</a><a class="${page==='monitor'?'active':''}" href="${link('monitor')}">Monitor</a>` : '';
+  nav.innerHTML = task && !['tasks', 'builder'].includes(page) ? `<a class="${['specialists','designer'].includes(page)?'active':''}" href="${link('specialists')}">Specialists</a><a class="${page==='progress'?'active':''}" href="${link('progress')}">Progress</a><a class="${page==='monitor'?'active':''}" href="${link('monitor')}">Monitor</a>` : '';
   if (page === 'builder') {
     task = null;
     if (!builder) builder = await api('/builder');
     renderBuilder();
   } else if (page === 'tasks') renderTasks();
   else if (page === 'designer') renderDesigner();
+  else if (page === 'progress') renderDesigner();
   else if (page === 'monitor') renderMonitor();
   else renderSpecialists();
   updateLocks();
@@ -243,7 +246,7 @@ function updateLocks() {
   if (banner) banner.hidden = !state.busy;
   const preview = document.querySelector('#preview-request');
   if (preview) {
-    preview.disabled = dirty;
+    preview.disabled = dirty || (page === 'progress' && !task.progress.nodes.length);
     preview.title = dirty ? 'Save before previewing' : '';
   }
   document.querySelectorAll('.task-open').forEach(el => el.setAttribute('aria-disabled', String(state.busy && !el.hash.includes('/' + state.task_id + '/'))));
@@ -253,7 +256,7 @@ function updateLocks() {
     document.querySelector('#record').checked = state.busy ? state.recording : record;
   }
   if (page === 'builder' && builder) {
-    document.querySelectorAll('.builder-preview input,.builder-preview textarea,.builder-preview select').forEach(el => el.disabled = locked || builder.created);
+    document.querySelectorAll('.builder-preview [data-edit]').forEach(el => el.disabled = locked || builder.created);
     for (const action of ['builder-send', 'builder-generate']) {
       const button = app.querySelector(`[data-action="${action}"]`);
       if (button) button.disabled = locked || builder.created || (!builderText.trim() && !builderAttachments.length && (action === 'builder-send' || !builder.messages.length));
@@ -280,6 +283,17 @@ function updateMonitor() {
   };
   document.querySelector('#run-detail').textContent = relevant ? `${phases[state.phase]||state.phase} · ${(state.elapsed_s||0).toFixed(1)} s${result.stop_reason==='episode_timeout'?' · Episode timeout':''}` : 'Ready to start';
   document.querySelector('#record-status').textContent = relevant && state.busy && state.recording ? (state.phase === 'finalizing' ? 'Finalizing recording…' : state.phase === 'starting' ? 'Recording enabled' : '● Recording') : '';
+  let progressPanel = document.querySelector('#progress-panel');
+  if (!progressPanel) {
+    document.querySelector('.operating').insertAdjacentHTML('afterend', '<section id="progress-panel" class="card progress-panel" hidden></section>');
+    progressPanel = document.querySelector('#progress-panel');
+  }
+  const progress = relevant ? state.progress : null;
+  progressPanel.hidden = !task.progress?.enabled && !progress;
+  if (!progressPanel.hidden) {
+    const quality = progress?.quality || 'unknown', known = progress && progress.node_id !== 'UNKNOWN';
+    progressPanel.innerHTML = `<div class="section-head"><div><div class="eyebrow">Task progress</div><h2>${esc(known?progress.label:'Not observed')}</h2></div><span class="badge ${quality==='confirmed'?'good':'warning'}">${esc(quality)}</span></div>${known&&progress.total?`<div class="progress-count">${progress.completed}/${progress.total} ${esc(progress.unit_label)}${progress.percent!=null?' · '+progress.percent+'%':' · last known'}</div><progress max="${progress.total}" ${quality==='confirmed'?`value="${progress.completed}"`:''} aria-label="Confirmed task progress"></progress>`:''}<p>${esc(progress?.error||progress?.reason||'Progress will be observed after Start.')}</p>${quality!=='confirmed'&&known?'<p class="hint">Showing the last confirmed node; current progress is not confirmed.</p>':''}<div class="hint">${progress?.age_s!=null?'Evidence '+progress.age_s.toFixed(1)+' s old · ':''}${progress?progress.responses+' / '+progress.requests+' progress responses · ':''}Independent of task outcome</div>${progress?.candidate_id&&quality==='pending'?`<p class="hint">Candidate: ${esc(task.progress?.nodes.find(n=>n.id===progress.candidate_id)?.label||progress.candidate_id)} · ${progress.matches}/${progress.confirmations} matching observations</p>`:''}${progress?.history.length?`<details><summary>Progress history</summary><ol>${progress.history.slice(-12).map(h=>`<li><time>${h.time_s.toFixed(1)} s</time> ${esc(h.label)}</li>`).join('')}</ol></details>`:''}`;
+  }
   const error = document.querySelector('#run-error');
   error.hidden = !(relevant && state.error);
   error.textContent = state.error || '';
@@ -424,6 +438,30 @@ async function uploadFile(file, kind, sourceId) {
   await route();
   toast('Uploaded. Save the task to keep the assignment.');
 }
+function newProgress() {
+  const source = task?.sources[0]?.id || 'camera1';
+  return {id:'progress',name:'Task progress',enabled:false,nodes:[],unit_label:'items',interval_s:1,confirmations:2,stale_after_s:5,history_frames:1,max_tokens:192,
+    blocks:[{id:'progress_context',type:'text',alias:'Task context',enabled:true,text:'',asset:null,source,crop:null},
+            {id:'progress_view',type:'camera',alias:'Current progress view',enabled:true,text:'',asset:null,source,crop:null}]};
+}
+
+function progressEditor(p) {
+  const generated = page === 'builder';
+  return `<section class="card progress-editor"><div class="section-head"><div><h2>Predefined progress nodes</h2><p class="hint">The VLM returns node_id and reason. UNKNOWN is always allowed. Nodes may be skipped or revisited; they never decide SUCCESS or FAIL.</p></div><label class="switch"><input type="checkbox" id="progress-enabled" ${p.enabled?'checked':''} ${edit()}>Enable progress</label></div>
+    <div class="progress-settings">${(generated?[['history_frames','Recent sampled frames',1,3,1]]:[['interval_s','Sample interval (seconds)',.05,60,.05],['confirmations','Consecutive matches',1,10,1],['stale_after_s','Stale after (seconds)',.1,600,.1],['history_frames','Recent sampled frames',1,3,1],['max_tokens','Progress output tokens',32,2048,1]]).map(([key,label,min,max,step])=>`<label>${label}<input type="number" data-progress-setting="${key}" min="${min}" max="${max}" step="${step}" value="${p[key]}" required ${edit()}></label>`).join('')}<label>Count unit label<input data-progress-setting="unit_label" value="${esc(p.unit_label)}" maxlength="40" required ${edit()}></label></div>
+    <p class="hint">Use one frame for visible arrangements or up to three recent samples for motion. Requests run separately, one at a time. Counts are optional display metadata; leave both count fields empty for stage-only nodes.</p>
+    <div class="progress-nodes">${p.nodes.map((n,i)=>`<fieldset class="progress-node"><legend>Node ${i+1}</legend><div class="progress-node-fields"><label>Node ID<input data-progress-node="${i}" data-progress-field="id" value="${esc(n.id)}" required ${edit()}></label><label>Display label<input data-progress-node="${i}" data-progress-field="label" value="${esc(n.label)}" maxlength="120" required ${edit()}></label><label>Completed<input type="number" min="0" step="1" data-progress-node="${i}" data-progress-field="completed" value="${n.completed??''}" placeholder="Optional" ${edit()}></label><label>Total<input type="number" min="1" step="1" data-progress-node="${i}" data-progress-field="total" value="${n.total??''}" placeholder="Optional" ${edit()}></label></div><label>Observable criteria<textarea rows="3" data-progress-node="${i}" data-progress-field="criteria" maxlength="6000" required ${edit()}>${esc(n.criteria)}</textarea></label><div class="actions"><button data-action="progress-node-up" data-id="${i}" aria-label="Move node ${i+1} up" ${edit()}>↑</button><button data-action="progress-node-down" data-id="${i}" aria-label="Move node ${i+1} down" ${edit()}>↓</button><button data-action="progress-node-remove" data-id="${i}" ${edit()}>Remove node</button></div></fieldset>`).join('')||'<p>No nodes yet. Add observable states before enabling progress.</p>'}</div><button data-action="progress-node-add" ${edit()}>＋ Add progress node</button></section>`;
+}
+
+function renderProgressControls() {
+  app.querySelector('.detector-config').remove();
+  app.querySelector('.page-head h1').textContent = 'Progress tracking';
+  app.querySelector('.page-head p').textContent = 'A separate observation path, with task-defined progress states.';
+  app.querySelector('.page-head [data-action="save"]').textContent = 'Save progress';
+  app.querySelector('.designer').insertAdjacentHTML('beforebegin',progressEditor(task.progress));
+  updateLocks();
+}
+
 function renderBuilder() {
   const draft = builder.draft, inputs = builder.inputs;
   app.innerHTML = `<div class="page-head"><div><a class="breadcrumb" href="#tasks">Tasks</a><h1>Task Builder</h1><p>Describe your task. Review the specialists. Create a saved setup.</p></div><div class="actions"><button data-action="builder-settings" ${edit()}>Builder settings</button><button data-action="builder-reset" ${edit()}>New conversation</button></div></div>
@@ -441,6 +479,12 @@ function renderBuilder() {
     <label>Input type<select id="builder-mode" ${edit()}><option value="camera" ${inputs.input_mode==='camera'?'selected':''}>Live cameras</option><option value="video" ${inputs.input_mode==='video'?'selected':''}>Video simulation</option></select></label>
     ${inputs.sources.map((s,i)=>`<div class="builder-source"><label class="switch"><input type="checkbox" data-builder-source-enabled="${i}" ${s.enabled?'checked':''} ${edit()}>${esc(s.name)}</label>${inputs.input_mode==='camera'?`<label>Camera device<input data-builder-device="${i}" value="${esc(s.device)}" placeholder="0 or /dev/video0" ${edit()}></label>`:`<label>Video<input type="file" accept=".mov,.mp4,.avi,.mkv" data-builder-video="${i}" ${edit()}><small>${esc(s.video||'Choose a video')}</small></label>`}</div>`).join('')}<p class="hint">Sources use full-frame crops. Connect and check their previews on Monitor after creating the task. The builder model is configured separately.</p></details></section>
     <section class="card builder-preview"><div class="section-head"><h2>Task preview</h2><span class="badge">${draft?'Ready to review':'Draft'}</span></div>${draft?`<label>Task name<input data-builder-name value="${esc(draft.name)}" maxlength="120" required ${edit()}></label><p>${esc(draft.summary)}</p>${draft.specialists.map((s,i)=>`<fieldset class="builder-specialist"><legend>Specialist ${i+1}</legend><label>Name<input data-builder-spec="${i}" data-builder-field="name" value="${esc(s.name)}" maxlength="120" required ${edit()}></label><label>Failure type <small>Leave blank for the success specialist</small><input data-builder-spec="${i}" data-builder-field="failure_type" value="${esc(s.failure_type||'')}" placeholder="Success specialist" ${edit()}></label><label>System prompt<textarea rows="9" data-builder-spec="${i}" data-builder-field="prompt" minlength="40" maxlength="20000" required ${edit()}>${esc(s.prompt)}</textarea></label><label>Camera / video views<select multiple data-builder-spec="${i}" data-builder-list="camera_sources" ${edit()}>${inputs.sources.filter(x=>x.enabled).map(x=>`<option value="${esc(x.id)}" ${s.camera_sources.includes(x.id)?'selected':''}>${esc(x.name)}</option>`).join('')}</select></label>${builder.attachments.some(a=>a.reference)?`<label>Reference images<select multiple data-builder-spec="${i}" data-builder-list="reference_assets" ${edit()}>${builder.attachments.filter(a=>a.reference).map(a=>`<option value="${esc(a.asset)}" ${s.reference_assets.includes(a.asset)?'selected':''}>${esc(a.label)}</option>`).join('')}</select></label>`:''}<details><summary>Configuration JSON</summary><pre data-builder-config="${i}">${esc(JSON.stringify({field:'verdict',values:{POSITIVE:'POSITIVE',NEGATIVE:'NEGATIVE',UNCERTAIN:'UNCERTAIN'},failure_type:s.failure_type},null,2))}</pre></details></fieldset>`).join('')}<p class="hint">Prompts, names, views and reference assignments are editable here. All settings remain editable in Prompt Designer after creation.</p>${builder.created?`<a class="button" href="${link('specialists',builder.task_id)}">Open created task →</a>`:`<button class="primary" data-action="builder-create" ${edit()}>Create task</button>`}`:'<div class="builder-placeholder"><span aria-hidden="true">✦</span><h3>Your specialists will appear here</h3><p>Explain what success looks like and which failures matter. Attach images to clarify targets and distractors, then generate a draft.</p></div>'}</section></div>`;
+  if (draft?.progress) {
+    const p=draft.progress;
+    const html=`<div class="builder-progress"><label>Progress task context<textarea rows="4" data-progress-setting="prompt" required ${edit()}>${esc(p.prompt)}</textarea></label><label>Progress camera / video views<select multiple data-builder-progress-list="camera_sources" ${edit()}>${inputs.sources.filter(s=>s.enabled).map(s=>`<option value="${esc(s.id)}" ${p.camera_sources.includes(s.id)?'selected':''}>${esc(s.name)}</option>`).join('')}</select></label><label>Progress reference images<select multiple data-builder-progress-list="reference_assets" ${edit()}>${builder.attachments.filter(a=>a.reference).map(a=>`<option value="${esc(a.asset)}" ${p.reference_assets.includes(a.asset)?'selected':''}>${esc(a.label)}</option>`).join('')}</select></label>${progressEditor({...newProgress(),...p,enabled:true})}</div>`;
+    app.querySelector('.builder-preview > .hint').insertAdjacentHTML('beforebegin',html);
+    app.querySelector('#progress-enabled').closest('label').remove();
+  }
   renderBuilderConversation();
   updateLocks();
 }
@@ -552,6 +596,17 @@ async function builderAction(action, id) {
 app.addEventListener('input', e => {
   const el = e.target;
   if (state.busy || pending) return;
+  if (el.dataset.progressSetting) {
+    const progress=page==='builder'?builder.draft.progress:task.progress;
+    progress[el.dataset.progressSetting] = ['unit_label','prompt'].includes(el.dataset.progressSetting)?el.value:Number(el.value);
+    if(page==='builder') builderDirty=true; else markDirty();
+  }
+  if (el.dataset.progressField) {
+    const key=el.dataset.progressField;
+    const progress=page==='builder'?builder.draft.progress:task.progress;
+    progress.nodes[Number(el.dataset.progressNode)][key] = ['completed','total'].includes(key)?(el.value===''?null:Number(el.value)):el.value;
+    if(page==='builder') builderDirty=true; else markDirty();
+  }
   if (el.id === 'builder-message') { builderText = el.value; builderDirty = true; updateLocks(); }
   if (el.hasAttribute('data-builder-attachment')) { builderAttachments[Number(el.dataset.builderAttachment)].label = el.value; builderDirty = true; }
   if (el.hasAttribute('data-builder-device')) { builder.inputs.sources[Number(el.dataset.builderDevice)].device = el.value; builder.draft = null; builderDirty = true; }
@@ -583,12 +638,17 @@ app.addEventListener('input', e => {
 app.addEventListener('change', async e => {
   const el = e.target;
   try {
+    if (el.id === 'progress-enabled') {
+      if (state.busy || state.builder_busy || pending) return;
+      task.progress.enabled=el.checked; markDirty(); return;
+    }
     if (page === 'builder') {
       if (state.busy || pending || builder.busy) return;
       if (el.id === 'builder-images') { for (const file of el.files) await uploadBuilder(file); return; }
       if (el.hasAttribute('data-builder-video')) { await uploadBuilder(el.files[0],Number(el.dataset.builderVideo)); return; }
       if (el.hasAttribute('data-builder-reference')) builderAttachments[Number(el.dataset.builderReference)].reference = el.checked;
       if (el.dataset.builderList) builder.draft.specialists[Number(el.dataset.builderSpec)][el.dataset.builderList] = [...el.selectedOptions].map(o=>o.value);
+      if (el.dataset.builderProgressList) builder.draft.progress[el.dataset.builderProgressList] = [...el.selectedOptions].map(o=>o.value);
       if (el.id === 'builder-base') {
         builder.inputs.base_task_id = el.value || null;
         const base = tasks.find(t=>t.id===el.value);
@@ -672,6 +732,21 @@ app.addEventListener('click', async e => {
     }
     if (action === 'save') {
       await saveTask();
+      return;
+    }
+    if (action.startsWith('progress-node-')) {
+      const nodes=(page==='builder'?builder.draft.progress:task.progress).nodes, index=Number(id);
+      if (action==='progress-node-add') {
+        let next=0;
+        while(nodes.some(n=>n.id==='P'+next)) next++;
+        nodes.push({id:'P'+next,label:'New progress node',criteria:'',completed:null,total:null});
+      } else if (action==='progress-node-remove') nodes.splice(index,1);
+      else {
+        const target=index+(action==='progress-node-up'?-1:1);
+        if(target>=0&&target<nodes.length) [nodes[index],nodes[target]]=[nodes[target],nodes[index]];
+      }
+      if(page==='builder') { builderDirty=true; renderBuilder(); }
+      else { markDirty(); renderDesigner(); }
       return;
     }
     if (['new-task', 'duplicate-task', 'rename-task'].includes(action)) {
@@ -839,7 +914,7 @@ app.addEventListener('click', async e => {
       return;
     }
     if (action === 'preview-request') {
-      const p = await api(`/tasks/${task.id}/request/${specialist.id}`);
+      const p = await api(page==='progress'?`/tasks/${task.id}/progress/request`:`/tasks/${task.id}/request/${specialist.id}`);
       ask('Model request preview', `<h3>System prompt</h3><pre>${esc(p.system)}</pre><h3>User message</h3>${p.content.map(part=>part.type==='text'?`<p>${esc(part.text)}</p>`:`<img class="request-image" src="${esc(part.image_url.url)}" alt="Image sent to the model">`).join('')}<details><summary>Existing response schema</summary><pre>${esc(JSON.stringify(p.schema,null,2))}</pre></details>`, async () => {}, 'Close');
       return;
     }

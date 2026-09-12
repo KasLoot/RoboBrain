@@ -19,7 +19,22 @@ def write_json(path, value):
         temporary.unlink(missing_ok=True)
 
 
-def annotate_frame(image, source_frame, status, *, show_frame_numbers=True):
+def progress_snapshot(state, now_s):
+    if not state:
+        return None
+    state = dict(state)
+    captured = state.get("confirmed_captured_time_s")
+    if captured is None:
+        captured = state.get("captured_time_s")
+    state["age_s"] = max(0., now_s - captured) if captured is not None else None
+    if captured is not None and now_s - captured > state["stale_after_s"] and state["quality"] != "unavailable":
+        state["quality"] = "stale"
+    state["percent"] = (round(100 * state["completed"] / state["total"], 1)
+                        if state.get("total") and state["quality"] == "confirmed" else None)
+    return state
+
+
+def annotate_frame(image, source_frame, status, *, show_frame_numbers=True, progress=None, elapsed_s=0.):
     """Use one-based source frames; zero means no completed observation yet."""
     frame = image.copy()  # Overlays must never reach the inference buffer.
     height, width = frame.shape[:2]
@@ -47,11 +62,22 @@ def annotate_frame(image, source_frame, status, *, show_frame_numbers=True):
     title = "Operating Status"
     suffix = f" (frame {status.get('source_frame', -1) + 1}):" if show_frame_numbers else ":"
     lines = [f"Status: {status['status']}", f"Failure type: {status.get('failure_type') or 'NONE'}"]
+    if progress:
+        current = progress_snapshot(progress, elapsed_s)
+        label = current["label"] if current["node_id"] != "UNKNOWN" else "Unknown"
+        if current["quality"] != "confirmed" and current["node_id"] != "UNKNOWN":
+            label = "Last known: " + label
+        if current.get("total"):
+            label += f" ({current['completed']}/{current['total']} {current['unit_label']})"
+        for line in ("Progress: " + label, "Evidence: " + current["quality"] + (f" | {current['age_s']:.1f}s old" if current["age_s"] is not None else "")):
+            while len(line) > 4 and size(line)[0] > width - 2 * (margin + padding):
+                line = line[:-4] + "..."
+            lines.append(line)
     title_width, title_height = size(title, bold)
     text_width = max(title_width + size(suffix, 1)[0], *(size(line)[0] for line in lines))
     line_height = title_height + max(8, round(18 * scale))
     left = max(0, width - margin - text_width - 2 * padding)
-    top = height - margin - 3 * line_height - padding
+    top = height - margin - (len(lines) + 1) * line_height - padding
     panel(left, top, width - margin, height - margin)
     x, y = left + padding, top + padding + title_height
     cv2.putText(frame, title, (x, y), font, scale, blue, bold, cv2.LINE_AA)
@@ -69,13 +95,18 @@ class LiveView:
         self.camera = None
         self.name = ""
         self.status = {"status": "ON_GOING", "failure_type": None, "source_frame": -1}
+        self.progress = None
 
     def show(self, camera, name):
         with self.lock:
             self.camera, self.name = camera, name
             self.status = {"status": "ON_GOING", "failure_type": None, "source_frame": -1}
+            self.progress = None
 
     def update(self, event):
+        if event["type"] == "progress_state":
+            with self.lock:
+                self.progress = dict(event)
         if event["type"] == "status":
             with self.lock:
                 self.status = dict(event)
@@ -107,7 +138,17 @@ class EpisodeReport:
     def finish(self, result, recording=None):
         if not self.stream:
             return
-        requests, other_events = [], []
+        def readable_progress(event):
+            value = dict(event)
+            if "source_frame" in value:
+                value["source_frame"] += 1
+            for key in ("source_frames", "confirmed_source_frames"):
+                if key in value:
+                    value[key] = {name: {**frame, "source_frame": frame["source_frame"] + 1}
+                                  for name, frame in value[key].items()}
+            return value
+
+        requests, other_events, progress_requests = [], [], []
         for event in self.events:
             if event["type"] == "observation":
                 request = {
@@ -133,7 +174,11 @@ class EpisodeReport:
                     request["source_frames"] = {name: {**value, "source_frame": value["source_frame"] + 1}
                                                 for name, value in event["source_frames"].items()}
                 requests.append(request)
-            elif event["type"] != "request_started":
+            elif event["type"] == "progress_observation":
+                progress_requests.append(readable_progress(event))
+            elif event["type"] == "progress_state":
+                other_events.append(readable_progress(event))
+            elif event["type"] not in {"request_started", "progress_request_started"}:
                 readable = dict(event)
                 if "source_frame" in readable:
                     readable["source_frame"] += 1
@@ -155,6 +200,10 @@ class EpisodeReport:
             document["sources"] = self.input_info
             document["task_template"] = self.task_template
             document["frame_numbering"] += " Live camera source_frame uses the 30 fps run timeline; source_frames contains physical per-camera indices."
+        if self.view.progress is not None:
+            document["progress"] = {"result": readable_progress(progress_snapshot(self.view.progress, result.get("decision_time_s", 0))),
+                                    "requests": progress_requests, "request_count": len(progress_requests),
+                                    "request_errors": sum("error" in r for r in progress_requests)}
         try:
             write_json(self.directory / f"output-{self.video.stem}.json", document)
         finally:
@@ -167,6 +216,8 @@ def render_recording(video, destination, events, result, ffmpeg, stop_event, *, 
     temporary = process = None
     written, fps, position = 0, 30, 0
     states = sorted((e for e in events if e["type"] == "status"), key=lambda e: e["decision_time_s"])
+    progress_events = sorted((e for e in events if e["type"] == "progress_state"), key=lambda e: e["time_s"])
+    progress, progress_position = None, 0
     state = {"status": "ON_GOING", "failure_type": None, "source_frame": -1}
     interrupted_at_start = stop_event.is_set()
     limit = max(1, math.ceil(result["decision_time_s"] * fps)) if interrupted_at_start else None
@@ -194,13 +245,19 @@ def render_recording(video, destination, events, result, ffmpeg, stop_event, *, 
             process = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.DEVNULL, stderr=errors)
 
             def write_frame(current, source_index):
-                nonlocal position, state, written
+                nonlocal position, state, written, progress, progress_position
                 if current.shape[:2] != (height, width):
                     raise ValueError("Source video resolution changed during recording")
                 while position < len(states) and states[position]["decision_time_s"] <= written / fps:
                     state = states[position]
                     position += 1
-                annotated = annotate_frame(current, source_index, state) if show_frame_numbers else annotate_frame(current, source_index, state, show_frame_numbers=False)
+                while progress_position < len(progress_events) and progress_events[progress_position]["time_s"] <= written / fps:
+                    progress = progress_events[progress_position]
+                    progress_position += 1
+                options = {} if show_frame_numbers else {"show_frame_numbers": False}
+                if progress:
+                    options.update(progress=progress, elapsed_s=written / fps)
+                annotated = annotate_frame(current, source_index, state, **options)
                 process.stdin.write(annotated.tobytes())
                 written += 1
 

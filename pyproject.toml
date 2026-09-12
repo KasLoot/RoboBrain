@@ -1,6 +1,6 @@
 [project]
 name = "robobrain"
-version = "0.3.3"
+version = "0.3.4"
 description = "Real-time visual supervision of robot plug insertion"
 readme = "README.md"
 authors = [
