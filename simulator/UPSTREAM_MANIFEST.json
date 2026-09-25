@@ -1,0 +1,882 @@
+{
+  "upstream": "/home/yuxin/workspace/Show-Harness",
+  "revision": "8c89d3bdcf1c7d28bc5050621dabf7cdde31008e",
+  "files": [
+    {
+      "path": "LICENSE",
+      "upstream_sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "adapted": false
+    },
+    {
+      "path": "assets/mujoco/lab.xml",
+      "upstream_sha256": "0f9870bcdbe2e34676469da07a178680c980b7bc1b2c7cd83f2a4b5d1953375c",
+      "adapted": false
+    },
+    {
+      "path": "assets/mujoco/pick_place.xml",
+      "upstream_sha256": "7afbb780cd93a3846d3e9ff5c188c07eaefa8ee9df0e94632fb1bcc77762dcfd",
+      "adapted": false
+    },
+    {
+      "path": "assets/mujoco/plug_insert.xml",
+      "upstream_sha256": "8ded638bf1b395cb96b74503ce3bbb0f2f5b37973a6b12963958a504378591e4",
+      "adapted": false
+    },
+    {
+      "path": "configs/primitives_franka.yaml",
+      "upstream_sha256": "2a67fb87f3dcdf41cafa3107012d0fbd8c6529884fb825e2dc1d7561667f2746",
+      "adapted": false
+    },
+    {
+      "path": "configs/robot_mujoco.yaml",
+      "upstream_sha256": "db3bdf45e403a2f0a95fb0d2ee2f0bc5ea7b46b262ae1f947251ab28bfb76b6e",
+      "adapted": false
+    },
+    {
+      "path": "configs/robot_mujoco_plug.yaml",
+      "upstream_sha256": "bc917b570ccc7a0cf407195effb2e958a63a802ca5572856f152e066d2181a8f",
+      "adapted": false
+    },
+    {
+      "path": "core/__init__.py",
+      "upstream_sha256": "b1038375e82a26bb5a9f0b6f41e073f4715d8d0a7f60c103d7c7afb6fe0ec4d1",
+      "adapted": false
+    },
+    {
+      "path": "core/action_units.py",
+      "upstream_sha256": "dd5cbf9af81de7abf9055e0e6437a7d6af7d33a4c3f72eaf7c00cc5494976b33",
+      "adapted": false
+    },
+    {
+      "path": "core/agent/__init__.py",
+      "upstream_sha256": "67ee92254b2f32bcd16eb1ca7a2790d13aedea8de829022e097bbe991984c80a",
+      "adapted": false
+    },
+    {
+      "path": "core/agent/stage_control.py",
+      "upstream_sha256": "9dec34a12b2829410a156b0d3f51e570e11d5614056d5008dd4981f072dbd3db",
+      "adapted": false
+    },
+    {
+      "path": "core/cartesian_actions.py",
+      "upstream_sha256": "57e5345a5a9fcae0c0c8af435a946c9fe53b07d8f119159bf83ffc8cf09e00dd",
+      "adapted": false
+    },
+    {
+      "path": "core/config.py",
+      "upstream_sha256": "702c7e0401b3e748fc61aabee435f7addee0f2ea93cf05eb429ea886ed9f18e0",
+      "adapted": false
+    },
+    {
+      "path": "core/launch.py",
+      "upstream_sha256": "622a6bd1bc1712c43a7274c7b02c3afecd88c768da017b194563219214fee739",
+      "adapted": true
+    },
+    {
+      "path": "core/prompting/__init__.py",
+      "upstream_sha256": "e61bcc0e2f390fac478b26a2f4470e35bd5916ae9c27f05edec60ae43a4af7fa",
+      "adapted": false
+    },
+    {
+      "path": "core/prompting/prompt_loader.py",
+      "upstream_sha256": "d98348d9dfc7d57cc4ebf789ca573c524f2a819e1cdd130174192bc06d203b82",
+      "adapted": false
+    },
+    {
+      "path": "core/prompting/wrist_marker.py",
+      "upstream_sha256": "5c3be140423c59a7436a5ae526f6527f10645de0c89423cac5f47180e952b2d9",
+      "adapted": false
+    },
+    {
+      "path": "core/prompting/wrist_marker.txt",
+      "upstream_sha256": "435a69b999b68b25d1a4a3764def369438f7db4487b1efc3d56b69c46a5b3aae",
+      "adapted": false
+    },
+    {
+      "path": "core/record/__init__.py",
+      "upstream_sha256": "7c2887d82f5a77583f9ca9d3bd44d96310e6cbcd9e0605eaa11af1c4cde50924",
+      "adapted": false
+    },
+    {
+      "path": "core/record/episode_logger.py",
+      "upstream_sha256": "425e5f30d63585ccdc1a9a7289d7bbc89ec05e366d77f7f75bad3bc39435f5ad",
+      "adapted": false
+    },
+    {
+      "path": "core/record/images.py",
+      "upstream_sha256": "f480e207e5a8fada7edaa0991e3b7231f7294efd9010bd7f28fb33ac7a3fb2cb",
+      "adapted": true
+    },
+    {
+      "path": "core/record/mujoco_recorder.py",
+      "upstream_sha256": "62b7843c7ac5c0b939daa67dbd289c1c3f72261579f51ea2fd7cd5fc6ae24e6e",
+      "adapted": false
+    },
+    {
+      "path": "core/runners/__init__.py",
+      "upstream_sha256": "28a997769c9818fcb086d2c4c88bf0053efb1f2f2af000381ea4b95414b1b597",
+      "adapted": false
+    },
+    {
+      "path": "core/runners/motion_history.py",
+      "upstream_sha256": "49d4d430baa6f63fc0d1f79e08d807506b0adc041b784a00b306e09fd49d7384",
+      "adapted": false
+    },
+    {
+      "path": "core/runners/preemption.py",
+      "upstream_sha256": "6f846a87e7427edb9e26464c3a1d4952dd5f72b29d5d86c9d706a857888f9342",
+      "adapted": false
+    },
+    {
+      "path": "core/runners/real.py",
+      "upstream_sha256": "5f20c48e11b2b8d97670c7e588ab643f8fd3ee03db01af70eec71dd124f916e8",
+      "adapted": true,
+      "integration_notes": "Hardware imports isolated; generation-guarded runner checkpoint and robot-only cumulative stage travel; interrupted-run audit finalization."
+    },
+    {
+      "path": "core/sim/__init__.py",
+      "upstream_sha256": "140ccd8cb897f2cc74574a8dbaef0e69ab80537e00cb265254ebf26c835890f2",
+      "adapted": false
+    },
+    {
+      "path": "core/sim/launch.py",
+      "upstream_sha256": "d54907980b737430432505e553b37ac148cd7ffe11d1fd2d9070c5b03dc70a7b",
+      "adapted": false
+    },
+    {
+      "path": "core/sim/mujoco_depth.py",
+      "upstream_sha256": "e3075e3d7b079c9f9c34018fb83248acf106f88854a1cad7d48864752124cfd4",
+      "adapted": false
+    },
+    {
+      "path": "core/sim/mujoco_replay.py",
+      "upstream_sha256": "85d14678e6738eb14d9be6affe9205025f94ae5048336a83591afafa517b457e",
+      "adapted": false
+    },
+    {
+      "path": "core/sim/mujoco_session.py",
+      "upstream_sha256": "047efebb656f2f87f9e6529153648a0a198aa162d8f923abf850fa6b016ce379",
+      "adapted": false
+    },
+    {
+      "path": "core/sim/mujoco_socket.py",
+      "upstream_sha256": "94a3954614b196c6d815f83b8fe23f51c6996d293762bed41ce6546860443577",
+      "adapted": false
+    },
+    {
+      "path": "core/sim/mujoco_success.py",
+      "upstream_sha256": "c79898cb407adcde43a5533d4aa72aea9ecf32670fffe8994f0e67050840267c",
+      "adapted": false
+    },
+    {
+      "path": "core/ui/__init__.py",
+      "upstream_sha256": "708ceec1870addf2841e16d0d2dd747ee426416744cb37ba233b1b309ae2bb1a",
+      "adapted": false
+    },
+    {
+      "path": "core/ui/console.py",
+      "upstream_sha256": "237f21f59fe37af0914ae7eea6937d1df02a9ea9c82f7d68b83c07f53bb813be",
+      "adapted": false
+    },
+    {
+      "path": "core/v0_types.py",
+      "upstream_sha256": "1e6d170efb0ae87eac37ab7ed1cb16cad94e84ce8e21cf34ac82640ed07d8e7e",
+      "adapted": false
+    },
+    {
+      "path": "core/visual_history.py",
+      "upstream_sha256": "d7cdb736f5e9ca3c930e3bef271cbd8adfe3543cf14d164d0573db1a3d43ae00",
+      "adapted": false
+    },
+    {
+      "path": "core/vlm/__init__.py",
+      "upstream_sha256": "f5a43f91ce75f6ed26829abb3b45ad259bd7c484c819f3f34545687c56d90779",
+      "adapted": false
+    },
+    {
+      "path": "core/vlm/roles.py",
+      "upstream_sha256": "e4b281e215801373013ac2e2b38160e71a77bbb54eeb147263a8853bb3de2971",
+      "adapted": false
+    },
+    {
+      "path": "core/vlm/vlm_client.py",
+      "upstream_sha256": "96c3837b4b0f51003fe664b099184893997b64a39b81359bad8dd421bb3eda1e",
+      "adapted": false
+    },
+    {
+      "path": "interpreters/__init__.py",
+      "upstream_sha256": "62b1babfde50aa178c92bb06a003ddefea7ec707e34b9621d05ed674ecd0a7d8",
+      "adapted": false
+    },
+    {
+      "path": "interpreters/mujoco_atomic_controller.py",
+      "upstream_sha256": "57d5e85d81c2f0249be1d963d5ed8febce6d4b0092412e222185249054b83af9",
+      "adapted": false
+    },
+    {
+      "path": "interpreters/real_atomic_controller.py",
+      "upstream_sha256": "a0196ab42179d2a95dea14eb5c3ba60e38becabd603165acdcc89da4b45c4788",
+      "adapted": false
+    },
+    {
+      "path": "plugins/__init__.py",
+      "upstream_sha256": "0a54d41098ff59e9aa5cbf1930e6de628aa75a64d06a11fbbc38386930ce5e15",
+      "adapted": false
+    },
+    {
+      "path": "plugins/action_ablation/__init__.py",
+      "upstream_sha256": "510b4e2990d923d2eec5151b8aae71f494e2dbe8d2b2a218cfb45f7b419ae538",
+      "adapted": false
+    },
+    {
+      "path": "plugins/action_ablation/action_ablation.txt",
+      "upstream_sha256": "a75a6c5b2c882b0f7ba65bd7042ba11cd99eda0974a80e0a27a4dd7bcc5d4823",
+      "adapted": false
+    },
+    {
+      "path": "plugins/action_ablation/plugin.py",
+      "upstream_sha256": "fd9829e70a6e7a95857bbf1bd544743ddf361d58fa4c65de1a530004d44a79bd",
+      "adapted": false
+    },
+    {
+      "path": "plugins/action_chunk/__init__.py",
+      "upstream_sha256": "1aa02c351d5635a6a805c4323465749f3c34ff248b12ac0575aa799e6eea8ac6",
+      "adapted": false
+    },
+    {
+      "path": "plugins/action_chunk/action_chunk.txt",
+      "upstream_sha256": "284ddff8ace5c18e54903c02abf785604d033cfd609cded6ffc720d55f677f07",
+      "adapted": false
+    },
+    {
+      "path": "plugins/action_chunk/plugin.py",
+      "upstream_sha256": "0d6dcbbae4cfd7214976fad8bcf9daa5a9df7246e7b50d1a3c83cd02445eb239",
+      "adapted": false
+    },
+    {
+      "path": "plugins/affordance/__init__.py",
+      "upstream_sha256": "fe4be54db422d2a8e6830d7f009e894efc36325e05f6365532a18102aef6ec68",
+      "adapted": false
+    },
+    {
+      "path": "plugins/affordance/affordance_field.txt",
+      "upstream_sha256": "da79864e157887d48593767abee28d7306de144f300f1f884b84bfe19d6495e2",
+      "adapted": false
+    },
+    {
+      "path": "plugins/affordance/affordance_point.txt",
+      "upstream_sha256": "d9ac53fbdbafe277a1a90efa4d86f63e8764ac3803d4b17270bcf2acd410b63d",
+      "adapted": false
+    },
+    {
+      "path": "plugins/affordance/affordance_verify.txt",
+      "upstream_sha256": "9c4d2f7ae4d8e1d59f87ca6c56a87baa6d28c17383f8bb65b5469d5fb0aacde4",
+      "adapted": false
+    },
+    {
+      "path": "plugins/affordance/agent.py",
+      "upstream_sha256": "9b06b72d0ce67c1bad9a15cea1f56c837ad5102c88638474f9d269b0fc0f1721",
+      "adapted": false
+    },
+    {
+      "path": "plugins/affordance/plugin.py",
+      "upstream_sha256": "6a6458fa59c48a04a5956755a239b22b96c684e111f8798858febc4066e751e2",
+      "adapted": false
+    },
+    {
+      "path": "plugins/config.py",
+      "upstream_sha256": "99161bb38cf1191cfa1a030416e22adc3d49dec37eb292d2a289e8ba99c93282",
+      "adapted": false
+    },
+    {
+      "path": "plugins/coords/__init__.py",
+      "upstream_sha256": "19a63e0c94e804f98581ad7582ec7fe3afe41af263abc6ed848bdd3cbcc57575",
+      "adapted": false
+    },
+    {
+      "path": "plugins/coords/coords.txt",
+      "upstream_sha256": "0b7a95d752f90035fdefab56fd4daa4114857a69c8b313053bf81abb91fffabc",
+      "adapted": false
+    },
+    {
+      "path": "plugins/coords/plugin.py",
+      "upstream_sha256": "4a292603844214d82cda7a9a260c467c9cc938aaa6084fa8e8231ae46479375a",
+      "adapted": false
+    },
+    {
+      "path": "plugins/deepplan/__init__.py",
+      "upstream_sha256": "c34bb8c25e17629ebaab1f57d1507bba1341e4ec294620fc51d6b2b6394ea08a",
+      "adapted": false
+    },
+    {
+      "path": "plugins/deepplan/agent.py",
+      "upstream_sha256": "d86bf500f2cbd8d1097c3765a0e18eca93e4544838a6b754b285e48ae5e31358",
+      "adapted": false
+    },
+    {
+      "path": "plugins/deepplan/deepplan_planner.txt",
+      "upstream_sha256": "713f86ba7248d1bc7abad015cd311b9dc078c86ef645d0cf0ccddb04455e428b",
+      "adapted": false
+    },
+    {
+      "path": "plugins/deepplan/deepplan_resolver.txt",
+      "upstream_sha256": "081791f88efd6e8a52669442db32ec0ee09b6419544a243c6f9f11ec403336b0",
+      "adapted": false
+    },
+    {
+      "path": "plugins/deepplan/plugin.py",
+      "upstream_sha256": "ba551bdc7586bd51ec30da84654edd0dde6b103c3ca2c6d9b4bf1988c2b437e1",
+      "adapted": false
+    },
+    {
+      "path": "plugins/ego/__init__.py",
+      "upstream_sha256": "48ad6c62cd052fd1affb75735b9928193bbcc0f51f1bbdf0862d32a1d97d0a18",
+      "adapted": false
+    },
+    {
+      "path": "plugins/ego/plugin.py",
+      "upstream_sha256": "f10b0f463c8d6c4c21fe46a52d49b3e70df8381defedad923761ecc18b92a21c",
+      "adapted": false
+    },
+    {
+      "path": "plugins/mcq/__init__.py",
+      "upstream_sha256": "a8de0769162da94a6b16a216a9d95589d50ff55d052f5785bfe1bf7af27313d3",
+      "adapted": false
+    },
+    {
+      "path": "plugins/mcq/mcq.txt",
+      "upstream_sha256": "77bc7bd60b84d4c511a62677c4196a2af6b0815ed5b644a9775a636ac77ab8a0",
+      "adapted": false
+    },
+    {
+      "path": "plugins/mcq/plugin.py",
+      "upstream_sha256": "dd3039c14303f22fd3db2eff1baabbcb8f5c7f34c8f04ac11fc4db401fc7b4ee",
+      "adapted": false
+    },
+    {
+      "path": "plugins/mem_text/__init__.py",
+      "upstream_sha256": "6fe88336424b52bb9594a2c204fa65c5df75491a730cc60078dcb08513948e6a",
+      "adapted": false
+    },
+    {
+      "path": "plugins/mem_text/mem_text.txt",
+      "upstream_sha256": "ecb604c87aea269dcc62b81f7ad617c0cd78053f65cb3e8cb9ee48ce4d3ab4de",
+      "adapted": false
+    },
+    {
+      "path": "plugins/mem_text/plugin.py",
+      "upstream_sha256": "baeb1a97c8005eaad304b7cdf37e9f7aee8a34a683ec45f6b8bff3e45b08ed38",
+      "adapted": false
+    },
+    {
+      "path": "plugins/prompt_text.py",
+      "upstream_sha256": "2bf8f2a13fa05df4c2ed593ad6a52751656f6df275c44e34facc1c782f3fdab5",
+      "adapted": false
+    },
+    {
+      "path": "plugins/proprioception/__init__.py",
+      "upstream_sha256": "1db40bbf73280f359749f54dfe2ffffde32d3b149694fa30d58e5dc32a6ed343",
+      "adapted": false
+    },
+    {
+      "path": "plugins/proprioception/plugin.py",
+      "upstream_sha256": "c8f3ad6f3329f0fe9158b74a28b2ba5afbcf4104cb03ba17590aedef76d05b11",
+      "adapted": false
+    },
+    {
+      "path": "plugins/proprioception/proprioception.txt",
+      "upstream_sha256": "e4cd4db0149e6cdd86d91d887e64a2565897fa804dbb814104667f18fdbfe3ea",
+      "adapted": false
+    },
+    {
+      "path": "plugins/recovery/__init__.py",
+      "upstream_sha256": "7ce2e414865e808b2db48cf4ff1ea211f7f34f5a80132bc05a764cd8fa9caf96",
+      "adapted": false
+    },
+    {
+      "path": "plugins/recovery/plugin.py",
+      "upstream_sha256": "9def3a0c81230b24a72a1cf8d0be06b9f9aba3540f629b645c2758973b4f8c82",
+      "adapted": false
+    },
+    {
+      "path": "plugins/recovery/recovery.txt",
+      "upstream_sha256": "f3d918b510c7f400e29ee1a973a3b27954293b1069f969577e813c8f9feb97ab",
+      "adapted": false
+    },
+    {
+      "path": "plugins/smooth/__init__.py",
+      "upstream_sha256": "cd84c829d3c6568b0a1c5d2949720880042d84a0cc242101c860ee22d19883c6",
+      "adapted": false
+    },
+    {
+      "path": "plugins/smooth/plugin.py",
+      "upstream_sha256": "1ac18ae0d7bd82b2ceb5bd00e4e760c6058044aebdd208ce8816876fbae81eab",
+      "adapted": false
+    },
+    {
+      "path": "plugins/subgoal/__init__.py",
+      "upstream_sha256": "0e3987460790026aa857c433471be476f482c7267b66f3c1a952ef7ef189db2d",
+      "adapted": true
+    },
+    {
+      "path": "plugins/subgoal/agent.py",
+      "upstream_sha256": "f4c2a63043598d9d74e657758880a6ead2abe1ad4e0ec3abe06b43cfdfa6a227",
+      "adapted": false
+    },
+    {
+      "path": "plugins/subgoal/plugin.py",
+      "upstream_sha256": "fb953c24594272a9fb4b88e324e2fe4d17d5a985eda3164e4dea155e9fec93b3",
+      "adapted": false
+    },
+    {
+      "path": "plugins/subgoal/subgoal_planner.txt",
+      "upstream_sha256": "aa61e2f3955d9e41f7dc97b9c06d9acf58e14ce9bce2150ff8617de015220d6a",
+      "adapted": false
+    },
+    {
+      "path": "plugins/subgoal/subgoal_planner_dual.txt",
+      "upstream_sha256": "9b57ca03a5fb3f9528f5f886c508d0a9d936b68227762ca36aebdf8cc5a0f2b5",
+      "adapted": false
+    },
+    {
+      "path": "plugins/variable_step/__init__.py",
+      "upstream_sha256": "30a349fbacf5d93f9a73f6056c8d4aa50f67c2508ed249f356dd82c2c6cbbe6b",
+      "adapted": false
+    },
+    {
+      "path": "plugins/variable_step/plugin.py",
+      "upstream_sha256": "2b9c3b3117d594b7edd0ce237b965826d05dfdaeea0283b2bb6081cee8de0c1d",
+      "adapted": false
+    },
+    {
+      "path": "plugins/wrist_frame/__init__.py",
+      "upstream_sha256": "157ffc772952de6d4dcfec1a65161a511de5d88ef5d24c7e6313ab3013c310b3",
+      "adapted": false
+    },
+    {
+      "path": "plugins/wrist_frame/plugin.py",
+      "upstream_sha256": "dd5844aeec20514e6c13145cba717e246be229ffd30481f9fa9783aa0079c1e3",
+      "adapted": false
+    },
+    {
+      "path": "prompts/common_context.txt",
+      "upstream_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "adapted": false
+    },
+    {
+      "path": "prompts/controller.txt",
+      "upstream_sha256": "6a50320aa8e039d72f14e6f3b59a0e67a5261c0cd58487587337f01df228f615",
+      "adapted": false
+    },
+    {
+      "path": "prompts/controller_mujoco.txt",
+      "upstream_sha256": "7cdfa57252998e4ebd03d43b3a5b69d59dd14bce1aa0ca27e3ac21d748c20201",
+      "adapted": false
+    },
+    {
+      "path": "prompts/controller_mujoco_cartesian.txt",
+      "upstream_sha256": "ebe3487b41334d9b7c08ce173017ce426a5976f1df36933449440b438866fb02",
+      "adapted": false
+    },
+    {
+      "path": "prompts/controller_mujoco_plug.txt",
+      "upstream_sha256": "4f182ce267027ef6f3471575074d551d1c7a182c11bda3189cf8cd19b54ae49c",
+      "adapted": false
+    },
+    {
+      "path": "scripts/mujoco/replay.py",
+      "upstream_sha256": "d3293debaeb8c17ee4cdca103d8ce914607b26afbe064ab16db16f5b68db2407",
+      "adapted": false
+    },
+    {
+      "path": "scripts/run_mujoco.py",
+      "upstream_sha256": "ed91f09c42f3c1ab7548fe1bf47e92877ee597b5389e19e1b0368f86ad717563",
+      "adapted": false
+    },
+    {
+      "path": "tests/test_mujoco.py",
+      "upstream_sha256": "a0b4df670641441acd3e28582a20e46192f840e473fdc921ecc0791efa48e25a",
+      "adapted": false
+    },
+    {
+      "path": "tests/test_mujoco_actions.py",
+      "upstream_sha256": "4663bdffd76509c89fd9fc704063b264ecf58529147dfc36658f80d8a2921d51",
+      "adapted": false
+    },
+    {
+      "path": "tests/test_mujoco_cartesian_integration.py",
+      "upstream_sha256": "9cc4e0064f8a03ce3be5eb3922644aba10f86171a8d01b42cd15e10bf629c322",
+      "adapted": false
+    },
+    {
+      "path": "tests/test_mujoco_depth.py",
+      "upstream_sha256": "2a84b146d21335c4997cbd6df1f8af2348861a7e2402ac28b2b0de00fdb785ae",
+      "adapted": false
+    },
+    {
+      "path": "tests/test_mujoco_plug_scene.py",
+      "upstream_sha256": "898b331665e6867c3ebae208764853e5ab566f8131979aa7636a54c29b9c1f6c",
+      "adapted": false
+    },
+    {
+      "path": "tests/test_mujoco_recording.py",
+      "upstream_sha256": "5cb4aae2dffcd5827a0049ea0839c2ae9e1eeaa27082e44a2a1d7ef0ab5eabc1",
+      "adapted": true
+    },
+    {
+      "path": "tests/test_mujoco_recording_cli.py",
+      "upstream_sha256": "c28d2fb7c6927ad60c268c1ad93f3221594d84d4d9aab0fce119f33357b1c674",
+      "adapted": false
+    },
+    {
+      "path": "tests/test_mujoco_replay.py",
+      "upstream_sha256": "b47b849bb7f13b1d6826a0c99df6ee86566ba23f9b7aa2f0e9021cfb31ad09be",
+      "adapted": false
+    },
+    {
+      "path": "third_party/mujoco_menagerie/franka_emika_panda/LICENSE",
+      "upstream_sha256": "a6cba85bc92e0cff7a450b1d873c0eaa2e9fc96bf472df0247a26bec77bf3ff9",
+      "adapted": false
+    },
+    {
+      "path": "third_party/mujoco_menagerie/franka_emika_panda/assets/finger_0.obj",
+      "upstream_sha256": "215098c0fcdf7192f6c503a37cf49e3efecf8a9e1320f02b17c5584d89cc5b2c",
+      "adapted": false
+    },
+    {
+      "path": "third_party/mujoco_menagerie/franka_emika_panda/assets/finger_1.obj",
+      "upstream_sha256": "cf239e9aca26bba09dbbf1c544c47d87cfc9a2f0637c8bb786af750b6d4eca44",
+      "adapted": false
+    },
+    {
+      "path": "third_party/mujoco_menagerie/franka_emika_panda/assets/hand.stl",
+      "upstream_sha256": "94493e94f30fe940f2c8ca2f155c3bbe67bbff406d3edf5e261670d2f0f6e2ed",
+      "adapted": false
+    },
+    {
+      "path": "third_party/mujoco_menagerie/franka_emika_panda/assets/hand_0.obj",
+      "upstream_sha256": "b94aab901086f85df04c019b30f43bf9aa23a7ad0443ec80a8c14662a41cabd2",
+      "adapted": false
+    },
+    {
+      "path": "third_party/mujoco_menagerie/franka_emika_panda/assets/hand_1.obj",
+      "upstream_sha256": "cd76f7494bb314406a1819c46eb826ee254894f87235714f604a470653d9badb",
+      "adapted": false
+    },
+    {
+      "path": "third_party/mujoco_menagerie/franka_emika_panda/assets/hand_2.obj",
+      "upstream_sha256": "e0f44a71712afa5b98eb20355eff17763d3e2e19f459b2bef19abed3727e64b3",
+      "adapted": false
+    },
+    {
+      "path": "third_party/mujoco_menagerie/franka_emika_panda/assets/hand_3.obj",
+      "upstream_sha256": "a431a06d99e88a1b322b3122a01424ee7704daeaad0bc343b90b9604f014ad0c",
+      "adapted": false
+    },
+    {
+      "path": "third_party/mujoco_menagerie/franka_emika_panda/assets/hand_4.obj",
+      "upstream_sha256": "21f96ef6a8de082e41b1ea9834f1043de359e5d60305541bcb63539581f53bff",
+      "adapted": false
+    },
+    {
+      "path": "third_party/mujoco_menagerie/franka_emika_panda/assets/link0.stl",
+      "upstream_sha256": "dfc6d94330de8ddb005b311bfdba9f3b8e1aa7c256b71592ee7ff32cb9a9a5aa",
+      "adapted": false
+    },
+    {
+      "path": "third_party/mujoco_menagerie/franka_emika_panda/assets/link0_0.obj",
+      "upstream_sha256": "6b9f41a4c203540daaeb7a33cc3d0d6c6a32dc8bba187074eeaf97b3e36b3f9c",
+      "adapted": false
+    },
+    {
+      "path": "third_party/mujoco_menagerie/franka_emika_panda/assets/link0_1.obj",
+      "upstream_sha256": "57673d2ee2a9db2e10c8986ae57c56a7c39c012b60fd26d7d8549553b664a5ed",
+      "adapted": false
+    },
+    {
+      "path": "third_party/mujoco_menagerie/franka_emika_panda/assets/link0_10.obj",
+      "upstream_sha256": "c9198b9d8534d628d097b0f2b239bb30343353182df098ce0d9db6bc13326848",
+      "adapted": false
+    },
+    {
+      "path": "third_party/mujoco_menagerie/franka_emika_panda/assets/link0_11.obj",
+      "upstream_sha256": "f0adec78d6677b7799d25121981270e8bfe119b5c18d08a91ee37a54ad75f65c",
+      "adapted": false
+    },
+    {
+      "path": "third_party/mujoco_menagerie/franka_emika_panda/assets/link0_2.obj",
+      "upstream_sha256": "1ca435a2a87a9608a146a47955724d43dd7ce10fc3dd3018800aa98f8ba86e05",
+      "adapted": false
+    },
+    {
+      "path": "third_party/mujoco_menagerie/franka_emika_panda/assets/link0_3.obj",
+      "upstream_sha256": "3e9c6334d2b3b47944af3458ee5f20519abc20fe7ee23063bb53405ccab28046",
+      "adapted": false
+    },
+    {
+      "path": "third_party/mujoco_menagerie/franka_emika_panda/assets/link0_4.obj",
+      "upstream_sha256": "215d25789704936120f119c0bc1cc7f68516dd3f8f1df61457b71acac3873f26",
+      "adapted": false
+    },
+    {
+      "path": "third_party/mujoco_menagerie/franka_emika_panda/assets/link0_5.obj",
+      "upstream_sha256": "9361b104e93743045107aa5b15fb1a0835ba9c1f355aae71f56403cf6a9c33f6",
+      "adapted": false
+    },
+    {
+      "path": "third_party/mujoco_menagerie/franka_emika_panda/assets/link0_7.obj",
+      "upstream_sha256": "2dc0b8ebbbc80e4c065d71e195adbc384f673438641fac82b07b801b4d2837cb",
+      "adapted": false
+    },
+    {
+      "path": "third_party/mujoco_menagerie/franka_emika_panda/assets/link0_8.obj",
+      "upstream_sha256": "3b8c436999db5586b8eb47bed2b0aa7de6993868b2681b4c04246eeac42fdb7a",
+      "adapted": false
+    },
+    {
+      "path": "third_party/mujoco_menagerie/franka_emika_panda/assets/link0_9.obj",
+      "upstream_sha256": "45178f97d2b5da6bce11f610212c4ef7d08c73db33a4fc38e1b7f66b93d023f5",
+      "adapted": false
+    },
+    {
+      "path": "third_party/mujoco_menagerie/franka_emika_panda/assets/link1.obj",
+      "upstream_sha256": "51091e776b16babdbe2f3849b5c041f921d1f11dd94ac19a0f1c81abf496fbae",
+      "adapted": false
+    },
+    {
+      "path": "third_party/mujoco_menagerie/franka_emika_panda/assets/link1.stl",
+      "upstream_sha256": "e41a39a94108fcf56aacff603fc91ec80541f4c1af17b51a0de5617f5566e6d2",
+      "adapted": false
+    },
+    {
+      "path": "third_party/mujoco_menagerie/franka_emika_panda/assets/link2.obj",
+      "upstream_sha256": "5c9f8e715de52c3eb71b475de35993b3b96081e02abea9f28c414768877fc59b",
+      "adapted": false
+    },
+    {
+      "path": "third_party/mujoco_menagerie/franka_emika_panda/assets/link2.stl",
+      "upstream_sha256": "370f7605a0fae3529db169ded50f52f171024aa792d4d773bc84197301f6a039",
+      "adapted": false
+    },
+    {
+      "path": "third_party/mujoco_menagerie/franka_emika_panda/assets/link3.stl",
+      "upstream_sha256": "0a8d638b9349c6c0eefc4e888636ac4838c4b27170f18a51699321118af709c1",
+      "adapted": false
+    },
+    {
+      "path": "third_party/mujoco_menagerie/franka_emika_panda/assets/link3_0.obj",
+      "upstream_sha256": "ce2da87f51708e11b189249d41401065dabe89a06e251185a06cef4d5ff27178",
+      "adapted": false
+    },
+    {
+      "path": "third_party/mujoco_menagerie/franka_emika_panda/assets/link3_1.obj",
+      "upstream_sha256": "2880b7753a7173f38fa87ee21da4dfc7fa7be46fbe07bac5aef9e128513cb118",
+      "adapted": false
+    },
+    {
+      "path": "third_party/mujoco_menagerie/franka_emika_panda/assets/link3_2.obj",
+      "upstream_sha256": "670cff81ae84693769ca4ae658c154cf909d81167e7c8d22b70ea977f2504efa",
+      "adapted": false
+    },
+    {
+      "path": "third_party/mujoco_menagerie/franka_emika_panda/assets/link3_3.obj",
+      "upstream_sha256": "30ede0c812efd0e0b767d134a4eae0b84e0fa407bb6325a5a555e0569b3a3ffd",
+      "adapted": false
+    },
+    {
+      "path": "third_party/mujoco_menagerie/franka_emika_panda/assets/link4.stl",
+      "upstream_sha256": "0180ebb5772ec9840cb049750cffb29a9ddc90311752a16ea34757782ef9e48d",
+      "adapted": false
+    },
+    {
+      "path": "third_party/mujoco_menagerie/franka_emika_panda/assets/link4_0.obj",
+      "upstream_sha256": "443bf6d178177cf347951ecf107ccd10ca444e605e375b67304579e5f948806f",
+      "adapted": false
+    },
+    {
+      "path": "third_party/mujoco_menagerie/franka_emika_panda/assets/link4_1.obj",
+      "upstream_sha256": "ca935ec7cc8b3f0e86aa079c76b0b3bf593b1e9830bab0fa7131ac51577c74f0",
+      "adapted": false
+    },
+    {
+      "path": "third_party/mujoco_menagerie/franka_emika_panda/assets/link4_2.obj",
+      "upstream_sha256": "c89caf26d379c35bb9e191ee2d91d09ab29ecc792b48d8bc10b39e5b38222175",
+      "adapted": false
+    },
+    {
+      "path": "third_party/mujoco_menagerie/franka_emika_panda/assets/link4_3.obj",
+      "upstream_sha256": "1495d17f45bdb230cf58b0beef9da4e8c9cfe76a3d2d38da89017efe5e093136",
+      "adapted": false
+    },
+    {
+      "path": "third_party/mujoco_menagerie/franka_emika_panda/assets/link5_0.obj",
+      "upstream_sha256": "a3238b8f2af0f2eb66d9fe63dc5d41ac52d5d38507241b5ed10e3cb019ab3e71",
+      "adapted": false
+    },
+    {
+      "path": "third_party/mujoco_menagerie/franka_emika_panda/assets/link5_1.obj",
+      "upstream_sha256": "9d994bbf83ec241e301b5197a6846da13f2a4a0582edb2c0f76962c5549649d6",
+      "adapted": false
+    },
+    {
+      "path": "third_party/mujoco_menagerie/franka_emika_panda/assets/link5_2.obj",
+      "upstream_sha256": "83b4ffe9f772cd7fe182e98640650eebc899aaf01842656574b0416c90dd40a4",
+      "adapted": false
+    },
+    {
+      "path": "third_party/mujoco_menagerie/franka_emika_panda/assets/link5_collision_0.obj",
+      "upstream_sha256": "3e5aa75fb13f193555c3dfb999df91d81df25006a5c3af5338297d78137c129b",
+      "adapted": false
+    },
+    {
+      "path": "third_party/mujoco_menagerie/franka_emika_panda/assets/link5_collision_1.obj",
+      "upstream_sha256": "87cd8f621071df010f774cbde789282b8463840dfe704f8bdfa2e29be0142e15",
+      "adapted": false
+    },
+    {
+      "path": "third_party/mujoco_menagerie/franka_emika_panda/assets/link5_collision_2.obj",
+      "upstream_sha256": "823ab6c8f7b1d79e0844fa071d82a03499ff68e34fddb1ba3451032c22736040",
+      "adapted": false
+    },
+    {
+      "path": "third_party/mujoco_menagerie/franka_emika_panda/assets/link6.stl",
+      "upstream_sha256": "20b768e99a0e0440b5754dcca108016434e57937cc356acd9c352ccd3cb27f77",
+      "adapted": false
+    },
+    {
+      "path": "third_party/mujoco_menagerie/franka_emika_panda/assets/link6_0.obj",
+      "upstream_sha256": "0504c70ebf1b284ee8faae7dcb896b8830bc672a6552015dd5dbd121fa031fb9",
+      "adapted": false
+    },
+    {
+      "path": "third_party/mujoco_menagerie/franka_emika_panda/assets/link6_1.obj",
+      "upstream_sha256": "45f7ca77695198b6d86ec2417ad4e42e6275044f0f96266699ee8e1057757ac1",
+      "adapted": false
+    },
+    {
+      "path": "third_party/mujoco_menagerie/franka_emika_panda/assets/link6_10.obj",
+      "upstream_sha256": "365f26c21d10332cab8d8704645cb46930c30b3085956f2d097498c793f24db4",
+      "adapted": false
+    },
+    {
+      "path": "third_party/mujoco_menagerie/franka_emika_panda/assets/link6_11.obj",
+      "upstream_sha256": "8ae61e08b3ad064f25bbf03b22e59cc15d65883b5a7ce92711aff29df2493901",
+      "adapted": false
+    },
+    {
+      "path": "third_party/mujoco_menagerie/franka_emika_panda/assets/link6_12.obj",
+      "upstream_sha256": "f28d1bfd62b0244ffd19fb35fe9edefdf583d3c9167db944e87185d919e1d021",
+      "adapted": false
+    },
+    {
+      "path": "third_party/mujoco_menagerie/franka_emika_panda/assets/link6_13.obj",
+      "upstream_sha256": "0a55fa92dccb261d07200e6565fca4c850fd17f0c1ecf38821c0b97d51796c7d",
+      "adapted": false
+    },
+    {
+      "path": "third_party/mujoco_menagerie/franka_emika_panda/assets/link6_14.obj",
+      "upstream_sha256": "750ae3ee4781e62e3a045c662195247b03f6642b05aa93104f08258e5f6eba26",
+      "adapted": false
+    },
+    {
+      "path": "third_party/mujoco_menagerie/franka_emika_panda/assets/link6_15.obj",
+      "upstream_sha256": "5999c1c2497a004a7c4bbe034cdf13744f839d85ae7a11b1bc386c48a3e642e6",
+      "adapted": false
+    },
+    {
+      "path": "third_party/mujoco_menagerie/franka_emika_panda/assets/link6_16.obj",
+      "upstream_sha256": "551d7a8b37c53e7a152d008b4e36992e5b5abe74a4be18b57ee6319c27def09f",
+      "adapted": false
+    },
+    {
+      "path": "third_party/mujoco_menagerie/franka_emika_panda/assets/link6_2.obj",
+      "upstream_sha256": "e54eee4d8232947ee8af65afd5a067e09dac2da6e7e585cb1dccb65496457da0",
+      "adapted": false
+    },
+    {
+      "path": "third_party/mujoco_menagerie/franka_emika_panda/assets/link6_3.obj",
+      "upstream_sha256": "d4f6a25ef32fa1fa4734146981994ee760232cb077c80fea6487d78a077c7f27",
+      "adapted": false
+    },
+    {
+      "path": "third_party/mujoco_menagerie/franka_emika_panda/assets/link6_4.obj",
+      "upstream_sha256": "be353480fe71d46f7a96f0a3cbb7e112caaf8d88368826f321a36a253c8749b2",
+      "adapted": false
+    },
+    {
+      "path": "third_party/mujoco_menagerie/franka_emika_panda/assets/link6_5.obj",
+      "upstream_sha256": "7c87664623c3e1a6cb330db273227a69626dc5e53b4caff1d4ee7911eb3340c6",
+      "adapted": false
+    },
+    {
+      "path": "third_party/mujoco_menagerie/franka_emika_panda/assets/link6_6.obj",
+      "upstream_sha256": "8fbc031e0d07b795ebf99115c75223141caaba317cab569159f3d477a7821681",
+      "adapted": false
+    },
+    {
+      "path": "third_party/mujoco_menagerie/franka_emika_panda/assets/link6_7.obj",
+      "upstream_sha256": "7dc5ebb799fe281aab27d6e84e7a4efa0a8e42da2369ec83de3ea3f206f62d73",
+      "adapted": false
+    },
+    {
+      "path": "third_party/mujoco_menagerie/franka_emika_panda/assets/link6_8.obj",
+      "upstream_sha256": "e3f77381817a341030f9dcc4c4aa7c559f80411b453fd87eb0fefecca82151bf",
+      "adapted": false
+    },
+    {
+      "path": "third_party/mujoco_menagerie/franka_emika_panda/assets/link6_9.obj",
+      "upstream_sha256": "25a56ea9b02a03b6cb5a81f31c54f54d0185e1a0b3937c37e4289d896e50215a",
+      "adapted": false
+    },
+    {
+      "path": "third_party/mujoco_menagerie/franka_emika_panda/assets/link7.stl",
+      "upstream_sha256": "92ac6afcf7574c034d3170d8a68e95ac9048ab9d0dd5bbd8311b86e551b9ab1c",
+      "adapted": false
+    },
+    {
+      "path": "third_party/mujoco_menagerie/franka_emika_panda/assets/link7_0.obj",
+      "upstream_sha256": "04586b0bde011715cfc22072ac72fe0717eb4d4817bcf665987ce6cd88eb2b93",
+      "adapted": false
+    },
+    {
+      "path": "third_party/mujoco_menagerie/franka_emika_panda/assets/link7_1.obj",
+      "upstream_sha256": "c3f72289f394c9d6749a4a327fb11f05b203c37c95032c92f28019b40ebe7e00",
+      "adapted": false
+    },
+    {
+      "path": "third_party/mujoco_menagerie/franka_emika_panda/assets/link7_2.obj",
+      "upstream_sha256": "d2faecedb304d0989040d082410378dc949dbbda23bd18c05134f08aae984db5",
+      "adapted": false
+    },
+    {
+      "path": "third_party/mujoco_menagerie/franka_emika_panda/assets/link7_3.obj",
+      "upstream_sha256": "b62d87c4d4bdb7b281ed341d347c39dad0e50bf36aed8ac11d050073701d5f70",
+      "adapted": false
+    },
+    {
+      "path": "third_party/mujoco_menagerie/franka_emika_panda/assets/link7_4.obj",
+      "upstream_sha256": "cb78ccb61fd4ad6c7bff4c4d2e6cb41e1964a5a3e1a28e67c0c6202371cfc018",
+      "adapted": false
+    },
+    {
+      "path": "third_party/mujoco_menagerie/franka_emika_panda/assets/link7_5.obj",
+      "upstream_sha256": "099071d3090b51471ba52f4f90814fd3089f4975d196e4d488117073d0bfe491",
+      "adapted": false
+    },
+    {
+      "path": "third_party/mujoco_menagerie/franka_emika_panda/assets/link7_6.obj",
+      "upstream_sha256": "99469e2d95ab74ce0292f2f16954c87a8a7dc16652e62e970fe37c94330a81bb",
+      "adapted": false
+    },
+    {
+      "path": "third_party/mujoco_menagerie/franka_emika_panda/assets/link7_7.obj",
+      "upstream_sha256": "426c3db8a19373f3dc73d4bec672e948121b2914c10e2e7b9c7ea80643a19e54",
+      "adapted": false
+    },
+    {
+      "path": "third_party/mujoco_menagerie/franka_emika_panda/panda.xml",
+      "upstream_sha256": "96ad67da03710f17f798c9478fd9e9efdf24a3bf8359f05e456dd9fb158ea273",
+      "adapted": false
+    }
+  ]
+}

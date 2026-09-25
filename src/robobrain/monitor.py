@@ -3,7 +3,7 @@
 import asyncio
 import base64
 from collections import deque
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import json
 import itertools
 from pathlib import Path
@@ -13,7 +13,7 @@ import time
 import cv2
 import httpx
 
-from .endpoints import cloud_model, model_info, native_ollama, ollama_headers
+from .endpoints import cloud_model, model_info, model_headers, native_ollama, official_openai
 
 HERE = Path(__file__).resolve().parent
 VERDICTS = ("POSITIVE", "NEGATIVE", "UNCERTAIN")
@@ -94,11 +94,17 @@ class Specialist:
                 name: {"source_frame": view.source_index, "captured_time_s": view.observed_at - started_at}
                 for name, view in frame.views.items()
             }
+        if getattr(frame, "metadata", None):
+            observation["evidence"] = {"context": frame.metadata["context"],
+                                       "identity": frame.metadata["identity"],
+                                       "observed_at": frame.observed_at,
+                                       "simulation": frame.metadata["simulation"]}
         sent = time.monotonic()
         log({**observation, "type": "request_started", "sent_time_s": sent - started_at})
         try:
             response = await backend.complete(self, frame)
             observation["http_status"] = response.status_code
+            observation["queue_wait_s"] = response.extensions.get("model_queue_wait_s", 0.)
             observation["response_text"] = response.text
             response.raise_for_status()
             body = response.json()
@@ -183,6 +189,7 @@ class Frame:
     sequence: int
     source_index: int
     observed_at: float
+    metadata: dict | None = field(default=None, kw_only=True)
 
 
 class SimulatedCamera:
@@ -264,9 +271,15 @@ def image_content(image, crop):
 
 class Backend:
     """Shared transport; specialists never own independent verification schedulers."""
-    def __init__(self, config, client, *, specialists=None):
+    def __init__(self, config, client, *, specialists=None, request_gate=None, audit=None):
         self.config, self.client = config, client
+        self.audit = audit
         self.native = native_ollama(config["base_url"])
+        default_limit = min(3, config.get("max_connections", 36)) if self.native else config.get("max_connections", 36)
+        limit = config.get("max_in_flight", default_limit)
+        if type(limit) is not int or limit < 1:
+            raise ValueError("max_in_flight must be a positive integer")
+        self.request_gate = request_gate if request_gate is not None else asyncio.Semaphore(limit)
         self.model, self.info = config["model"], {}
         self.request_ids = itertools.count(1)
         if specialists is not None:
@@ -286,6 +299,14 @@ class Backend:
         return self.info
 
     async def complete(self, specialist, frame):
+        queued_at = time.monotonic()
+        async with self.request_gate:
+            waited = time.monotonic() - queued_at
+            response = await self._complete(specialist, frame)
+            response.extensions["model_queue_wait_s"] = waited
+            return response
+
+    async def _complete(self, specialist, frame):
         content = [*specialist.references, *specialist.current_content(frame)]
         base_url = self.config["base_url"].rstrip("/")
         if self.native:
@@ -317,9 +338,44 @@ class Backend:
                        "messages": [{"role": "system", "content": specialist.prompt}, {"role": "user", "content": content}],
                        "response_format": {"type": "json_schema", "json_schema": {
                            "name": "visual_observation", "strict": True, "schema": specialist.schema}}}
+            if official_openai(base_url):
+                payload.pop("chat_template_kwargs", None)
+                payload["max_completion_tokens"] = payload.pop("max_tokens")
+                effort = self.config.get("reasoning_effort")
+                if effort is not None:
+                    payload["reasoning_effort"] = effort
+                    if effort != "none":
+                        payload.pop("temperature", None)
             path = "/chat/completions"
-        return await self.client.post(base_url + path, json=payload, headers=ollama_headers(base_url),
-                                      timeout=self.config["request_timeout"])
+        call_id = None
+        started = time.monotonic()
+        try:
+            if self.audit:
+                from uuid import uuid4
+                call_id = uuid4().hex
+                # Progress supplies a history; retain every evidence identity.
+                frames = [item[1] for item in frame] if isinstance(frame, (list, tuple)) else [frame]
+                evidence = [getattr(item, 'metadata', None) for item in frames]
+                begin = asyncio.create_task(asyncio.to_thread(self.audit.begin, payload,
+                    specialist=getattr(specialist, 'name', 'progress'), evidence=evidence, call_id=call_id))
+                try:
+                    await asyncio.shield(begin)
+                except asyncio.CancelledError:
+                    await begin
+                    raise
+            response = await self.client.post(base_url + path, json=payload, headers=model_headers(base_url),
+                                              timeout=self.config["request_timeout"])
+            if self.audit:
+                await asyncio.to_thread(self.audit.event, {'event': 'response_received', 'call_id': call_id,
+                    'http_status': response.status_code, 'duration_s': time.monotonic() - started,
+                    'response': response.text, 'provider_request_id': response.headers.get('x-request-id')})
+            return response
+        except BaseException as exc:
+            if self.audit:
+                await asyncio.shield(asyncio.to_thread(self.audit.event, {
+                    'event': 'request_cancelled' if isinstance(exc, asyncio.CancelledError) else 'request_failed',
+                    'call_id': call_id, 'duration_s': time.monotonic() - started, 'error': str(exc)}))
+            raise
 
     async def batch(self, frame, started_at, log, *, normal, round_id=None, slot=None):
         return await asyncio.gather(*(
@@ -365,14 +421,64 @@ class ReplayController:
                  "status": result["status"], "failure_type": result.get("failure_type")})
 
 
+async def input_batch(camera, backend, started_at, log, **tags):
+    try:
+        frame = camera.get()
+        if getattr(camera, "mode", None) == "mujoco" and tags.get("normal"):
+            while frame.metadata["identity"] == getattr(camera, "_last_normal_identity", None):
+                await asyncio.sleep(.01)
+                frame = camera.get()
+            camera._last_normal_identity = frame.metadata["identity"]
+    except RuntimeError as exc:
+        if getattr(camera, "mode", None) != "mujoco":
+            raise
+        # Preserve complete verification slots while the remote stream recovers.
+        await asyncio.sleep(.05)
+        now = time.monotonic() - started_at
+        observations = [{"type": "observation", "specialist": name, "verdict": "UNCERTAIN",
+                         "reason": "Simulation image unavailable", "source_unavailable": str(exc),
+                         "source_frame": -1, "source_time_s": now, "captured_time_s": now,
+                         "received_time_s": now, "latency_s": 0., **tags}
+                        for name in backend.specialists]
+        for observation in observations:
+            log({**observation, "type": "source_unavailable"})
+        return observations
+    return await backend.batch(frame, started_at, log, **tags)
+
+
+def current_observations(camera, observations):
+    """Reject stale/repeated remote evidence without changing local video semantics."""
+    if getattr(camera, "mode", None) != "mujoco":
+        return observations
+    seen, valid = set(), []
+    for observation in observations:
+        evidence = observation.get("evidence")
+        identity = (observation["specialist"], evidence["identity"]) if evidence else None
+        accepted = evidence and camera.accepts_evidence(evidence) and identity not in seen
+        if identity:
+            seen.add(identity)
+        valid.append(observation if accepted else {
+            **observation, "verdict": "UNCERTAIN", "evidence_rejected": True,
+            "reason": "Stale, repeated, or obsolete simulation observation"})
+    return valid
+
+
+def attach_evidence(result, observations):
+    evidence = [o["evidence"] for o in observations if o.get("evidence") and not o.get("evidence_rejected")]
+    if evidence:
+        result["evidence"] = max(evidence, key=lambda e: e["observed_at"])
+    else:
+        result.pop("evidence", None)
+
+
 async def verify(camera, backend, config, first_batch, started_at, triggered_at, round_id, log):
     tasks = [first_batch]
     try:
         for slot in range(1, config["evidence_horizon"]):
             target = triggered_at + slot * config["horizon_duration"] / config["evidence_horizon"]
             await asyncio.sleep(max(0, target - time.monotonic()))
-            tasks.append(asyncio.create_task(backend.batch(
-                camera.get(), started_at, log, normal=False, round_id=round_id, slot=slot,
+            tasks.append(asyncio.create_task(input_batch(
+                camera, backend, started_at, log, normal=False, round_id=round_id, slot=slot,
             )))
         return [o for batch in await asyncio.gather(*tasks) for o in batch]
     finally:
@@ -385,8 +491,9 @@ async def verify(camera, backend, config, first_batch, started_at, triggered_at,
 async def monitor(camera, backend, config, log, stop_event=None, *, continuous=False):
     """Continuous sessions re-arm visual events; batch episodes stop on a decision."""
     started_at = camera.started_at
-    normal = asyncio.create_task(backend.batch(camera.get(), started_at, log, normal=True))
+    normal = asyncio.create_task(input_batch(camera, backend, started_at, log, normal=True))
     verification = None
+    evidence_context = camera.evidence_context() if hasattr(camera, "evidence_context") else None
     round_id, rearm_after = 0, -1.0
     confirmed = set()
     consecutive_errors = 0
@@ -400,11 +507,40 @@ async def monitor(camera, backend, config, log, stop_event=None, *, continuous=F
                     result.update(decision_time_s=time.monotonic() - started_at, stop_reason="user_stop")
                     log({"type": "status", **result})
                     return result
+                context = camera.evidence_context() if hasattr(camera, "evidence_context") else None
+                if context != evidence_context:
+                    old = [normal] + ([verification] if verification else [])
+                    for job in old:
+                        job.cancel()
+                    await asyncio.gather(*old, return_exceptions=True)
+                    if verification:
+                        log({"type": "verification_finished", "round_id": round_id, "cancelled": True,
+                             "counts": {}, "status": "ON_GOING", "time_s": time.monotonic() - started_at})
+                    evidence_context = context
+                    verification = None
+                    confirmed.clear()
+                    rearm_after = -1.
+                    result = {"status": "ON_GOING", "failure_type": None, "source_frame": -1,
+                              "decision_time_s": time.monotonic() - started_at}
+                    log({"type": "simulation_context_changed", "context": context, "time_s": result["decision_time_s"]})
+                    # A run owner can synchronously end this recording on episode reset.
+                    # Do not dispatch a new-scene request into the previous run's audit.
+                    if stop_event is not None and stop_event.is_set():
+                        result["stop_reason"] = "simulation_episode_changed"
+                        log({"type": "status", **result})
+                        return result
+                    log({"type": "status", **result})
+                    normal = asyncio.create_task(input_batch(camera, backend, started_at, log, normal=True))
+                if result.get("evidence") and hasattr(camera, "accepts_evidence") and not camera.accepts_evidence(result["evidence"]):
+                    confirmed.clear()
+                    result = {"status": "ON_GOING", "failure_type": None, "source_frame": -1,
+                              "evidence_unavailable": True, "decision_time_s": time.monotonic() - started_at}
+                    log({"type": "status", **result})
                 pending = [normal] + ([verification] if verification else [])
                 done, _ = await asyncio.wait(pending, timeout=.05 if stop_event is not None else None,
                                             return_when=asyncio.FIRST_COMPLETED)
                 if verification in done:
-                    observations = verification.result()
+                    observations = current_observations(camera, verification.result())
                     status, counts, failures = decide(observations, config, backend.specialists)
                     log({"type": "verification_finished", "round_id": round_id,
                          "counts": counts, "status": status,
@@ -427,12 +563,23 @@ async def monitor(camera, backend, config, log, stop_event=None, *, continuous=F
                                           failure_description=max(positives, key=lambda o: o["source_time_s"])["reason"])
                         result["evidence_source_time_s"] = max(o["source_time_s"] for o in observations)
                         result["source_frame"] = round(result["evidence_source_time_s"] * 30)
+                        attach_evidence(result, observations)
                         log({"type": "status", **result})
                         if not continuous:
                             return result
                 if normal in done:
-                    batch = normal.result()
+                    batch = current_observations(camera, normal.result())
                     consecutive_errors = consecutive_errors + 1 if all("error" in o for o in batch) else 0
+                    if batch and all(o.get("http_status") == 429 for o in batch):
+                        # Do not resubmit failed observations. Back off before the next
+                        # fresh normal sample, allowing a provider's pending work to drain.
+                        delay = min(8., 2. ** max(0, consecutive_errors - 1))
+                        if stop_event is not None:
+                            await asyncio.to_thread(stop_event.wait, delay)
+                            if stop_event.is_set():
+                                continue
+                        else:
+                            await asyncio.sleep(delay)
                     if consecutive_errors >= 5:
                         raise RuntimeError("Five consecutive normal batches failed; check the model endpoint")
                     if config["evidence_horizon"] == 0:
@@ -446,10 +593,11 @@ async def monitor(camera, backend, config, log, stop_event=None, *, continuous=F
                             result.update(failure_type=primary.failure_type,
                                           confirmed_failure_types=[s.failure_type for s in failures],
                                           failure_description=next(o["reason"] for o in batch if o["specialist"] == primary.name))
+                        attach_evidence(result, batch)
                         log({"type": "status", **result})
                         if not continuous and status != "ON_GOING":
                             return result
-                        normal = asyncio.create_task(backend.batch(camera.get(), started_at, log, normal=True))
+                        normal = asyncio.create_task(input_batch(camera, backend, started_at, log, normal=True))
                         continue
                     fresh = batch[0]["captured_time_s"] >= rearm_after
                     positive_specialists = {o["specialist"] for o in batch if o["verdict"] == "POSITIVE"}
@@ -467,13 +615,12 @@ async def monitor(camera, backend, config, log, stop_event=None, *, continuous=F
                         and fresh
                         and bool(positive_specialists - confirmed if continuous else positive_specialists)
                     )
-                    frame = camera.get()
                     if trigger:
                         round_id += 1
                     triggered_at = time.monotonic()
                     # This next normal batch is also verification slot 0 when triggered.
-                    normal = asyncio.create_task(backend.batch(
-                        frame, started_at, log, normal=True,
+                    normal = asyncio.create_task(input_batch(
+                        camera, backend, started_at, log, normal=True,
                         round_id=round_id if trigger else None, slot=0 if trigger else None,
                     ))
                     if trigger:

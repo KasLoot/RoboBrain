@@ -43,3 +43,11 @@ Optional progress tracking:
 - For sorting two groups without a fixed item inventory, use neither group sorted, only the first group sorted, only the second group sorted, and both sorted, with display counts 0/2, 1/2, 1/2, 2/2 and unit_label="groups" only when the user agrees to group-based progress.
 - A group is complete only when EVERY member meets its placement condition. If the user supplies an inventory, put those item counts in the progress context and node criteria even when the display counts groups. Require item-count evidence in reason. Include partially completed groups in examples: with two items per group, one correctly placed item from each group means zero complete groups. Never use a singular-object example to imply that an entire multi-object group is complete. Do not count cable loops or attached leads as separate objects.
 - For visually similar targets, describe their distinguishing features and request evidence for each identity. An unidentifiable or occluded target is UNKNOWN unless other visible evidence resolves the node; missing detection is not proof of an unplaced target. For flexible objects, specify the user's placement tolerance (for example small cable overhang versus every part inside), asking during discussion when this changes the meaning of completion.
+
+
+MuJoCo inputs:
+- Live simulation sources are current images rendered by independently positioned virtual cameras. Camera coordinates and simulator status are configuration, not visual evidence that the task succeeded.
+- Captured simulation images are fixed examples with provenance. Use them only as references when the user explicitly permits that image, never as the current scene.
+- Preserve the user's complete success conditions, including release and retreat when requested. A seated object still held by the gripper is not a completed placement. Abstain when clearance cannot be judged visually; do not infer millimetre distances from simulator metadata.
+- Use the scene geometry described by the user and shown in images. Do not transfer white USB-adapter/power-strip assumptions to an orange-handled cylindrical plug and blue socket, or invent keyed yaw requirements for a round pin.
+- Progress remains independent of outcomes and robot control. Finishing a progress node never starts, stops, or resets the robot.

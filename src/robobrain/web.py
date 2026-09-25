@@ -3,9 +3,11 @@
 import argparse
 import asyncio
 from contextlib import asynccontextmanager
+import io
 import json
 from pathlib import Path
 from urllib.parse import urlsplit
+from typing import Literal
 
 import cv2
 import httpx
@@ -15,9 +17,16 @@ from fastapi.responses import FileResponse, JSONResponse, Response, StreamingRes
 from .runtime import Runtime, prepare
 from .endpoints import endpoint_error, model_info
 from .sources import Inputs
-from .task_builder import CreateDraft, Settings, TaskBuilder, Turn
+from .task_builder import CreateDraft, Inputs as BuilderInputs, Settings, TaskBuilder, Turn
 from .progress import ProgressObserver
-from .workspace import ProgressDefinition, Workspace
+from .workspace import FreeCamera, Model, ProgressDefinition, Task, Workspace
+from .monitor import load_config
+from .presentation import write_json
+
+
+class RobotCommand(Model):
+    command: Literal["start", "stop", "reset"]
+    request_id: str | None = None
 
 
 def create_app(data_dir=Path(".robobrain")):
@@ -45,7 +54,11 @@ def create_app(data_dir=Path(".robobrain")):
             origin = request.headers.get("origin")
             if request.headers.get("x-robobrain") != "1" or (origin and urlsplit(origin).netloc != request.url.netloc):
                 return JSONResponse({"detail": "Only the local RoboBrain interface may change this workspace"}, status_code=403)
-        if mutation and request.url.path not in {"/api/run/stop", "/api/builder/cancel"}:
+        path = request.url.path
+        operational = request.method == "POST" and (
+            path in {"/api/run/stop", "/api/builder/cancel", "/api/simulation/commands"}
+            or (path.startswith("/api/simulation/views/") and len(path.split("/")) == 5))
+        if mutation and not operational:
             # One active run is an explicit product constraint. Serialize Start
             # with saves/connections so a stale browser cannot race the run lock.
             async with runtime.action_lock:
@@ -79,6 +92,9 @@ def create_app(data_dir=Path(".robobrain")):
 
     @app.post("/api/tasks")
     async def create(body: dict):
+        if body.get("template") == "mujoco_plug":
+            from .templates import mujoco_plug_task
+            return store.put(mujoco_plug_task(body.get("name", "MuJoCo plug insertion"), store=store))
         return store.create(body.get("name", "New task"), body.get("copy_from"))
 
     @app.put("/api/tasks/{task_id}")
@@ -147,6 +163,54 @@ def create_app(data_dir=Path(".robobrain")):
     @app.post("/api/sources/{source_id}/disconnect")
     async def disconnect(source_id: str):
         await runtime.disconnect(source_id)
+        return runtime.state()
+
+    @app.get("/api/simulation/status")
+    async def simulation_status(task_id: str | None = None):
+        if task_id is None:
+            return await runtime.simulation_status()
+        async with runtime.action_lock:
+            task = store.get(task_id)
+            if task["input_mode"] != "mujoco":
+                raise ValueError("Choose MuJoCo inputs before connecting the simulation")
+            if runtime.busy or builder.busy:
+                if task_id != runtime.task_id:
+                    raise HTTPException(409, "Simulation selection is locked while monitoring or building a task")
+                return await runtime.simulation_status()
+            return await runtime.simulation_status(task)
+
+    @app.post("/api/simulation/commands")
+    async def simulation_command(body: RobotCommand):
+        return await runtime.robot_command(body.command, body.request_id)
+
+    @app.post("/api/simulation/views/{source_id}")
+    async def simulation_view(source_id: str, camera: FreeCamera):
+        # Only camera pose is mutable during monitoring: no dimensions, prompts or policy.
+        return await runtime.update_simulation_view(source_id, camera.model_dump())
+
+    @app.post("/api/simulation/references/{source_id}")
+    async def simulation_reference(source_id: str):
+        png, provenance = await runtime.simulation_reference(source_id)
+        uploaded = await asyncio.to_thread(store.upload, io.BytesIO(png), f"{source_id}-reference.png", "image")
+        await asyncio.to_thread(write_json, store.assets / (uploaded["asset"] + ".json"),
+                                {"asset": uploaded["asset"], "provenance": provenance})
+        return {**uploaded, "provenance": provenance}
+
+    @app.post("/api/builder/simulation/connect")
+    async def builder_simulation_connect(inputs: BuilderInputs):
+        if inputs.input_mode != "mujoco":
+            raise ValueError("Choose MuJoCo inputs before connecting the builder")
+        if len({source.id for source in inputs.sources}) != len(inputs.sources):
+            raise ValueError("Source IDs must be unique")
+        if not any(source.enabled for source in inputs.sources):
+            raise ValueError("Enable at least one simulation view")
+        config = store.get(inputs.base_task_id)["config"] if inputs.base_task_id else load_config()
+        preview = Task(id=builder.data["task_id"], name="Task Builder preview", config=config,
+                       input_mode="mujoco", simulation=inputs.simulation, sources=inputs.sources).model_dump()
+        await runtime.disconnect()
+        for source in preview["sources"]:
+            if source["enabled"]:
+                await runtime.connect(preview, source["id"])
         return runtime.state()
 
     @app.get("/api/preview/{source_id}")

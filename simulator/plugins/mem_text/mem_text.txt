@@ -1,0 +1,18 @@
+Controller-prompt fragments owned by the move-memory plugin (see plugins/prompt_text.py
+for the [section] convention; {placeholders} are filled by plugin.py via str.replace).
+
+About [rules]: the move-history rules live with the memory they reason over. The
+oscillation ban carries an explicit overshoot exemption, and hunting resolves by
+RE-JUDGING, not by descending: a recorded PLACE failed exactly there --
+the ban blocked the needed rightward correction and the old "opposite directions ->
+prioritize MV_DOWN" line then instructed descent while still off-center, ending in a
+release beside the plate.
+
+[recent]
+Recent moves, newest first: {moves}
+
+[rules]
+- After GRASP(empty), re-check alignment and height in the current images before trying again; do not repeat GRASP in place.
+- An opposite move is allowed to correct visible overshoot. If directions alternate, re-judge alignment from current images instead of repeating the same overshoot.
+- During GRASP, if small opposite corrections alternate around a target already roughly centered between the fingertips, descend one step and re-check alignment from the closer view. Do not descend if the target is still outside the grasp corridor.
+- GRASP(no-op) or RELEASE(no-op) means the gripper was already in that state. Do not repeat that command; check DONE WHEN against the current images and report DONE if satisfied, otherwise choose the remaining useful action.

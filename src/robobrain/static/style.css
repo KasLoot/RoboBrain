@@ -38,3 +38,15 @@
 @media(max-width:900px){.progress-nodes{grid-template-columns:1fr}.progress-settings{grid-template-columns:repeat(2,minmax(0,1fr))}.progress-editor>.section-head{flex-wrap:wrap}}
 @media(max-width:950px){.builder-layout{grid-template-columns:minmax(0,1fr)}.builder-messages{max-height:50vh}}
 @media(max-width:500px){.builder-attachment{grid-template-columns:48px minmax(0,1fr) auto;gap:8px}.builder-attachment>img{width:48px;height:48px}.builder-composer>.actions>button{flex:1}.builder-message.from-user{margin-left:10px}}
+
+/* Simulation controls preserve the independent monitoring lifecycle. */
+.simulation-panel { margin-bottom: 20px; }
+.simulation-settings { display: grid; grid-template-columns: minmax(220px, 2fr) minmax(190px, 1.5fr) minmax(160px, 1fr); gap: 14px; }
+.simulation-panel .actions, .camera-pose .actions { flex-wrap: wrap; }
+.camera-pose { border-top: 1px solid var(--border, #dce2e8); margin-top: 14px; padding-top: 10px; }
+.camera-pose-fields { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.camera-pose-fields input { width: 100%; }
+.reference-actions { flex-wrap: wrap; margin-top: 12px; }
+.builder-inputs .simulation-settings { grid-template-columns: 1fr; }
+.builder-source .camera-preview { margin: 12px 0; }
+@media (max-width: 800px) { .simulation-settings { grid-template-columns: 1fr; } .camera-pose-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

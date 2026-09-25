@@ -25,9 +25,25 @@ def ollama_headers(base_url):
     return {"Authorization": "Bearer " + key}
 
 
+def official_openai(base_url):
+    return httpx.URL(base_url).host == "api.openai.com"
+
+
+def model_headers(base_url):
+    if not official_openai(base_url):
+        return ollama_headers(base_url)
+    url = httpx.URL(base_url)
+    if url.scheme != "https" or url.port not in (None, 443) or url.username or url.password:
+        raise ValueError("OpenAI requires HTTPS on api.openai.com without URL credentials")
+    key = os.environ.get("OPENAI_API_KEY", "").strip()
+    if not key:
+        raise ValueError("Set OPENAI_API_KEY in the environment before starting RoboBrain")
+    return {"Authorization": "Bearer " + key}
+
+
 async def model_info(client, base_url, selected, timeout=8, *, require_vision=False):
     base_url, selected = base_url.rstrip("/"), selected.strip()
-    headers = ollama_headers(base_url)
+    headers = model_headers(base_url)
     if not native_ollama(base_url):
         response = await client.get(base_url + "/models", headers=headers, timeout=timeout)
         response.raise_for_status()
@@ -49,7 +65,9 @@ async def model_info(client, base_url, selected, timeout=8, *, require_vision=Fa
 
 
 def endpoint_error(base_url, error):
-    if httpx.URL(base_url).host == "ollama.com":
+    if official_openai(base_url):
+        advice = "Check OPENAI_API_KEY and access to the configured OpenAI model."
+    elif httpx.URL(base_url).host == "ollama.com":
         advice = "Check OLLAMA_API_KEY, Ollama model access and cloud usage limits."
     elif native_ollama(base_url):
         advice = "Check that Ollama is running at the configured /api endpoint."

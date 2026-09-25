@@ -1,5 +1,6 @@
 """Shared video overlay, live-view state, and per-episode recordings."""
 
+from collections import deque
 import json
 import math
 from pathlib import Path
@@ -121,8 +122,9 @@ class EpisodeReport:
     def __init__(self, video, dataset, config, directory, view, *, input_info=None, task_template=None):
         self.video, self.dataset, self.config = video, dataset, config
         self.directory, self.view = directory, view
-        # ponytail: recorded events stay in memory; stream JSON from the log for multi-day runs.
-        self.events = []
+        self.simulation_report = bool(input_info and input_info.get('mode') == 'mujoco')
+        self.events = deque(maxlen=10000) if self.simulation_report else []
+        self.summary_omitted_events = 0
         self.stream = None
         self.input_info, self.task_template = input_info, task_template
         if directory:
@@ -132,7 +134,12 @@ class EpisodeReport:
     def log(self, event):
         self.view.update(event)
         if self.stream:
-            self.events.append(event)
+            if self.simulation_report and event.get('type') == 'simulation_frame':
+                self.summary_omitted_events += 1
+            else:
+                if self.simulation_report and len(self.events) == self.events.maxlen:
+                    self.summary_omitted_events += 1
+                self.events.append(event)
             self.stream.write(json.dumps(event, ensure_ascii=False) + "\n")
 
     def finish(self, result, recording=None):
@@ -173,6 +180,8 @@ class EpisodeReport:
                 if "source_frames" in event:
                     request["source_frames"] = {name: {**value, "source_frame": value["source_frame"] + 1}
                                                 for name, value in event["source_frames"].items()}
+                if "evidence" in event:
+                    request["evidence"] = event["evidence"]
                 requests.append(request)
             elif event["type"] == "progress_observation":
                 progress_requests.append(readable_progress(event))
@@ -195,6 +204,10 @@ class EpisodeReport:
             "cancelled_requests": sum(r.get("cancelled", False) for r in requests),
             "requests": sorted(requests, key=lambda r: r["request_id"]), "events": other_events,
         }
+        if self.simulation_report:
+            document['summary_omitted_events'] = self.summary_omitted_events
+            document['full_event_archive'] = f'output-{self.video.stem}.log'
+            document['summary_scope'] = 'Latest 10000 non-frame events; full lossless history in event archive'
         if self.input_info is not None:
             document.pop("input_video")
             document["sources"] = self.input_info

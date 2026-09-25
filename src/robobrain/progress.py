@@ -122,6 +122,8 @@ class ProgressRunner:
         self.store, self.inputs, self.log = store, inputs, log
         self.config = {**outcome_backend.config, "max_tokens": self.definition.max_tokens, "max_connections": 1}
         self.model, self.info = outcome_backend.model, dict(outcome_backend.info)
+        self.audit = getattr(outcome_backend, "audit", None)
+        self.request_gate = getattr(outcome_backend, "request_gate", None)
         self.started_at = inputs.started_at
         self.tracker = ProgressTracker(self.definition)
         self.history = deque(maxlen=50)
@@ -142,16 +144,64 @@ class ProgressRunner:
 
     async def run(self):
         last_key, request_id = None, 0
+        context = None
         history = deque(maxlen=self.definition.history_frames)
         try:
-            observer = await asyncio.to_thread(ProgressObserver, self.definition, self.store, self.inputs.get().views)
+            while True:
+                try:
+                    initial = self.inputs.get()
+                    break
+                except RuntimeError:
+                    if getattr(self.inputs, "mode", None) != "mujoco":
+                        raise
+                    await asyncio.sleep(.05)
+            # One audit/recording session belongs to one simulator episode. Generation
+            # and camera changes can continue; a reset must not send new-scene calls to it.
+            initial_context = self.inputs.evidence_context() if hasattr(self.inputs, "evidence_context") else None
+            initial_simulation = (getattr(initial, "metadata", None) or {}).get("simulation", {})
+            episode_identity = None
+            if getattr(self.inputs, "mode", None) == "mujoco":
+                episode_identity = (initial_simulation.get("server_instance_id"), initial_simulation.get("episode_id"))
+                if not all(episode_identity):
+                    episode_identity = tuple(initial_context[:2]) if initial_context else None
+            observer = await asyncio.to_thread(ProgressObserver, self.definition, self.store, initial.views)
             async with httpx.AsyncClient(limits=httpx.Limits(max_connections=1, max_keepalive_connections=1), trust_env=False) as client:
-                backend = Backend(self.config, client, specialists={})
+                backend = Backend(self.config, client, specialists={}, request_gate=self.request_gate, audit=self.audit)
                 backend.model, backend.info = self.model, self.info
                 while True:
                     next_sample = time.monotonic() + self.definition.interval_s
-                    frame = self.inputs.get()
-                    key = tuple((name, frame.views[name].source_index) for name in observer.sources)
+                    try:
+                        frame = self.inputs.get()
+                    except RuntimeError as exc:
+                        if getattr(self.inputs, "mode", None) != "mujoco":
+                            raise
+                        self.error = str(exc)
+                        self.tracker.candidate, self.tracker.matches = None, 0
+                        self.tracker.state.update(quality="unavailable", reason=str(exc), candidate_id=None, matches=0)
+                        history.clear()
+                        self.log({"type": "progress_state", **self.tracker.state,
+                                  "time_s": time.monotonic() - self.started_at})
+                        await asyncio.sleep(self.definition.interval_s)
+                        continue
+                    current_context = self.inputs.evidence_context() if hasattr(self.inputs, "evidence_context") else None
+                    if episode_identity and current_context and tuple(current_context[:2]) != episode_identity:
+                        self.tracker.candidate, self.tracker.matches = None, 0
+                        self.tracker.state.update(quality="unavailable", reason="Simulation episode changed; monitoring session ended",
+                                                  candidate_id=None, matches=0)
+                        history.clear()
+                        self.log({"type": "progress_episode_ended", "previous_episode": episode_identity,
+                                  "context": current_context, "time_s": time.monotonic() - self.started_at})
+                        self.log({"type": "progress_state", **self.tracker.state,
+                                  "time_s": time.monotonic() - self.started_at})
+                        return
+                    if current_context != context:
+                        context = current_context
+                        self.tracker = ProgressTracker(self.definition)
+                        history.clear()
+                        last_key = None
+                        self.log({"type": "progress_state", **self.tracker.state, "time_s": time.monotonic() - self.started_at})
+                    key = (frame.metadata["identity"] if getattr(frame, "metadata", None) else
+                           tuple((name, frame.views[name].source_index) for name in observer.sources))
                     if key != last_key:
                         last_key = key
                         captured = min(frame.views[name].observed_at for name in observer.sources) - self.started_at
@@ -162,12 +212,18 @@ class ProgressRunner:
                                        "captured_time_s": captured, "source_frame": frame.source_index,
                                        "source_frames": {name: {"source_frame": frame.views[name].source_index,
                                            "captured_time_s": frame.views[name].observed_at - self.started_at} for name in observer.sources}}
+                        if getattr(frame, "metadata", None):
+                            observation["evidence"] = {"context": frame.metadata["context"],
+                                                       "identity": frame.metadata["identity"],
+                                                       "observed_at": frame.observed_at,
+                                                       "simulation": frame.metadata["simulation"]}
                         sent = time.monotonic()
                         self.requests += 1
                         self.log({**observation, "type": "progress_request_started", "sent_time_s": sent - self.started_at})
                         try:
                             response = await backend.complete(observer, list(history))
-                            observation.update(http_status=response.status_code, response_text=response.text)
+                            observation.update(http_status=response.status_code, response_text=response.text,
+                                               queue_wait_s=response.extensions.get("model_queue_wait_s", 0.))
                             response.raise_for_status()
                             body = response.json()
                             observation["response"] = body
@@ -191,7 +247,22 @@ class ProgressRunner:
                             received = time.monotonic()
                             observation.update(sent_time_s=sent - self.started_at, received_time_s=received - self.started_at, latency_s=received - sent)
                             self.responses += 1
+                            if observation.get("evidence") and not self.inputs.accepts_evidence(observation["evidence"]):
+                                observation.update(discarded=True, discarded_node_id=observation["node_id"], node_id="UNKNOWN",
+                                                   reason="Obsolete or stale simulation observation")
+                            # Serialize the discard decision along with the raw response;
+                            # audit consumers must not mistake it for accepted progress.
                             self.log(observation)
+                            if observation.get("discarded"):
+                                # Keep this in finally: reset may cancel the worker while
+                                # awaiting the provider, before it can reach the next loop.
+                                history.clear()
+                                self.tracker.candidate, self.tracker.matches = None, 0
+                                self.tracker.state.update(quality="stale", reason=observation["reason"], candidate_id=None, matches=0)
+                                self.log({"type": "progress_state", **self.tracker.state,
+                                          "time_s": time.monotonic() - self.started_at})
+                        if observation.get("discarded"):
+                            continue
                         previous = self.tracker.state["node_id"]
                         event = self.tracker.observe(observation, key, received - self.started_at)
                         if event:

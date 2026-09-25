@@ -6,6 +6,7 @@ from pathlib import Path
 import re
 import shutil
 from typing import Literal
+from urllib.parse import urlsplit
 from uuid import uuid4
 
 import cv2
@@ -112,6 +113,42 @@ class ProgressDefinition(Model):
         return self
 
 
+class FreeCamera(Model):
+    type: Literal["free"] = "free"
+    lookat_m: list[float] = Field(default_factory=lambda: [.45, 0., .15], min_length=3, max_length=3)
+    distance_m: float = Field(default=.8, ge=.05, le=20, allow_inf_nan=False)
+    azimuth_deg: float = Field(default=45., ge=-360, le=360, allow_inf_nan=False)
+    elevation_deg: float = Field(default=-25., ge=-89.9, le=89.9, allow_inf_nan=False)
+
+    @field_validator("lookat_m")
+    @classmethod
+    def finite_target(cls, values):
+        if any(not -20 <= value <= 20 for value in values):
+            raise ValueError("Camera target must contain three finite metre coordinates between -20 and 20")
+        return values
+
+
+class SimulationSettings(Model):
+    base_url: str = "http://127.0.0.1:8766"
+    auto_stop: Literal["off", "fail", "terminal"] = "off"
+    stale_after_s: float = Field(default=5., gt=0, le=600, allow_inf_nan=False)
+
+    @field_validator("base_url")
+    @classmethod
+    def local_service(cls, value):
+        value = value.strip().rstrip("/")
+        try:
+            url = urlsplit(value)
+            port = url.port
+        except ValueError as exc:
+            raise ValueError("Enter a valid local simulation URL") from exc
+        if (url.scheme != "http" or url.hostname not in {"127.0.0.1", "localhost", "::1"}
+                or url.username or url.password or url.query or url.fragment or url.path
+                or (port is not None and port < 1)):
+            raise ValueError("Use a loopback HTTP simulation URL, such as http://127.0.0.1:8766")
+        return value
+
+
 class Source(Model):
     id: str
     name: str
@@ -121,6 +158,7 @@ class Source(Model):
     width: int = Field(default=1920, ge=1, le=8192)
     height: int = Field(default=1080, ge=1, le=8192)
     fps: int = Field(default=30, ge=1, le=120)
+    camera: FreeCamera = Field(default_factory=FreeCamera)
 
     @field_validator("id")
     @classmethod
@@ -134,7 +172,8 @@ class Task(Model):
     id: str
     name: str = Field(min_length=1, max_length=120)
     config: dict
-    input_mode: Literal["camera", "video"] = "camera"
+    input_mode: Literal["camera", "video", "mujoco"] = "camera"
+    simulation: SimulationSettings = Field(default_factory=SimulationSettings)
     sources: list[Source] = Field(default_factory=list, max_length=2)
     specialists: list[Detector] = Field(default_factory=list, max_length=32)
     progress: ProgressDefinition | None = None
@@ -145,6 +184,15 @@ class Task(Model):
         if not value.isidentifier():
             raise ValueError("Task ID must be an identifier")
         return value
+
+
+    @model_validator(mode="after")
+    def simulation_dimensions(self):
+        if self.input_mode == "mujoco" and any(
+                not (16 <= source.width <= 1920 and 16 <= source.height <= 1080 and source.fps <= 30)
+                for source in self.sources):
+            raise ValueError("MuJoCo views require width 16–1920, height 16–1080 and FPS 1–30")
+        return self
 
 
 class Workspace:

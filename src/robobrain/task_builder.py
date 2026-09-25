@@ -15,7 +15,7 @@ from pydantic import ConfigDict, Field, field_validator
 from .monitor import HERE, Specialist, VERDICTS, load_config
 from .endpoints import model_info, ollama_headers
 from .presentation import write_json
-from .workspace import Model, ProgressDefinition, ProgressNode, Source, Task, new_id
+from .workspace import Model, ProgressDefinition, ProgressNode, SimulationSettings, Source, Task, new_id
 
 
 class Settings(Model):
@@ -47,7 +47,8 @@ class Attachment(Model):
 
 class Inputs(Model):
     base_task_id: str | None = None
-    input_mode: Literal["camera", "video"] = "camera"
+    input_mode: Literal["camera", "video", "mujoco"] = "camera"
+    simulation: SimulationSettings = Field(default_factory=SimulationSettings)
     sources: list[Source] = Field(min_length=1, max_length=2)
 
 
@@ -115,7 +116,7 @@ class TaskBuilder:
     def empty(self):
         return {"task_id": new_id("task"), "revision": 0, "messages": [], "attachments": [],
                 "draft": None, "config": None, "usage": [], "created": False,
-                "inputs": {"base_task_id": None, "input_mode": "camera", "sources": [
+                "inputs": {"base_task_id": None, "input_mode": "camera", "simulation": SimulationSettings().model_dump(), "sources": [
                     Source(id="camera1", name="Camera 1", device="0").model_dump(),
                     Source(id="camera2", name="Camera 2", device="1", enabled=False).model_dump()]}}
 
@@ -195,7 +196,7 @@ class TaskBuilder:
             if inputs["input_mode"] == "video":
                 if not source["video"] or self.store.asset_path(source["video"]).suffix.lower() not in {".mov", ".mp4", ".avi", ".mkv"}:
                     raise ValueError("Choose an uploaded video for each enabled source")
-            elif not source["device"].strip():
+            elif inputs["input_mode"] == "camera" and not source["device"].strip():
                 raise ValueError("Enter a camera device for each enabled source")
         attachments = {a["asset"]: a for a in self.data["attachments"]}
         for attachment in turn.attachments:
@@ -217,7 +218,7 @@ class TaskBuilder:
         return self.state()
 
     def messages(self, action):
-        inventory = {"sources": [s for s in self.data["inputs"]["sources"] if s["enabled"]],
+        inventory = {"input_mode": self.data["inputs"]["input_mode"], "sources": [s for s in self.data["inputs"]["sources"] if s["enabled"]],
                      "images": self.data["attachments"]}
         system = (HERE / "prompts" / "task_builder.md").read_text() + "\n\nCurrent allowed inputs:\n" + json.dumps(inventory)
         system += ("\n\nCurrent mode: DISCUSSION. Reply in concise conversational prose, never task JSON. The user must use Generate draft to generate the template."
@@ -320,6 +321,7 @@ class TaskBuilder:
                     if draft.progress else None)
         return Task.model_validate({"id": self.data["task_id"], "name": draft.name, "config": config,
                                     "input_mode": inputs["input_mode"], "sources": inputs["sources"],
+                                    "simulation": inputs.get("simulation", {}),
                                     "specialists": specialists, "progress": progress}).model_dump()
 
     async def run(self, action):

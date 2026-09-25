@@ -20,6 +20,35 @@ let tasks = [],
   page = 'tasks',
   lastHash = '#tasks';
 let builder = null, builderAttachments = [], builderText = '', builderDirty = false, builderPolling = false;
+const cameraDrafts = new Map(), capturedReferences = new Map(), robotPending = new Set(), robotRequests = new Map();
+const defaultSimulation = () => ({base_url:'http://127.0.0.1:8766', auto_stop:'off', stale_after_s:5});
+const freeCamera = () => ({type:'free', lookat_m:[.45,0,.15], distance_m:.8, azimuth_deg:45, elevation_deg:-25});
+const cameraKey = id => `${task?.id}/${id}`;
+function setInputMode(target, mode) {
+  if (mode === 'mujoco' && target.input_mode !== mode) {
+    target.simulation ||= defaultSimulation();
+    target.sources.forEach(s => Object.assign(s,{width:640,height:480,fps:15,camera:s.camera||freeCamera()}));
+  }
+  target.input_mode = mode;
+}
+function simulationFields(settings, owner) {
+  settings ||= defaultSimulation();
+  return `<div class="simulation-settings"><label>Simulation service URL<input data-simulation-field="base_url" data-owner="${owner}" value="${esc(settings.base_url)}" required ${edit()}></label><label>Automatic robot stop<select data-simulation-field="auto_stop" data-owner="${owner}" ${edit()}><option value="off" ${settings.auto_stop==='off'?'selected':''}>Observe only</option><option value="fail" ${settings.auto_stop==='fail'?'selected':''}>On confirmed FAIL</option><option value="terminal" ${settings.auto_stop==='terminal'?'selected':''}>On confirmed SUCCESS or FAIL</option></select></label><label>Evidence stale after (seconds)<input type="number" data-simulation-field="stale_after_s" data-owner="${owner}" value="${settings.stale_after_s}" min=".1" max="600" step=".1" required ${edit()}></label></div>`;
+}
+function cameraFields(source, owner='monitor') {
+  const camera = owner==='builder' ? source.camera||freeCamera() : cameraDrafts.get(cameraKey(source.id))||state.simulation?.views?.[source.id]?.camera||source.camera||freeCamera();
+  const attrs = owner==='builder' ? edit() : '';
+  const fields = [['x','Target X (m)',camera.lookat_m[0],-20,20,.01],['y','Target Y (m)',camera.lookat_m[1],-20,20,.01],['z','Target Z (m)',camera.lookat_m[2],-20,20,.01],['distance_m','Distance (m)',camera.distance_m,.05,20,.05],['azimuth_deg','Azimuth (°)',camera.azimuth_deg,-360,360,5],['elevation_deg','Elevation (°)',camera.elevation_deg,-89.9,89.9,5]];
+  return `<div class="camera-pose" data-camera-owner="${owner}" data-camera-source="${esc(source.id)}"><p class="hint">Free camera · world target in metres, orbit angles in degrees.</p><div class="camera-pose-fields">${fields.map(([key,label,value,min,max,step])=>`<label>${label}<input type="number" data-camera-field="${key}" value="${value}" min="${min}" max="${max}" step="any" required ${attrs}></label>`).join('')}</div>${owner==='monitor'?`<div class="actions"><button data-action="simulation-view" data-id="${esc(source.id)}">Apply live view</button><button data-action="simulation-preset" data-id="${esc(source.id)}" ${edit()}>Save pose preset</button><button data-action="simulation-view-reset" data-id="${esc(source.id)}">Use saved pose</button></div><p class="hint" data-camera-revision="${esc(source.id)}">Save a preset after monitoring to retain a changed view.</p>`:''}</div>`;
+}
+function readCamera(container, validate=true) {
+  const values = Object.fromEntries([...container.querySelectorAll('[data-camera-field]')].map(el => {
+    if (validate && !el.reportValidity()) throw new Error('Enter valid camera coordinates.');
+    return [el.dataset.cameraField,Number(el.value)];
+  }));
+  return {type:'free',lookat_m:[values.x,values.y,values.z],distance_m:values.distance_m,azimuth_deg:values.azimuth_deg,elevation_deg:values.elevation_deg};
+}
+
 let state = {
     busy: false,
     phase: 'idle',
@@ -139,7 +168,7 @@ function menu(kind, id, name) {
 
 function renderTasks() {
   nav.innerHTML = '';
-  app.innerHTML = `<div class="page-head"><div><div class="eyebrow">Workspace</div><h1>Tasks</h1><p>Saved setups, ready for another run.</p></div><div class="actions"><button class="primary" data-action="open-builder" ${edit()}>✦ Create with AI</button><button data-action="new-task" ${edit()}>＋ New task</button></div></div><div class="grid">${tasks.map(t=>`<article class="card task-card"><div class="card-top"><span class="badge">Task template</span>${menu('task',t.id,t.name)}</div><h2>${esc(t.name)}</h2><p>${t.specialists.length} specialists · ${t.specialists.filter(s=>s.enabled).length} enabled</p><a class="button task-open" href="${link('specialists',t.id)}">Open task <span>→</span></a></article>`).join('')||'<div class="empty card"><h2>No tasks yet</h2><p>Create a task to start building its specialists.</p></div>'}</div>`;
+  app.innerHTML = `<div class="page-head"><div><div class="eyebrow">Workspace</div><h1>Tasks</h1><p>Saved setups, ready for another run.</p></div><div class="actions"><button class="primary" data-action="open-builder" ${edit()}>✦ Create with AI</button><button data-action="mujoco-task" ${edit()}>MuJoCo plug task</button><button data-action="new-task" ${edit()}>＋ New task</button></div></div><div class="grid">${tasks.map(t=>`<article class="card task-card"><div class="card-top"><span class="badge">Task template</span>${menu('task',t.id,t.name)}</div><h2>${esc(t.name)}</h2><p>${t.specialists.length} specialists · ${t.specialists.filter(s=>s.enabled).length} enabled</p><a class="button task-open" href="${link('specialists',t.id)}">Open task <span>→</span></a></article>`).join('')||'<div class="empty card"><h2>No tasks yet</h2><p>Create a task to start building its specialists.</p></div>'}</div>`;
 }
 
 function renderSpecialists() {
@@ -160,14 +189,45 @@ function renderDesigner() {
 
 function blockEditor(b) {
   const image = b.type === 'image';
-  return `<div class="section-head"><h2>${b.type==='text'?'System prompt':image?'Reference image':'Current view'}</h2><span class="badge">${b.enabled?'Enabled':'Disabled'}</span></div><label>Alias${b.type==='text'?'':' / label sent to the model'}<input data-block-field="alias" value="${esc(b.alias)}" ${edit()}></label>${b.type==='text'?`<label>Prompt text<textarea class="prompt-text" data-block-field="text" spellcheck="false" ${edit()}>${esc(b.text)}</textarea></label>`:image?`<label class="upload-zone" data-upload-kind="image"><input type="file" accept="image/jpeg,image/png" id="image-file" ${edit()}><strong>Choose an image or drop it here</strong><span>JPEG or PNG · up to 50 MB</span></label>${b.asset?`<div class="image-stage" id="crop-stage"><img id="crop-image" src="/api/assets/${encodeURIComponent(b.asset)}" alt="${esc(b.alias)}"><div id="crop-box" hidden></div></div>`:'<div class="empty preview-empty">No reference image</div>'}`:`<label>Source<select data-block-field="source" ${edit()}>${task.sources.map(s=>`<option value="${esc(s.id)}" ${s.id===b.source?'selected':''}>${esc(s.name)}</option>`).join('')}</select></label><div class="source-link"><span>Configure devices and videos on Monitor.</span><a class="text-link" href="${link('monitor')}">Open Monitor →</a></div><div class="image-stage" id="crop-stage"><img id="crop-image" data-source="${esc(b.source)}" alt="Camera preview"><div id="crop-box" hidden></div><span class="preview-notice">Connect this source on Monitor to see its preview.</span></div>`}${b.type!=='text'?`<div class="section-head crop-head"><h2>Crop</h2><button data-action="reset-crop" ${edit()}>Use full image</button></div><p class="hint">Drag on the image or enter original-image pixel coordinates. Right and bottom edges are exclusive.</p><div class="crop-fields">${['Left (x)','Top (y)','Right (x)','Bottom (y)'].map((label,i)=>`<label>${label}<input type="number" min="0" data-crop="${i}" value="${b.crop?.[i]??''}" placeholder="Full image" ${edit()}></label>`).join('')}</div><div class="section-head"><span id="crop-size" class="hint"></span><button data-action="apply-crop" ${edit()}>Apply crop</button></div>`:''}`;
+  return `<div class="section-head"><h2>${b.type==='text'?'System prompt':image?'Reference image':'Current view'}</h2><span class="badge">${b.enabled?'Enabled':'Disabled'}</span></div><label>Alias${b.type==='text'?'':' / label sent to the model'}<input data-block-field="alias" value="${esc(b.alias)}" ${edit()}></label>${b.type==='text'?`<label>Prompt text<textarea class="prompt-text" data-block-field="text" spellcheck="false" ${edit()}>${esc(b.text)}</textarea></label>`:image?`<label class="upload-zone" data-upload-kind="image"><input type="file" accept="image/jpeg,image/png" id="image-file" ${edit()}><strong>Choose an image or drop it here</strong><span>JPEG or PNG · up to 50 MB</span></label>${b.asset?`<div class="image-stage" id="crop-stage"><img id="crop-image" src="/api/assets/${encodeURIComponent(b.asset)}" alt="${esc(b.alias)}"><div id="crop-box" hidden></div></div>`:'<div class="empty preview-empty">No reference image</div>'}`:`<label>Source<select data-block-field="source" ${edit()}>${task.sources.map(s=>`<option value="${esc(s.id)}" ${s.id===b.source?'selected':''}>${esc(s.name)}</option>`).join('')}</select></label><div class="source-link"><span>Configure cameras, videos and simulation views on Monitor.</span><a class="text-link" href="${link('monitor')}">Open Monitor →</a></div><div class="image-stage" id="crop-stage"><img id="crop-image" data-source="${esc(b.source)}" alt="Camera preview"><div id="crop-box" hidden></div><span class="preview-notice">Connect this source on Monitor to see its preview.</span></div>`}${b.type!=='text'?`<div class="section-head crop-head"><h2>Crop</h2><button data-action="reset-crop" ${edit()}>Use full image</button></div><p class="hint">Drag on the image or enter original-image pixel coordinates. Right and bottom edges are exclusive.</p><div class="crop-fields">${['Left (x)','Top (y)','Right (x)','Bottom (y)'].map((label,i)=>`<label>${label}<input type="number" min="0" data-crop="${i}" value="${b.crop?.[i]??''}" placeholder="Full image" ${edit()}></label>`).join('')}</div><div class="section-head"><span id="crop-size" class="hint"></span><button data-action="apply-crop" ${edit()}>Apply crop</button></div>`:''}`;
 }
 
 function renderMonitor() {
-  app.innerHTML = header('Monitor', task.name, `<button data-action="settings" ${edit()}>Model & settings</button>`) + `<div class="monitor-toolbar card"><div class="mode-picker"><label><input type="radio" name="mode" value="camera" ${task.input_mode==='camera'?'checked':''} ${edit()}> Cameras</label><label><input type="radio" name="mode" value="video" ${task.input_mode==='video'?'checked':''} ${edit()}> Video simulation</label></div><div class="actions"><span id="save-state"></span><button data-action="save" ${edit()}>Save task</button><button data-action="connect-all" ${edit()}>Connect inputs</button></div></div><div class="camera-grid">${task.sources.map(s=>`<section class="card source-card"><div class="section-head"><h2>${esc(s.name)}</h2><label class="switch"><input type="checkbox" data-source-enabled="${esc(s.id)}" ${s.enabled?'checked':''} ${edit()}> Enabled</label></div><div class="source-controls">${task.input_mode==='camera'?`<label>Device<input data-source-id="${esc(s.id)}" data-source-field="device" value="${esc(s.device)}" placeholder="0 or /dev/video0" ${edit()}></label><button data-action="connect" data-id="${esc(s.id)}" ${edit()}>Connect</button>`:`<label class="upload-zone compact" data-upload-kind="video" data-source-id="${esc(s.id)}"><input type="file" accept=".mov,.mp4,.avi,.mkv" data-video-source="${esc(s.id)}" ${edit()}><strong>${s.video?'Replace video':'Choose or drop a video'}</strong><span>${esc(s.video||'MOV, MP4, AVI or MKV · up to 2 GB')}</span></label><button data-action="connect" data-id="${esc(s.id)}" ${edit()}>Preview</button>`}</div><div class="camera-preview"><img data-source="${esc(s.id)}" alt="${esc(s.name)} live view"><span class="preview-notice">${s.enabled?'Not connected':'Source disabled'}</span></div><div class="source-health" data-health="${esc(s.id)}">Not connected</div>${task.input_mode==='camera'?`<details class="capture-settings"><summary>Capture settings</summary><div class="capture-fields">${['width','height','fps'].map(k=>`<label>${k==='fps'?'FPS':k[0].toUpperCase()+k.slice(1)}<input type="number" min="1" data-source-id="${esc(s.id)}" data-source-field="${k}" value="${s[k]}" ${edit()}></label>`).join('')}</div></details>`:''}</section>`).join('')}</div><section class="card operating"><div><div class="eyebrow">Operating status</div><div id="task-status" class="task-status">ON_GOING</div><p id="failure-type">Failure type: NONE</p><p id="run-detail" class="hint">Ready to start</p></div><div class="run-actions"><label class="record-choice"><input type="checkbox" id="record" ${record?'checked':''} ${edit()}> Record <span>MOV · LOG · JSON</span></label><div class="actions"><button class="primary start" id="start" data-action="start">▶ Start</button><button class="danger" id="stop" data-action="stop" disabled>■ Stop</button></div><span id="record-status" class="hint"></span><p id="start-reason" class="start-reason" role="status" hidden></p></div></section><div id="run-error" class="error-box" role="alert" hidden></div><div id="verification" class="verification card" hidden></div><section class="card observations"><div class="section-head"><h2>Specialists</h2><span id="request-count" class="hint">No requests yet</span></div><div class="table-wrap"><table><thead><tr><th>Specialist</th><th>Observation</th><th>Visible evidence</th><th>Latency</th></tr></thead><tbody>${task.specialists.filter(s=>s.enabled).map(s=>`<tr data-observation="${esc(s.id)}"><td>${esc(s.name)}</td><td>Waiting</td><td>—</td><td>—</td></tr>`).join('')}</tbody></table></div></section><section id="outputs" class="card" hidden></section>`;
+  const simulation = task.input_mode === 'mujoco';
+  app.innerHTML = header('Monitor', task.name, `<button data-action="settings" ${edit()}>Model & settings</button>`) + `
+    <div class="monitor-toolbar card"><div class="mode-picker">${[['camera','Cameras'],['video','Video simulation'],['mujoco','MuJoCo simulation']].map(([mode,label])=>`<label><input type="radio" name="mode" value="${mode}" ${task.input_mode===mode?'checked':''} ${edit()}> ${label}</label>`).join('')}</div><div class="actions"><span id="save-state"></span><button data-action="save" ${edit()}>Save task</button><button data-action="connect-all" ${edit()}>Connect inputs</button></div></div>
+    ${simulation?`<section class="card simulation-panel"><div class="section-head"><div><div class="eyebrow">Simulation and robot</div><h2 id="simulation-status">Not connected</h2></div><span id="executor-status" class="badge">Robot unavailable</span></div>${simulationFields(task.simulation,'monitor')}<p class="hint">Robot stop cancels task commands and holds the arm; physics and monitoring continue. Stopping monitoring leaves the robot unchanged.</p><div class="actions"><button id="robot-start" data-action="robot-start">Start robot</button><button id="robot-stop" class="danger" data-action="robot-stop">Stop robot</button><button id="robot-reset" data-action="robot-reset">Reset scene</button><button data-action="simulation-refresh">Refresh status</button></div><p id="simulation-detail" class="hint" role="status"></p><p id="simulation-error" class="error-box" hidden></p></section>`:''}
+    <div class="camera-grid">${task.sources.map(s=>`<section class="card source-card"><div class="section-head"><h2>${esc(s.name)}</h2><label class="switch"><input type="checkbox" data-source-enabled="${esc(s.id)}" ${s.enabled?'checked':''} ${edit()}> Enabled</label></div><div class="source-controls">${task.input_mode==='camera'?`<label>Device<input data-source-id="${esc(s.id)}" data-source-field="device" value="${esc(s.device)}" placeholder="0 or /dev/video0" ${edit()}></label>`:task.input_mode==='video'?`<label class="upload-zone compact" data-upload-kind="video" data-source-id="${esc(s.id)}"><input type="file" accept=".mov,.mp4,.avi,.mkv" data-video-source="${esc(s.id)}" ${edit()}><strong>${s.video?'Replace video':'Choose or drop a video'}</strong><span>${esc(s.video||'MOV, MP4, AVI or MKV · up to 2 GB')}</span></label>`:'<span class="hint">Independent monitor camera</span>'}<button data-action="connect" data-id="${esc(s.id)}" ${edit()}>${task.input_mode==='video'?'Preview':'Connect'}</button></div><div class="camera-preview"><img data-source="${esc(s.id)}" alt="${esc(s.name)} live view"><span class="preview-notice">${s.enabled?'Not connected':'Source disabled'}</span></div><div class="source-health" data-health="${esc(s.id)}">Not connected</div>${simulation?cameraFields(s)+`<div class="actions reference-actions"><button data-action="simulation-capture" data-id="${esc(s.id)}" ${edit()}>Capture reference</button><button data-action="simulation-reference-builder" data-id="${esc(s.id)}" ${edit()} ${capturedReferences.has(cameraKey(s.id))?'':'hidden'}>Use reference in Task Builder</button></div>`:''}${task.input_mode!=='video'?`<details class="capture-settings"><summary>Capture settings</summary><div class="capture-fields">${['width','height','fps'].map(k=>`<label>${k==='fps'?'FPS':k[0].toUpperCase()+k.slice(1)}<input type="number" min="${simulation&&k!=='fps'?16:1}" max="${simulation?(k==='width'?1920:k==='height'?1080:30):(k==='fps'?120:8192)}" data-source-id="${esc(s.id)}" data-source-field="${k}" value="${s[k]}" ${edit()}></label>`).join('')}</div></details>`:''}</section>`).join('')}</div>
+    <section class="card operating"><div><div class="eyebrow">Visual task outcome</div><div id="task-status" class="task-status">ON_GOING</div><p id="failure-type">Failure type: NONE</p><p id="run-detail" class="hint">Ready to start</p></div><div class="run-actions"><label class="record-choice"><input type="checkbox" id="record" ${record?'checked':''} ${edit()}> Record <span>MOV · LOG · JSON</span></label><div class="actions"><button class="primary start" id="start" data-action="start">▶ Start monitoring</button><button class="danger" id="stop" data-action="stop" disabled>■ Stop monitoring</button></div><span id="record-status" class="hint"></span><p id="start-reason" class="start-reason" role="status" hidden></p></div></section>
+    <div id="run-error" class="error-box" role="alert" hidden></div><div id="verification" class="verification card" hidden></div><section class="card observations"><div class="section-head"><h2>Specialists</h2><span id="request-count" class="hint">No requests yet</span></div><div class="table-wrap"><table><thead><tr><th>Specialist</th><th>Observation</th><th>Visible evidence</th><th>Latency</th></tr></thead><tbody>${task.specialists.filter(s=>s.enabled).map(s=>`<tr data-observation="${esc(s.id)}"><td>${esc(s.name)}</td><td>Waiting</td><td>—</td><td>—</td></tr>`).join('')}</tbody></table></div></section><section id="outputs" class="card" hidden></section>`;
   document.querySelector('.camera-grid').before(document.querySelector('.operating'));
   updateMonitor();
 }
+
+function updateSimulationUI() {
+  if (page !== 'monitor' || task.input_mode !== 'mujoco') return;
+  const sim = state.simulation || {}, executor = sim.executor_state || sim.execution_state || sim.executor?.state || 'UNAVAILABLE';
+  const service = sim.service_state || sim.service?.state || (sim.connected?'READY':'DISCONNECTED');
+  const linked = sim.connected && (!sim.task_id || sim.task_id===task.id);
+  document.querySelector('#simulation-status').textContent = linked ? 'Simulation '+service : 'Simulation disconnected';
+  document.querySelector('#executor-status').textContent = 'Robot '+executor;
+  document.querySelector('#robot-start').textContent = executor==='STOPPED'?'Resume robot':'Start robot';
+  document.querySelector('#robot-start').disabled = !linked || service!=='READY' || !['IDLE','STOPPED'].includes(executor) || robotPending.size>0 || dirty;
+  document.querySelector('#robot-stop').disabled = !linked || !['RUNNING','STOPPING','ERROR'].includes(executor) || robotPending.has('stop');
+  const resettable = ['IDLE','STOPPED','FINISHED'].includes(executor) || (executor==='ERROR' && sim.physics_healthy===true && sim.hold_applied===true);
+  document.querySelector('#robot-reset').disabled = !linked || service!=='READY' || !resettable || robotPending.size>0;
+  const policy = {off:'Observe only',fail:'Stop on confirmed FAIL',terminal:'Stop on confirmed SUCCESS or FAIL'}[task.simulation?.auto_stop||'off'];
+  document.querySelector('#simulation-detail').textContent = `${policy} · ${task.config.evidence_horizon===0?'Verification disabled':'Outcome verification enabled'}${sim.sim_time_s!=null?' · simulation '+Number(sim.sim_time_s).toFixed(2)+' s':''}${sim.episode_id?' · episode '+sim.episode_id:''}${executor==='STOPPING'?' · awaiting applied stop':''}`;
+  const error = document.querySelector('#simulation-error');
+  error.hidden = !sim.error;
+  error.textContent = sim.error || '';
+  for (const el of document.querySelectorAll('[data-camera-revision]')) {
+    const view = sim.views?.[el.dataset.cameraRevision];
+    el.textContent = view ? `Applied camera revision ${view.camera_revision}. Save a preset after monitoring to retain this view.` : 'Connect this view, or save its pose as a preset before connecting.';
+  }
+  for (const button of document.querySelectorAll('[data-action="simulation-view"]')) button.disabled = !linked || !sim.views?.[button.dataset.id];
+}
+
 async function route() {
   if (pending) {
     toast('Wait for the current operation to finish.');
@@ -254,6 +314,7 @@ function updateLocks() {
     document.querySelector('#start').disabled = locked || dirty || !readyToRun();
     document.querySelector('#stop').disabled = !state.busy || state.phase === 'stopping';
     document.querySelector('#record').checked = state.busy ? state.recording : record;
+    updateSimulationUI();
   }
   if (page === 'builder' && builder) {
     document.querySelectorAll('.builder-preview [data-edit]').forEach(el => el.disabled = locked || builder.created);
@@ -321,7 +382,7 @@ function updateMonitor() {
   if (!out.hidden) out.innerHTML = `<h2>Run artifacts</h2><div class="artifact-links">${state.output.map(p=>`<a href="/api/output/${p.split('/').map(encodeURIComponent).join('/')}" download>${esc(p.split('/').pop())}</a>`).join('')}</div>`;
   for (const el of document.querySelectorAll('[data-health]')) {
     const info = state.preview_task_id === task.id ? state.sources[el.dataset.health] : null;
-    el.textContent = info?.connected ? `Connected · ${info.width} × ${info.height} · latest image ${info.age_s.toFixed(1)} s ago` : info?.error || 'Not connected';
+    el.textContent = info?.connected ? `Connected · ${info.width} × ${info.height} · latest image ${(info.age_s||0).toFixed(1)} s ago` : info?.error || 'Not connected';
     el.classList.toggle('connected', !!info?.connected);
     const button = el.closest('.source-card').querySelector('[data-action="connect"]');
     if (button && !pending) button.textContent = info?.connected && !dirty ? 'Disconnect' : task.input_mode === 'video' ? 'Preview' : 'Connect';
@@ -330,7 +391,8 @@ function updateMonitor() {
 }
 async function refreshPreviews() {
   for (const image of document.querySelectorAll('img[data-source]')) {
-    const source = state.preview_task_id === task?.id ? state.sources[image.dataset.source] : null,
+    const previewId = page === 'builder' ? builder?.task_id : task?.id;
+    const source = state.preview_task_id === previewId ? state.sources[image.dataset.source] : null,
       notice = image.parentElement.querySelector('.preview-notice');
     if (!source?.connected) {
       image.hidden = true;
@@ -462,8 +524,13 @@ function renderProgressControls() {
   updateLocks();
 }
 
+function builderSource(source, index, inputs) {
+  return `<div class="builder-source"><label class="switch"><input type="checkbox" data-builder-source-enabled="${index}" ${source.enabled?'checked':''} ${edit()}>${esc(source.name)}</label>${inputs.input_mode==='camera'?`<label>Camera device<input data-builder-device="${index}" value="${esc(source.device)}" placeholder="0 or /dev/video0" ${edit()}></label>`:inputs.input_mode==='video'?`<label>Video<input type="file" accept=".mov,.mp4,.avi,.mkv" data-builder-video="${index}" ${edit()}><small>${esc(source.video||'Choose a video')}</small></label>`:`<div class="camera-preview"><img data-source="${esc(source.id)}" alt="${esc(source.name)} builder preview"><span class="preview-notice">Connect simulation views to inspect the scene.</span></div>${cameraFields(source,'builder')}<div class="capture-fields">${['width','height','fps'].map(key=>`<label>${key}<input type="number" data-builder-source="${index}" data-builder-source-field="${key}" min="${key==='fps'?1:16}" max="${key==='width'?1920:key==='height'?1080:30}" value="${source[key]}" required ${edit()}></label>`).join('')}</div><button data-action="builder-simulation-capture" data-id="${esc(source.id)}" ${edit()}>Capture scene reference</button>`}</div>`;
+}
+
 function renderBuilder() {
   const draft = builder.draft, inputs = builder.inputs;
+  inputs.simulation ||= defaultSimulation();
   app.innerHTML = `<div class="page-head"><div><a class="breadcrumb" href="#tasks">Tasks</a><h1>Task Builder</h1><p>Describe your task. Review the specialists. Create a saved setup.</p></div><div class="actions"><button data-action="builder-settings" ${edit()}>Builder settings</button><button data-action="builder-reset" ${edit()}>New conversation</button></div></div>
     <div id="lock-banner" class="lock-banner" ${state.busy?'':'hidden'}>Stop monitoring before using Task Builder.</div>
     <div class="builder-layout"><section class="card builder-chat"><div class="section-head"><h2>Describe the task</h2><span class="badge">${esc(builder.settings.model)}</span></div>
@@ -476,8 +543,8 @@ function renderBuilder() {
     <p class="hint">Selected images are sent to the builder model with your message. Original reference files are kept locally.</p>
     <div class="actions"><button data-action="builder-send" ${edit()}>Send message</button><button class="primary" data-action="builder-generate" ${edit()}>Generate draft</button><button data-action="builder-cancel" ${builder.busy?'':'hidden'}>Cancel response</button></div><p id="builder-status" class="hint" role="status"></p></div>
     <details class="builder-inputs" ${builder.messages.length?'':'open'}><summary>Task inputs and monitoring settings</summary><label>Use monitoring settings from<select id="builder-base" ${edit()}><option value="">RoboBrain defaults</option>${tasks.map(t=>`<option value="${esc(t.id)}" ${inputs.base_task_id===t.id?'selected':''}>${esc(t.name)}</option>`).join('')}</select></label>
-    <label>Input type<select id="builder-mode" ${edit()}><option value="camera" ${inputs.input_mode==='camera'?'selected':''}>Live cameras</option><option value="video" ${inputs.input_mode==='video'?'selected':''}>Video simulation</option></select></label>
-    ${inputs.sources.map((s,i)=>`<div class="builder-source"><label class="switch"><input type="checkbox" data-builder-source-enabled="${i}" ${s.enabled?'checked':''} ${edit()}>${esc(s.name)}</label>${inputs.input_mode==='camera'?`<label>Camera device<input data-builder-device="${i}" value="${esc(s.device)}" placeholder="0 or /dev/video0" ${edit()}></label>`:`<label>Video<input type="file" accept=".mov,.mp4,.avi,.mkv" data-builder-video="${i}" ${edit()}><small>${esc(s.video||'Choose a video')}</small></label>`}</div>`).join('')}<p class="hint">Sources use full-frame crops. Connect and check their previews on Monitor after creating the task. The builder model is configured separately.</p></details></section>
+    <label>Input type<select id="builder-mode" ${edit()}><option value="camera" ${inputs.input_mode==='camera'?'selected':''}>Live cameras</option><option value="video" ${inputs.input_mode==='video'?'selected':''}>Video simulation</option><option value="mujoco" ${inputs.input_mode==='mujoco'?'selected':''}>MuJoCo simulation</option></select></label>${inputs.input_mode==='mujoco'?simulationFields(inputs.simulation,'builder')+`<button data-action="builder-simulation-connect" ${edit()}>Connect simulation views</button>`:''}
+    ${inputs.sources.map((s,i)=>builderSource(s,i,inputs)).join('')}<p class="hint">Sources use full-frame crops. Simulation captures are saved still images; mark which captures may become specialist references. Connect cameras or videos on Monitor after creating the task. The builder model is configured separately.</p></details></section>
     <section class="card builder-preview"><div class="section-head"><h2>Task preview</h2><span class="badge">${draft?'Ready to review':'Draft'}</span></div>${draft?`<label>Task name<input data-builder-name value="${esc(draft.name)}" maxlength="120" required ${edit()}></label><p>${esc(draft.summary)}</p>${draft.specialists.map((s,i)=>`<fieldset class="builder-specialist"><legend>Specialist ${i+1}</legend><label>Name<input data-builder-spec="${i}" data-builder-field="name" value="${esc(s.name)}" maxlength="120" required ${edit()}></label><label>Failure type <small>Leave blank for the success specialist</small><input data-builder-spec="${i}" data-builder-field="failure_type" value="${esc(s.failure_type||'')}" placeholder="Success specialist" ${edit()}></label><label>System prompt<textarea rows="9" data-builder-spec="${i}" data-builder-field="prompt" minlength="40" maxlength="20000" required ${edit()}>${esc(s.prompt)}</textarea></label><label>Camera / video views<select multiple data-builder-spec="${i}" data-builder-list="camera_sources" ${edit()}>${inputs.sources.filter(x=>x.enabled).map(x=>`<option value="${esc(x.id)}" ${s.camera_sources.includes(x.id)?'selected':''}>${esc(x.name)}</option>`).join('')}</select></label>${builder.attachments.some(a=>a.reference)?`<label>Reference images<select multiple data-builder-spec="${i}" data-builder-list="reference_assets" ${edit()}>${builder.attachments.filter(a=>a.reference).map(a=>`<option value="${esc(a.asset)}" ${s.reference_assets.includes(a.asset)?'selected':''}>${esc(a.label)}</option>`).join('')}</select></label>`:''}<details><summary>Configuration JSON</summary><pre data-builder-config="${i}">${esc(JSON.stringify({field:'verdict',values:{POSITIVE:'POSITIVE',NEGATIVE:'NEGATIVE',UNCERTAIN:'UNCERTAIN'},failure_type:s.failure_type},null,2))}</pre></details></fieldset>`).join('')}<p class="hint">Prompts, names, views and reference assignments are editable here. All settings remain editable in Prompt Designer after creation.</p>${builder.created?`<a class="button" href="${link('specialists',builder.task_id)}">Open created task →</a>`:`<button class="primary" data-action="builder-create" ${edit()}>Create task</button>`}`:'<div class="builder-placeholder"><span aria-hidden="true">✦</span><h3>Your specialists will appear here</h3><p>Explain what success looks like and which failures matter. Attach images to clarify targets and distractors, then generate a draft.</p></div>'}</section></div>`;
   if (draft?.progress) {
     const p=draft.progress;
@@ -570,6 +637,24 @@ async function builderAction(action, id) {
     };
     return;
   }
+  if (action === 'builder-simulation-connect') {
+    validateEditor();
+    state = await api('/builder/simulation/connect','POST',builder.inputs);
+    refreshPreviews();
+    toast('Simulation views connected. Capture a scene image before sending your description.');
+    return;
+  }
+  if (action === 'builder-simulation-capture') {
+    if (builderAttachments.length >= 8) throw new Error('Attach at most eight images per message.');
+    if (state.preview_task_id !== builder.task_id) throw new Error('Connect the builder simulation views first.');
+    const captured = await api('/simulation/references/'+encodeURIComponent(id),'POST');
+    const source = builder.inputs.sources.find(s=>s.id===id);
+    builderAttachments.push({asset:captured.asset,label:`${source.name} captured scene (episode ${captured.provenance.episode_id||'unknown'})`,reference:false});
+    builderDirty=true;
+    renderBuilder();
+    toast('Captured a fixed reference. Select Use as specialist reference if desired.');
+    return;
+  }
   if (action === 'builder-remove-image') {
     builderAttachments.splice(Number(id),1); builderDirty = true; renderBuilder(); return;
   }
@@ -595,7 +680,27 @@ async function builderAction(action, id) {
 
 app.addEventListener('input', e => {
   const el = e.target;
-  if (state.busy || pending) return;
+  if (el.dataset.cameraField && el.closest('[data-camera-owner="monitor"]')) {
+    const container = el.closest('[data-camera-source]');
+    cameraDrafts.set(cameraKey(container.dataset.cameraSource),readCamera(container,false));
+    return;
+  }
+  if (state.busy || state.builder_busy || builder?.busy || pending) return;
+  if (el.dataset.cameraField) {
+    const container = el.closest('[data-camera-source]');
+    builder.inputs.sources.find(s=>s.id===container.dataset.cameraSource).camera=readCamera(container,false);
+    builder.draft=null; builderDirty=true;
+  }
+  if (el.dataset.builderSourceField) {
+    builder.inputs.sources[Number(el.dataset.builderSource)][el.dataset.builderSourceField]=Number(el.value);
+    builder.draft=null; builderDirty=true;
+  }
+  if (el.dataset.simulationField) {
+    const target = el.dataset.owner==='builder'?builder.inputs:task;
+    target.simulation ||= defaultSimulation();
+    target.simulation[el.dataset.simulationField]=el.dataset.simulationField==='stale_after_s'?Number(el.value):el.value;
+    if (el.dataset.owner==='builder') {builder.draft=null; builderDirty=true;} else markDirty();
+  }
   if (el.dataset.progressSetting) {
     const progress=page==='builder'?builder.draft.progress:task.progress;
     progress[el.dataset.progressSetting] = ['unit_label','prompt'].includes(el.dataset.progressSetting)?el.value:Number(el.value);
@@ -652,9 +757,9 @@ app.addEventListener('change', async e => {
       if (el.id === 'builder-base') {
         builder.inputs.base_task_id = el.value || null;
         const base = tasks.find(t=>t.id===el.value);
-        if (base) { builder.inputs.sources = clone(base.sources); builder.inputs.input_mode = base.input_mode; }
+        if (base) { builder.inputs.sources = clone(base.sources); builder.inputs.input_mode = base.input_mode; builder.inputs.simulation=clone(base.simulation||defaultSimulation()); }
       }
-      if (el.id === 'builder-mode') builder.inputs.input_mode = el.value;
+      if (el.id === 'builder-mode') setInputMode(builder.inputs,el.value);
       if (el.hasAttribute('data-builder-source-enabled')) builder.inputs.sources[Number(el.dataset.builderSourceEnabled)].enabled = el.checked;
       if (el.id === 'builder-base' || el.id === 'builder-mode' || el.hasAttribute('data-builder-source-enabled') || el.hasAttribute('data-builder-device')) { builder.draft = null; renderBuilder(); }
       builderDirty = true;
@@ -680,7 +785,7 @@ app.addEventListener('change', async e => {
       markDirty();
     }
     if (el.name === 'mode') {
-      task.input_mode = el.value;
+      setInputMode(task,el.value);
       markDirty();
       renderMonitor();
     }
@@ -719,12 +824,77 @@ app.addEventListener('contextmenu', e => {
     card.querySelector('details').open = true;
   }
 });
+async function robotCommandUI(command) {
+  if (robotPending.has(command)) return;
+  const sim=state.simulation||{}, key=`${sim.server_instance_id}/${sim.episode_id}/${command}`;
+  const requestId=robotRequests.get(key)||crypto.randomUUID();
+  robotRequests.set(key,requestId);
+  robotPending.add(command);
+  updateSimulationUI();
+  try {
+    const response=await api('/simulation/commands','POST',{command,request_id:requestId});
+    robotRequests.delete(key);
+    state=await api('/state');
+    toast(`Robot ${command}: ${response.status||response.state||'accepted'}`);
+  } catch(error) {
+    toast(error.message+' Retry uses the same request ID.');
+  } finally {robotPending.delete(command);updateSimulationUI();}
+}
+async function simulationAction(action,id,button) {
+  if (action==='simulation-refresh') {
+    state.simulation=await api('/simulation/status?task_id='+encodeURIComponent(task.id));
+    updateSimulationUI(); return;
+  }
+  const source=task.sources.find(s=>s.id===id);
+  if (!source) throw new Error('Unknown simulation source');
+  const container=app.querySelector(`[data-camera-source="${id}"][data-camera-owner="monitor"]`);
+  if (action==='simulation-view') {
+    const camera=readCamera(container);
+    cameraDrafts.set(cameraKey(id),camera);
+    button.disabled=true;
+    try { await api('/simulation/views/'+encodeURIComponent(id),'POST',camera); }
+    finally {state=await api('/state');updateSimulationUI();}
+    toast('Live camera pose applied. Monitoring evidence is refreshed for the new view.');
+  } else if (action==='simulation-preset') {
+    source.camera=readCamera(container);
+    markDirty();
+    await saveTask();
+    toast('Camera preset saved. Reconnect inputs to inspect it.');
+  } else if (action==='simulation-view-reset') {
+    cameraDrafts.set(cameraKey(id),clone(source.camera||freeCamera()));
+    const camera=cameraDrafts.get(cameraKey(id));
+    container.querySelectorAll('[data-camera-field]').forEach(el=>el.value=['x','y','z'].includes(el.dataset.cameraField)?camera.lookat_m[['x','y','z'].indexOf(el.dataset.cameraField)]:camera[el.dataset.cameraField]);
+    toast('Saved pose loaded. Apply live view to use it.');
+  } else if (action==='simulation-capture') {
+    if (state.preview_task_id!==task.id) throw new Error('Connect this task before capturing a reference.');
+    const captured=await api('/simulation/references/'+encodeURIComponent(id),'POST');
+    capturedReferences.set(cameraKey(id),{...captured,label:`${source.name} captured scene (episode ${captured.provenance.episode_id||'unknown'})`});
+    button.parentElement.querySelector('[data-action="simulation-reference-builder"]').hidden=false;
+    toast('Reference image and camera provenance saved. You can attach it to Task Builder.');
+  } else if (action==='simulation-reference-builder') {
+    const captured=capturedReferences.get(cameraKey(id));
+    if (!captured) throw new Error('Capture a reference first.');
+    builder ||= await api('/builder');
+    if (builder.created) throw new Error('Start a new Task Builder conversation before attaching this reference.');
+    if (builderAttachments.length>=8) throw new Error('Attach at most eight images per message.');
+    builderAttachments.push({asset:captured.asset,label:captured.label,reference:false});
+    builder.inputs={base_task_id:task.id,input_mode:task.input_mode,simulation:clone(task.simulation),sources:clone(task.sources)};
+    builder.draft=null; builderDirty=true;
+    location.hash='#builder';
+  }
+}
+
 app.addEventListener('click', async e => {
   const button = e.target.closest('[data-action]');
   if (!button) return;
   const action = button.dataset.action,
     id = button.dataset.id;
-  if (state.busy && button.hasAttribute('data-edit')) return;
+  if (button.disabled || ((state.busy || state.builder_busy || pending) && button.hasAttribute('data-edit'))) return;
+  if (action.startsWith('robot-')) { await robotCommandUI(action.slice(6)); return; }
+  if (action.startsWith('simulation-')) {
+    try { await simulationAction(action,id,button); } catch(error) {toast(error.message);}
+    return;
+  }
   try {
     if (action === 'open-builder' || action.startsWith('builder-')) {
       await builderAction(action,id);
@@ -747,6 +917,13 @@ app.addEventListener('click', async e => {
       }
       if(page==='builder') { builderDirty=true; renderBuilder(); }
       else { markDirty(); renderDesigner(); }
+      return;
+    }
+    if (action === 'mujoco-task') {
+      const created = await api('/tasks', 'POST', {template:'mujoco_plug'});
+      tasks = await api('/tasks'); task=null; dirty=false;
+      location.hash = link('monitor', created.id);
+      toast('Simulation starter created. Review criteria and camera views before enabling automatic control.');
       return;
     }
     if (['new-task', 'duplicate-task', 'rename-task'].includes(action)) {

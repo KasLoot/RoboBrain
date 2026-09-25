@@ -13,3 +13,16 @@ __pycache__/
 .robobrain/
 
 *.zip
+# Workspace-local integration tools and generated artifacts
+.venv-integration/
+.cache/
+.tools/
+.tmp/
+simulator/rollouts/
+simulator/*.egg-info/
+simulator/build/
+.pytest_cache/
+
+.env
+
+simulator/configs/secrets.env

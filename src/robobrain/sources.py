@@ -156,6 +156,7 @@ class LiveCamera:
 @dataclass(frozen=True)
 class Snapshot(Frame):
     views: dict
+    global_image: object = None
 
 
 class Inputs:
@@ -166,14 +167,45 @@ class Inputs:
         self.sequence = 0
 
     def get(self):
-        views = {name: reader.get() for name, reader in self.readers.items()}
+        global_image = None
+        if self.mode == "mujoco":
+            connection = next(iter(self.readers.values())).connection
+            if getattr(connection, 'include_global', False):
+                views, global_image = connection.bundle(list(self.readers), with_global=True)
+            else:
+                views = connection.bundle(list(self.readers))
+        else:
+            views = {name: reader.get() for name, reader in self.readers.items()}
         first = next(iter(views.values()))
+        expected = getattr(self, 'expected_simulation_episode', None)
+        if expected and first.metadata['simulation']['episode_id'] != expected:
+            self.scene_stop_event.set()
+            raise RuntimeError('Scene reset: start a new monitoring session for the new run')
         captured = max(v.observed_at for v in views.values())
         # The unchanged monitor/report contract uses a 30 fps timeline. Physical
         # camera frame IDs and read timestamps are retained separately in views.
         index = first.source_index if self.mode == "video" else max(0, round((captured - self.started_at) * 30))
         self.sequence += 1
-        return Snapshot(first.image, self.sequence, index, captured, views)
+        return Snapshot(first.image, self.sequence, index, captured, views, global_image=global_image, metadata=first.metadata)
+
+    def evidence_context(self):
+        if self.mode != "mujoco":
+            return None
+        return next(iter(self.readers.values())).connection.context(list(self.readers))
+
+    def accepts_evidence(self, evidence):
+        if self.mode != "mujoco":
+            return True
+        connection = next(iter(self.readers.values())).connection
+        if not evidence or evidence.get("context") != self.evidence_context():
+            return False
+        if time.monotonic() - evidence.get("observed_at", 0) > connection.settings.get("stale_after_s", 5):
+            return False
+        try:
+            connection.bundle(list(self.readers))
+        except RuntimeError:
+            return False
+        return True
 
 
 def composite(views, names):

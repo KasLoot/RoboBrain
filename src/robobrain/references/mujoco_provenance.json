@@ -1,0 +1,21 @@
+{
+  "source_run": "/home/yuxin/workspace/RoboBrain/runs/live-plug-20260924T215415Z",
+  "source_files": [
+    "camera1-initial.png",
+    "final-camera1.png"
+  ],
+  "completed_verified_by": "MuJoCo physical success diagnostics: task_success",
+  "camera": {
+    "type": "free",
+    "lookat_m": [
+      0.4,
+      0,
+      0.16
+    ],
+    "distance_m": 0.85,
+    "azimuth_deg": 45,
+    "elevation_deg": -25
+  },
+  "note": "Raw unchanged simulator snapshots; no visual annotations.",
+  "completed_tcp_clearance_mm": 116.90430253592007
+}

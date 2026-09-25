@@ -1,0 +1,675 @@
+{
+  "first_attempt": {
+    "path": "runs/live-plug-20260924T215415Z",
+    "executed_steps": 67,
+    "summaries": [
+      {
+        "file": "runs/live-plug-20260924T215415Z/simulator/4ab00f4e0b4441daa465be7f1437c8c7/generation_3/openai/0925/task_0/06-07-59/summary.json",
+        "success": true,
+        "steps": 29,
+        "end_reason": "task_success",
+        "criteria": {
+          "angular_rest": {
+            "operator": "<",
+            "passed": true,
+            "threshold": 0.1,
+            "unit": "rad/s",
+            "value": 5.672772539306321e-10
+          },
+          "gripper_open": {
+            "operator": ">",
+            "passed": true,
+            "threshold": 0.06,
+            "unit": "m",
+            "value": 0.07767280969628676
+          },
+          "insertion_depth": {
+            "operator": "<",
+            "passed": true,
+            "threshold": 0.002,
+            "unit": "m",
+            "value": 2.1742667083435308e-08
+          },
+          "linear_rest": {
+            "operator": "<",
+            "passed": true,
+            "threshold": 0.02,
+            "unit": "m/s",
+            "value": 9.198116147640378e-12
+          },
+          "retreat_clearance": {
+            "operator": ">",
+            "passed": true,
+            "plug_top_height_m": 0.09699997825733213,
+            "required_tcp_height_m": 0.14699997825733213,
+            "tcp_height_m": 0.2139042807932522,
+            "threshold": 0.05,
+            "unit": "m",
+            "value": 0.11690430253592006
+          },
+          "shaft_fits": {
+            "operator": "<",
+            "passed": true,
+            "threshold": 0.013,
+            "unit": "m",
+            "value": 0.011697697190301925
+          },
+          "tip_centered": {
+            "operator": "<",
+            "passed": true,
+            "threshold": 0.004,
+            "unit": "m",
+            "value": 0.001697689782368854
+          },
+          "upright": {
+            "operator": ">",
+            "passed": true,
+            "threshold": 0.9945218953682733,
+            "unit": "cosine",
+            "value": 0.9999999999999902
+          }
+        }
+      }
+    ],
+    "segments": [
+      {
+        "log": "runs/live-plug-20260924T215415Z/robobrain/runs/task_f7ab42f08476/20260924-215635-522016/output-20260924-215635-522016.log",
+        "report": "runs/live-plug-20260924T215415Z/robobrain/runs/task_f7ab42f08476/20260924-215635-522016/output-20260924-215635-522016.json",
+        "model": "gemma4:31b-cloud",
+        "reasoning_effort": null,
+        "requests": 168,
+        "http_errors": 0,
+        "http_429": 0,
+        "latency_median_s": 0.6322172114996647,
+        "latency_p95_s": 0.7324905789992044,
+        "verification": [],
+        "statuses": [],
+        "last_status": "ON_GOING",
+        "progress_confirmed": [
+          "ON_STAND"
+        ],
+        "recording": {
+          "file": "output-20260924-215635-522016.MOV",
+          "fps": 30,
+          "width": 1280,
+          "height": 480,
+          "codec": "H.264",
+          "original_audio": "no audio input",
+          "interrupted": true,
+          "frames": 1846,
+          "unavailable_frames": 0
+        }
+      },
+      {
+        "log": "runs/live-plug-20260924T215415Z/robobrain/runs/task_f7ab42f08476/20260924-215851-558698/output-20260924-215851-558698.log",
+        "report": "runs/live-plug-20260924T215415Z/robobrain/runs/task_f7ab42f08476/20260924-215851-558698/output-20260924-215851-558698.json",
+        "model": "gemma4:31b-cloud",
+        "reasoning_effort": null,
+        "requests": 822,
+        "http_errors": 0,
+        "http_429": 0,
+        "latency_median_s": 0.6618934385005559,
+        "latency_p95_s": 1.0108877099992242,
+        "verification": [],
+        "statuses": [],
+        "last_status": "ON_GOING",
+        "progress_confirmed": [
+          "ON_STAND",
+          "GRASPED"
+        ],
+        "recording": {
+          "file": "output-20260924-215851-558698.MOV",
+          "fps": 30,
+          "width": 1280,
+          "height": 480,
+          "codec": "H.264",
+          "original_audio": "no audio input",
+          "interrupted": true,
+          "frames": 10818,
+          "unavailable_frames": 2
+        }
+      },
+      {
+        "log": "runs/live-plug-20260924T215415Z/robobrain/runs/task_f7ab42f08476/20260924-220452-888825/output-20260924-220452-888825.log",
+        "report": "runs/live-plug-20260924T215415Z/robobrain/runs/task_f7ab42f08476/20260924-220452-888825/output-20260924-220452-888825.json",
+        "model": "gemma4:31b-cloud",
+        "reasoning_effort": null,
+        "requests": 1526,
+        "http_errors": 15,
+        "http_429": 15,
+        "latency_median_s": 0.6265094624995982,
+        "latency_p95_s": 0.853743673000281,
+        "verification": [],
+        "statuses": [],
+        "last_status": "ON_GOING",
+        "progress_confirmed": [
+          "ON_STAND",
+          "GRASPED",
+          "LIFTED_CLEAR",
+          "ALIGNED_ABOVE_SOCKET",
+          "RETREATED"
+        ],
+        "recording": {
+          "file": "output-20260924-220452-888825.MOV",
+          "fps": 30,
+          "width": 1280,
+          "height": 480,
+          "codec": "H.264",
+          "original_audio": "no audio input",
+          "interrupted": false,
+          "frames": 17282,
+          "unavailable_frames": 5
+        }
+      },
+      {
+        "log": "runs/live-plug-20260924T215415Z/robobrain/runs/task_f7ab42f08476/20260924-221858-031821/output-20260924-221858-031821.log",
+        "report": "runs/live-plug-20260924T215415Z/robobrain/runs/task_f7ab42f08476/20260924-221858-031821/output-20260924-221858-031821.json",
+        "model": "gemma4:31b-cloud",
+        "reasoning_effort": null,
+        "requests": 44,
+        "http_errors": 0,
+        "http_429": 0,
+        "latency_median_s": 1.5370208544991328,
+        "latency_p95_s": 4.382424999999785,
+        "verification": [
+          {
+            "round_id": 1,
+            "counts": {
+              "success": 6,
+              "drop": 0
+            },
+            "status": "SUCCESS",
+            "time_s": 10.890781625999807,
+            "cancelled": null
+          }
+        ],
+        "statuses": [
+          {
+            "status": "SUCCESS",
+            "time_s": 10.89082503499958
+          }
+        ],
+        "last_status": "ON_GOING",
+        "progress_confirmed": [
+          "RETREATED"
+        ],
+        "recording": {
+          "file": "output-20260924-221858-031821.MOV",
+          "fps": 30,
+          "width": 1280,
+          "height": 480,
+          "codec": "H.264",
+          "original_audio": "no audio input",
+          "interrupted": true,
+          "frames": 507,
+          "unavailable_frames": 0
+        }
+      }
+    ],
+    "recoveries": [
+      {
+        "step": 28,
+        "stage": "INSERT",
+        "action": "RELEASE",
+        "recovery": {
+          "event": "lost_grasp",
+          "reason": "closed gripper width 0.0000m <= empty threshold 0.0050m",
+          "token": "RELEASE"
+        }
+      }
+    ],
+    "steps_with_lost_grasp": [
+      {
+        "i": 28,
+        "sg": 3,
+        "sg_step": 17,
+        "stage": "INSERT",
+        "sid": "insert_pin",
+        "act": "RELEASE",
+        "eef": [
+          0.48,
+          0.16,
+          0.214
+        ],
+        "w": 0.0,
+        "grip": "OPEN",
+        "pre_pose": [
+          0.47989874571182034,
+          0.16001379179322683,
+          0.2139423185400244,
+          0.9999999855722318,
+          9.161586995154461e-07,
+          -0.00016829628157089392,
+          -2.304470480185059e-05
+        ],
+        "target_pose": [
+          0.4799084089796645,
+          0.16001684885933648,
+          0.2138845408432543,
+          0.9999999874674497,
+          5.934879510061109e-08,
+          -0.00015647309829503007,
+          -2.4109470722638147e-05
+        ],
+        "post_pose": [
+          0.4799025597781257,
+          0.16001524289092198,
+          0.21390435590149323,
+          0.9999999868748911,
+          1.1844908299196712e-06,
+          -0.00016003657277151648,
+          -2.5241033548347112e-05
+        ],
+        "grasp_fail": "gripper open",
+        "grasp_unverified": true,
+        "recover": true,
+        "recovery": {
+          "event": "lost_grasp",
+          "reason": "closed gripper width 0.0000m <= empty threshold 0.0050m",
+          "token": "RELEASE"
+        },
+        "ok": true,
+        "success_diagnostics": {
+          "scene": "plug_insert",
+          "success": true,
+          "failed_criteria": [],
+          "criteria": {
+            "upright": {
+              "value": 0.9999999999999902,
+              "operator": ">",
+              "threshold": 0.9945218953682733,
+              "unit": "cosine",
+              "passed": true
+            },
+            "shaft_fits": {
+              "value": 0.011697697190302104,
+              "operator": "<",
+              "threshold": 0.013,
+              "unit": "m",
+              "passed": true
+            },
+            "tip_centered": {
+              "value": 0.001697689781886219,
+              "operator": "<",
+              "threshold": 0.004,
+              "unit": "m",
+              "passed": true
+            },
+            "insertion_depth": {
+              "value": 2.1742688482984107e-08,
+              "operator": "<",
+              "threshold": 0.002,
+              "unit": "m",
+              "passed": true
+            },
+            "gripper_open": {
+              "value": 0.07573662335618463,
+              "operator": ">",
+              "threshold": 0.06,
+              "unit": "m",
+              "passed": true
+            },
+            "retreat_clearance": {
+              "value": 0.1169043776441825,
+              "operator": ">",
+              "threshold": 0.05,
+              "unit": "m",
+              "passed": true,
+              "tcp_height_m": 0.21390435590149323,
+              "plug_top_height_m": 0.09699997825731073,
+              "required_tcp_height_m": 0.14699997825731073
+            },
+            "linear_rest": {
+              "value": 4.596461859760674e-12,
+              "operator": "<",
+              "threshold": 0.02,
+              "unit": "m/s",
+              "passed": true
+            },
+            "angular_rest": {
+              "value": 2.8589356156613856e-10,
+              "operator": "<",
+              "threshold": 0.1,
+              "unit": "rad/s",
+              "passed": true
+            }
+          }
+        }
+      }
+    ]
+  },
+  "requested_model_attempt": {
+    "path": "runs/live-plug-luna-20260924T222454Z",
+    "executed_steps": 72,
+    "summaries": [
+      {
+        "file": "runs/live-plug-luna-20260924T222454Z/simulator/6a29c65ef9cc42df925d750f51179764/generation_3/openai/0925/task_0/06-33-29/summary.json",
+        "success": true,
+        "steps": 72,
+        "end_reason": "task_success",
+        "criteria": {
+          "angular_rest": {
+            "operator": "<",
+            "passed": true,
+            "threshold": 0.1,
+            "unit": "rad/s",
+            "value": 5.613097690249321e-10
+          },
+          "gripper_open": {
+            "operator": ">",
+            "passed": true,
+            "threshold": 0.06,
+            "unit": "m",
+            "value": 0.07772089366945059
+          },
+          "insertion_depth": {
+            "operator": "<",
+            "passed": true,
+            "threshold": 0.002,
+            "unit": "m",
+            "value": 2.161837153735746e-08
+          },
+          "linear_rest": {
+            "operator": "<",
+            "passed": true,
+            "threshold": 0.02,
+            "unit": "m/s",
+            "value": 9.014348204551958e-12
+          },
+          "retreat_clearance": {
+            "operator": ">",
+            "passed": true,
+            "plug_top_height_m": 0.09699997838162806,
+            "required_tcp_height_m": 0.14699997838162807,
+            "tcp_height_m": 0.18384541051855297,
+            "threshold": 0.05,
+            "unit": "m",
+            "value": 0.0868454321369249
+          },
+          "shaft_fits": {
+            "operator": "<",
+            "passed": true,
+            "threshold": 0.013,
+            "unit": "m",
+            "value": 0.010939388513184645
+          },
+          "tip_centered": {
+            "operator": "<",
+            "passed": true,
+            "threshold": 0.004,
+            "unit": "m",
+            "value": 0.0009393843862959052
+          },
+          "upright": {
+            "operator": ">",
+            "passed": true,
+            "threshold": 0.9945218953682733,
+            "unit": "cosine",
+            "value": 0.9999999999999951
+          }
+        }
+      }
+    ],
+    "segments": [
+      {
+        "log": "runs/live-plug-luna-20260924T222454Z/robobrain/runs/task_9911bfde0097/20260924-222458-198264/output-20260924-222458-198264.log",
+        "report": "runs/live-plug-luna-20260924T222454Z/robobrain/runs/task_9911bfde0097/20260924-222458-198264/output-20260924-222458-198264.json",
+        "model": "gpt-6-luna",
+        "reasoning_effort": "none",
+        "requests": 651,
+        "http_errors": 0,
+        "http_429": 0,
+        "latency_median_s": 1.3181549229993834,
+        "latency_p95_s": 1.9855279729999893,
+        "verification": [],
+        "statuses": [],
+        "last_status": "ON_GOING",
+        "progress_confirmed": [
+          "ON_STAND",
+          "LIFTED_CLEAR",
+          "INSERTING"
+        ],
+        "recording": {
+          "file": "output-20260924-222458-198264.MOV",
+          "fps": 30,
+          "width": 1280,
+          "height": 480,
+          "codec": "H.264",
+          "original_audio": "no audio input",
+          "interrupted": true,
+          "frames": 15649,
+          "unavailable_frames": 2
+        }
+      },
+      {
+        "log": "runs/live-plug-luna-20260924T222454Z/robobrain/runs/task_9911bfde0097/20260924-223341-774536/output-20260924-223341-774536.log",
+        "report": "runs/live-plug-luna-20260924T222454Z/robobrain/runs/task_9911bfde0097/20260924-223341-774536/output-20260924-223341-774536.json",
+        "model": "gpt-6-luna",
+        "reasoning_effort": "low",
+        "requests": 235,
+        "http_errors": 0,
+        "http_429": 0,
+        "latency_median_s": 2.9585575979999703,
+        "latency_p95_s": 5.309213496000666,
+        "verification": [
+          {
+            "round_id": 1,
+            "counts": {
+              "success": 7,
+              "drop": 0
+            },
+            "status": "SUCCESS",
+            "time_s": 389.4335485299998,
+            "cancelled": null
+          }
+        ],
+        "statuses": [
+          {
+            "status": "SUCCESS",
+            "time_s": 389.4335622819999
+          }
+        ],
+        "last_status": "ON_GOING",
+        "progress_confirmed": [
+          "LIFTED_CLEAR",
+          "ALIGNED_ABOVE_SOCKET",
+          "INSERTING"
+        ],
+        "recording": {
+          "file": "output-20260924-223341-774536.MOV",
+          "fps": 30,
+          "width": 1280,
+          "height": 480,
+          "codec": "H.264",
+          "original_audio": "no audio input",
+          "interrupted": true,
+          "frames": 11956,
+          "unavailable_frames": 12
+        }
+      },
+      {
+        "log": "runs/live-plug-luna-20260924T222454Z/robobrain/runs/task_9911bfde0097/20260924-224523-806161/output-20260924-224523-806161.log",
+        "report": "runs/live-plug-luna-20260924T222454Z/robobrain/runs/task_9911bfde0097/20260924-224523-806161/output-20260924-224523-806161.json",
+        "model": "gpt-6-luna",
+        "reasoning_effort": "low",
+        "requests": 63,
+        "http_errors": 0,
+        "http_429": 0,
+        "latency_median_s": 2.7387401910000335,
+        "latency_p95_s": 5.6872148380007275,
+        "verification": [
+          {
+            "round_id": 1,
+            "counts": {
+              "success": 8,
+              "drop": 0
+            },
+            "status": "SUCCESS",
+            "time_s": 24.279791240000122,
+            "cancelled": null
+          },
+          {
+            "round_id": 2,
+            "counts": {},
+            "status": "ON_GOING",
+            "time_s": 44.30675487600092,
+            "cancelled": true
+          }
+        ],
+        "statuses": [
+          {
+            "status": "SUCCESS",
+            "time_s": 24.279810768999596
+          }
+        ],
+        "last_status": "ON_GOING",
+        "progress_confirmed": [
+          "RETREATED",
+          "RELEASED"
+        ],
+        "recording": {
+          "file": "output-20260924-224523-806161.MOV",
+          "fps": 30,
+          "width": 1280,
+          "height": 480,
+          "codec": "H.264",
+          "original_audio": "no audio input",
+          "interrupted": true,
+          "frames": 1648,
+          "unavailable_frames": 2
+        }
+      }
+    ],
+    "recoveries": [
+      {
+        "step": 71,
+        "stage": "INSERT",
+        "action": "RELEASE",
+        "recovery": {
+          "event": "lost_grasp",
+          "reason": "closed gripper width 0.0000m <= empty threshold 0.0050m",
+          "token": "RELEASE"
+        }
+      }
+    ],
+    "steps_with_lost_grasp": [
+      {
+        "i": 71,
+        "sg": 3,
+        "sg_step": 24,
+        "stage": "INSERT",
+        "sid": "insert_pin",
+        "act": "RELEASE",
+        "eef": [
+          0.48,
+          0.16,
+          0.184
+        ],
+        "w": 0.0,
+        "grip": "OPEN",
+        "pre_pose": [
+          0.4798531361103784,
+          0.16002139992093908,
+          0.18388265075688442,
+          0.9999999701565027,
+          8.654879009584174e-07,
+          -0.00024183838957485748,
+          -3.4647340544556396e-05
+        ],
+        "target_pose": [
+          0.4798640065359813,
+          0.16002509443296128,
+          0.18382533451174501,
+          0.999999972865401,
+          1.3103916834955603e-07,
+          -0.00023019394847557129,
+          -3.577605612816121e-05
+        ],
+        "post_pose": [
+          0.47985719080040445,
+          0.1600229264353092,
+          0.1838454859903718,
+          0.9999999720153214,
+          1.1379503725428288e-06,
+          -0.00023367333264020157,
+          -3.6943673971626814e-05
+        ],
+        "grasp_fail": "gripper open",
+        "grasp_unverified": true,
+        "recover": true,
+        "recovery": {
+          "event": "lost_grasp",
+          "reason": "closed gripper width 0.0000m <= empty threshold 0.0050m",
+          "token": "RELEASE"
+        },
+        "ok": true,
+        "success_diagnostics": {
+          "scene": "plug_insert",
+          "success": true,
+          "failed_criteria": [],
+          "criteria": {
+            "upright": {
+              "value": 0.9999999999999951,
+              "operator": ">",
+              "threshold": 0.9945218953682733,
+              "unit": "cosine",
+              "passed": true
+            },
+            "shaft_fits": {
+              "value": 0.01093938851318426,
+              "operator": "<",
+              "threshold": 0.013,
+              "unit": "m",
+              "passed": true
+            },
+            "tip_centered": {
+              "value": 0.0009393843868607806,
+              "operator": "<",
+              "threshold": 0.004,
+              "unit": "m",
+              "passed": true
+            },
+            "insertion_depth": {
+              "value": 2.161835843672577e-08,
+              "operator": "<",
+              "threshold": 0.002,
+              "unit": "m",
+              "passed": true
+            },
+            "gripper_open": {
+              "value": 0.07573662335730044,
+              "operator": ">",
+              "threshold": 0.06,
+              "unit": "m",
+              "passed": true
+            },
+            "retreat_clearance": {
+              "value": 0.08684550760873062,
+              "operator": ">",
+              "threshold": 0.05,
+              "unit": "m",
+              "passed": true,
+              "tcp_height_m": 0.1838454859903718,
+              "plug_top_height_m": 0.09699997838164116,
+              "required_tcp_height_m": 0.14699997838164117
+            },
+            "linear_rest": {
+              "value": 3.2822461879674725e-12,
+              "operator": "<",
+              "threshold": 0.02,
+              "unit": "m/s",
+              "passed": true
+            },
+            "angular_rest": {
+              "value": 2.0326228427994067e-10,
+              "operator": "<",
+              "threshold": 0.1,
+              "unit": "rad/s",
+              "passed": true
+            }
+          }
+        }
+      }
+    ]
+  }
+}

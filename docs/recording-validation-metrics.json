@@ -1,0 +1,272 @@
+{
+  "run_directory": "/home/yuxin/workspace/RoboBrain/runs/recording-validation-20260924T235301Z/robobrain/runs/20260924T235302.866042Z-b29fb00d",
+  "validation_directory": "/home/yuxin/workspace/RoboBrain/runs/recording-validation-20260924T235301Z",
+  "videos": {
+    "show-harness-video/combined.mp4": {
+      "frames": 12808,
+      "width": 2624,
+      "height": 1632,
+      "fps": 30
+    },
+    "show-harness-video/front.mp4": {
+      "frames": 12808,
+      "width": 512,
+      "height": 512,
+      "fps": 30
+    },
+    "show-harness-video/global.mp4": {
+      "frames": 12808,
+      "width": 1920,
+      "height": 1080,
+      "fps": 30
+    },
+    "show-harness-video/side.mp4": {
+      "frames": 12808,
+      "width": 512,
+      "height": 512,
+      "fps": 30
+    },
+    "show-harness-video/wrist.mp4": {
+      "frames": 12808,
+      "width": 512,
+      "height": 512,
+      "fps": 30
+    },
+    "show-harness-video/wrist_depth.mp4": {
+      "frames": 12808,
+      "width": 512,
+      "height": 512,
+      "fps": 30
+    },
+    "show-harness-video/wrist_insert.mp4": {
+      "frames": 12808,
+      "width": 512,
+      "height": 512,
+      "fps": 30
+    },
+    "robobrain-video/combined.mp4": {
+      "frames": 27183,
+      "width": 2640,
+      "height": 1080,
+      "fps": 30
+    },
+    "robobrain-video/global.mp4": {
+      "frames": 27183,
+      "width": 1920,
+      "height": 1080,
+      "fps": 30
+    },
+    "robobrain-video/view-camera1.mp4": {
+      "frames": 27183,
+      "width": 640,
+      "height": 480,
+      "fps": 30
+    },
+    "robobrain-video/view-camera2.mp4": {
+      "frames": 27183,
+      "width": 640,
+      "height": 480,
+      "fps": 30
+    }
+  },
+  "models": {
+    "show-harness": {
+      "models": [
+        "gpt-6-sol"
+      ],
+      "events": {
+        "vlm_call_start": 66,
+        "vlm_transport_start": 66,
+        "vlm_transport_end": 66,
+        "vlm_call_end": 66
+      },
+      "roles": {
+        "planner": 1,
+        "controller": 65
+      }
+    },
+    "robobrain": {
+      "models": [
+        "gpt-6-luna"
+      ],
+      "events": {
+        "request_started": 804,
+        "request_cancelled": 7,
+        "response_received": 797
+      },
+      "roles": {
+        "drop": 307,
+        "success": 307,
+        "progress": 190
+      }
+    }
+  },
+  "show-harness-video": {
+    "frames": 12808,
+    "missing_scene_identity": 1,
+    "gaps": 13373,
+    "unavailable_frames": 0,
+    "wall_duration_s": 909.1279999922994,
+    "video_duration_s": 426.93333333333334
+  },
+  "robobrain-video": {
+    "frames": 27183,
+    "missing_scene_identity": 0,
+    "gaps": 20,
+    "unavailable_frames": 4,
+    "wall_duration_s": 906.7353182890001,
+    "video_duration_s": 906.1
+  },
+  "trajectory": {
+    "initial_poses": 1,
+    "controls": 66,
+    "completed_statuses": {
+      "completed": 66
+    }
+  },
+  "verified_image_assets": 1769,
+  "credential_matches": 0,
+  "size_bytes": 6242146296,
+  "controller_end_state": "FINISHED",
+  "final_monitor_status": "SUCCESS",
+  "recording_error": null,
+  "real_time_factor": 0.9999398959718143,
+  "physics_events_dropped": 0,
+  "success_detections": 2,
+  "controller_summaries": [
+    {
+      "file": "show-harness-logs/b6ad6065782d4ebb8b78f66680d200dc/generation_1/openai/0925/task_0/07-53-05/summary.json",
+      "summary": {
+        "control_mode": "mujoco",
+        "end_reason": "task_success",
+        "gripper_color": "black",
+        "max_steps": 200,
+        "raw_plan": "{\"subgoals\": [{\"affordance\": \"orange handle body\", \"completion\": \"Both fingertip pads visibly hold opposite sides of the orange handle body at contact height, with no edge-only or off-center grip.\", \"description\": \"With the fingers open, center the handle at the Wrist TCP and between the fingertip pads in both Front and Right Side views. Correct horizontal offsets before lowering in small steps; use the Wrist depth samples and external views to check that the pads reach around the handle body below its top edge, then close.\", \"id\": \"grasp_plug\", \"motion\": \"GRASP\", \"target\": \"orange-handled plug on the gray stand\"}, {\"affordance\": \"orange handle body\", \"completion\": \"The verified upward lift totals at least 50 mm from the secure-grasp pose; the grip remains secure, and the silver pin bottom is visibly clear of the stand and the blue socket top along the transport path.\", \"description\": \"Command one 50 mm upward lift before any lateral transport. Check measured motion and fresh views; if incomplete, raise only the remaining distance while confirming the plug rises with the hand.\", \"id\": \"lift_clear\", \"motion\": \"LIFT\", \"target\": \"grasped orange-handled plug\"}, {\"affordance\": \"black bore opening\", \"completion\": \"The pin tip is visibly above and clear of the rim, and its axis is centered within the black opening in Front and Right Side, consistent with the Angled Wrist view.\", \"description\": \"Transport the lifted plug above the socket. Use Front for Y and Right Side for X to align the silver pin axis with the black opening, cross-checking the rim plane and pin tip in Angled Wrist. Make small corrections while the tip remains clear of the rim.\", \"id\": \"align_over_bore\", \"motion\": \"MOVE\", \"target\": \"blue socket\"}, {\"affordance\": \"black bore opening\", \"completion\": \"The silver pin is visibly seated to insertion depth in the bore, with the plug supported by the socket rather than hovering or resting on the rim.\", \"description\": \"Before each small descent, recheck pin-to-rim alignment in Front, Right Side, and Angled Wrist. Confirm that the plug descends with the hand; if the pin stalls or slips, lift clear and inspect rather than pushing against the rim.\", \"id\": \"insert_pin\", \"motion\": \"INSERT\", \"target\": \"blue socket\"}, {\"affordance\": \"orange handle body\", \"completion\": \"The fingers are visibly open and clear of the orange handle, while the plug remains seated and stationary in the socket.\", \"description\": \"Only after confirming seating, open the fingers without disturbing the plug.\", \"id\": \"release_plug\", \"motion\": \"RELEASE\", \"target\": \"seated plug in the blue socket\"}, {\"affordance\": \"visible top of the orange handle\", \"completion\": \"The fingers remain open, the plug remains visibly seated and undisturbed, and the TCP is strictly more than 50 mm vertically above the visible orange handle top.\", \"description\": \"With the fingers open, command one 50 mm upward retreat, then inspect the TCP-to-handle-top height in current views. Raise farther if needed to exceed a 50 mm vertical gap, aiming for at least 55 mm.\", \"id\": \"retreat_open_hand\", \"motion\": \"RETREAT\", \"target\": \"seated plug in the blue socket\"}]}",
+        "run_dir": "/home/yuxin/workspace/RoboBrain/runs/recording-validation-20260924T235301Z/robobrain/runs/20260924T235302.866042Z-b29fb00d/show-harness-logs/b6ad6065782d4ebb8b78f66680d200dc/generation_1/openai/0925/task_0/07-53-05",
+        "steps": 66,
+        "subgoals": [
+          {
+            "affordance": "orange handle body",
+            "completion": "Both fingertip pads visibly hold opposite sides of the orange handle body at contact height, with no edge-only or off-center grip.",
+            "description": "With the fingers open, center the handle at the Wrist TCP and between the fingertip pads in both Front and Right Side views. Correct horizontal offsets before lowering in small steps; use the Wrist depth samples and external views to check that the pads reach around the handle body below its top edge, then close.",
+            "id": "grasp_plug",
+            "motion": "GRASP",
+            "target": "orange-handled plug on the gray stand"
+          },
+          {
+            "affordance": "orange handle body",
+            "completion": "The verified upward lift totals at least 50 mm from the secure-grasp pose; the grip remains secure, and the silver pin bottom is visibly clear of the stand and the blue socket top along the transport path.",
+            "description": "Command one 50 mm upward lift before any lateral transport. Check measured motion and fresh views; if incomplete, raise only the remaining distance while confirming the plug rises with the hand.",
+            "id": "lift_clear",
+            "motion": "LIFT",
+            "target": "grasped orange-handled plug"
+          },
+          {
+            "affordance": "black bore opening",
+            "completion": "The pin tip is visibly above and clear of the rim, and its axis is centered within the black opening in Front and Right Side, consistent with the Angled Wrist view.",
+            "description": "Transport the lifted plug above the socket. Use Front for Y and Right Side for X to align the silver pin axis with the black opening, cross-checking the rim plane and pin tip in Angled Wrist. Make small corrections while the tip remains clear of the rim.",
+            "id": "align_over_bore",
+            "motion": "MOVE",
+            "target": "blue socket"
+          },
+          {
+            "affordance": "black bore opening",
+            "completion": "The silver pin is visibly seated to insertion depth in the bore, with the plug supported by the socket rather than hovering or resting on the rim.",
+            "description": "Before each small descent, recheck pin-to-rim alignment in Front, Right Side, and Angled Wrist. Confirm that the plug descends with the hand; if the pin stalls or slips, lift clear and inspect rather than pushing against the rim.",
+            "id": "insert_pin",
+            "motion": "INSERT",
+            "target": "blue socket"
+          },
+          {
+            "affordance": "orange handle body",
+            "completion": "The fingers are visibly open and clear of the orange handle, while the plug remains seated and stationary in the socket.",
+            "description": "Only after confirming seating, open the fingers without disturbing the plug.",
+            "id": "release_plug",
+            "motion": "RELEASE",
+            "target": "seated plug in the blue socket"
+          },
+          {
+            "affordance": "visible top of the orange handle",
+            "completion": "The fingers remain open, the plug remains visibly seated and undisturbed, and the TCP is strictly more than 50 mm vertically above the visible orange handle top.",
+            "description": "With the fingers open, command one 50 mm upward retreat, then inspect the TCP-to-handle-top height in current views. Raise farther if needed to exceed a 50 mm vertical gap, aiming for at least 55 mm.",
+            "id": "retreat_open_hand",
+            "motion": "RETREAT",
+            "target": "seated plug in the blue socket"
+          }
+        ],
+        "success": false,
+        "success_diagnostics": {
+          "criteria": {
+            "angular_rest": {
+              "operator": "<",
+              "passed": false,
+              "threshold": 0.1,
+              "unit": "rad/s",
+              "value": 0.3665925587124559
+            },
+            "gripper_open": {
+              "operator": ">",
+              "passed": true,
+              "threshold": 0.06,
+              "unit": "m",
+              "value": 0.07790349921265372
+            },
+            "insertion_depth": {
+              "operator": "<",
+              "passed": true,
+              "threshold": 0.002,
+              "unit": "m",
+              "value": 9.463477971233258e-06
+            },
+            "linear_rest": {
+              "operator": "<",
+              "passed": true,
+              "threshold": 0.02,
+              "unit": "m/s",
+              "value": 0.006143800493284873
+            },
+            "retreat_clearance": {
+              "operator": ">",
+              "passed": true,
+              "plug_top_height_m": 0.09699026916170006,
+              "required_tcp_height_m": 0.14699026916170005,
+              "tcp_height_m": 0.18402434118658936,
+              "threshold": 0.05,
+              "unit": "m",
+              "value": 0.0870340720248893
+            },
+            "shaft_fits": {
+              "operator": "<",
+              "passed": true,
+              "threshold": 0.013,
+              "unit": "m",
+              "value": 0.012714424426044823
+            },
+            "tip_centered": {
+              "operator": "<",
+              "passed": true,
+              "threshold": 0.004,
+              "unit": "m",
+              "value": 0.0027144244260448283
+            },
+            "upright": {
+              "operator": ">",
+              "passed": true,
+              "threshold": 0.9945218953682733,
+              "unit": "cosine",
+              "value": 0.9999967395081863
+            }
+          },
+          "failed_criteria": [
+            "angular_rest"
+          ],
+          "scene": "plug_insert",
+          "success": false
+        },
+        "task": "Securely grasp the orange-handled plug on the gray stand, lift it upward by 50 mm (5 cm) before lateral transport with its pin clear of the tall blue socket, and insert its silver cylindrical pin fully into the black bore, then release it and retreat with open fingers until the TCP is more than 50 mm above the plug's top (aim for 55 mm), leaving the plug seated and undisturbed.",
+        "video_path": "",
+        "z_floor_m": 0.025
+      }
+    }
+  ]
+}
