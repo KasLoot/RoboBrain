@@ -25,6 +25,7 @@ from PIL import Image
 
 from core.config import load_yaml, resolve_vlm_config
 from core.sim.mujoco_session import MujocoSession
+from core.sim.mujoco_success import PLUG_MIN_INSERTION_M
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -65,7 +66,12 @@ class _SnapshotSession(MujocoSession):
         self._reading = False
         self.observation_identity = None
         self.artifacts = runtime._run_artifacts
+        self.insertion_sequence = runtime._plug_sequence
         self.audit_context = {}
+        self._release_guard = None
+        self._release_approval = None
+        self._current_control_id = None
+        self._control_context = {'stage': 'INITIALIZATION', 'source': 'system', 'carry_established': False}
         self._refresh()
 
     def _check(self):
@@ -100,7 +106,11 @@ class _SnapshotSession(MujocoSession):
         self._refresh()
         self._reading = True
         try:
-            return super().success_diagnostics()
+            diagnostics = super().success_diagnostics()
+            if self.insertion_sequence is not None:
+                self._observe_insertion()
+                diagnostics = self.insertion_sequence.supplement(diagnostics)
+            return diagnostics
         finally:
             self._reading = False
 
@@ -112,9 +122,72 @@ class _SnapshotSession(MujocoSession):
         finally:
             self._reading = False
 
+    def set_control_context(self, *, stage, source, carry_established):
+        self._control_context = {'stage': stage, 'source': source, 'carry_established': carry_established}
+
+    def authorize_release(self, *, stage, source, carry_established):
+        if self._release_guard is None:
+            return
+        self._release_approval = None
+        self.set_control_context(stage=stage, source=source, carry_established=carry_established)
+        decision = self._release_guard(self, stage=stage, source=source, carry_established=carry_established)
+        self._check()
+        from core.sim.release_guard import ReleaseNotQualified
+        if not isinstance(decision, dict) or decision.get('verdict') not in ('HALF_INSERTED_HELD', 'SUPPORTED_SOURCE_REGRASP'):
+            raise ReleaseNotQualified('UNCERTAIN', 'Release verifier did not provide an explicit qualification')
+        if decision['verdict'] == 'SUPPORTED_SOURCE_REGRASP' and (str(stage).upper() != 'GRASP' or carry_established):
+            raise ReleaseNotQualified('UNSAFE', 'Source regrasp exemption is unavailable after carrying')
+        self._release_approval = {'identity': (self.generation, self.attempt_id, self._current_control_id),
+                                  'decision': decision}
+
+    def _check_release_grasp(self):
+        self._refresh()
+        if self._control_context['carry_established']:
+            from core.runners.real import GraspLost
+            width = float(super().get_gripper_position()[0])
+            threshold = float(self.runtime.config.get('empty_width_m', .005))
+            if float(self.data.ctrl[self._gripper]) < 1 and width <= threshold:
+                raise GraspLost(token='RELEASE', stage=self._control_context['stage'],
+                    source=self._control_context['source'], measured_width_m=width, empty_width_m=threshold)
+
     def control_gripper(self, close):
         self._refresh()
-        return super().control_gripper(close)
+        if not close and self._release_guard is not None:
+            self._check_release_grasp()
+            identity = (self.generation, self.attempt_id, self._current_control_id)
+            if not self._release_approval or self._release_approval['identity'] != identity:
+                # Includes the controller's internal empty-GRASP reopening path.
+                self.authorize_release(**self._control_context)
+            self._check_release_grasp()
+            decision = self._release_approval['decision']
+            if decision.get('verdict') == 'HALF_INSERTED_HELD':
+                # Same-generation physics continues during the provider request.
+                # Re-measure observed RGB-D at dispatch; old depth cannot authorize
+                # a release after withdrawal/slip, even if width still looks held.
+                from core.sim.visual_insertion import estimate_insertion
+                from core.sim.release_guard import ReleaseNotQualified
+                observation = self.get_observation()
+                measured = estimate_insertion(observation)
+                self.artifacts.append('release-verification.jsonl', {
+                    'event': 'release_dispatch_depth_checked', 'check_id': decision.get('check_id'),
+                    'observation': observation['simulation_snapshot'], 'measurement': measured})
+                if not measured['qualified']:
+                    self._release_approval = None
+                    raise ReleaseNotQualified('UNCERTAIN', 'Fresh dispatch RGB-D does not confirm 25 mm insertion',
+                        check_id=decision.get('check_id'), observation=observation['simulation_snapshot'])
+            self._check_release_grasp()
+            self._release_approval = None
+            self._observe_insertion(token='RELEASE', stage=self._control_context['stage'], boundary='before_gripper_open')
+        try:
+            result = super().control_gripper(close)
+            if not close and self._release_guard is not None:
+                self._refresh()
+                self._observe_insertion(token='RELEASE', stage=self._control_context['stage'], boundary='after_gripper_open')
+            return result
+        except BaseException as exc:
+            if not close and self.insertion_sequence is not None:
+                self.insertion_sequence.cancel_release(exc)
+            raise
 
     def update_desired_ee_pose(self, pose):
         self._refresh()
@@ -155,11 +228,20 @@ class _SnapshotSession(MujocoSession):
             'success': success, 'end_reason': end_reason, 'execution_generation': self.generation,
             'attempt_id': self.attempt_id})
 
+    def _observe_insertion(self, *, token=None, stage=None, boundary='observation'):
+        if self.insertion_sequence is None:
+            return None
+        return self.insertion_sequence.observe(self.model, self.data, self.observation_identity,
+            stage=stage or self.audit_context.get('stage', ''), token=token, boundary=boundary)
+
     def record_control_start(self, **fields):
-        self._check()
+        self._refresh()
         control_id = uuid4().hex
+        self._current_control_id = control_id
+        self._release_approval = None
+        process = self._observe_insertion(token=fields.get('token'), stage=fields.get('stage'), boundary='before_control')
         self.artifacts.append('robot-trajectory.jsonl', {'event': 'control_started', 'control_id': control_id,
-                              **fields, 'pose': self.runtime._robot_pose()})
+                              **fields, 'pose': self.runtime._robot_pose(), 'insertion_process': process})
         with self.runtime._artifact_lock:
             if self.artifacts is self.runtime._run_artifacts:
                 self.runtime._record_context.update(executing=str(fields.get('token', '')), status='Executing')
@@ -167,9 +249,15 @@ class _SnapshotSession(MujocoSession):
 
     def record_control_end(self, control_id, **fields):
         # Do not generation-check: a stopped/interrupted control still needs its final measured pose.
+        process = None
+        try:
+            self._refresh()
+            process = self._observe_insertion(token=fields.get('token'), stage=fields.get('stage'), boundary='after_control')
+        except ExecutionCancelled:
+            pass  # The old robot boundary pose below remains valid; never sample a reset scene.
         self.artifacts.append('robot-trajectory.jsonl', {'event': 'control_finished', 'control_id': control_id,
                               **fields, 'execution_generation': self.generation, 'attempt_id': self.attempt_id,
-                              'pose': self.runtime.final_control_pose(self.generation)})
+                              'pose': self.runtime.final_control_pose(self.generation), 'insertion_process': process})
 
     def load_runner_checkpoint(self):
         return self.runtime.load_runner_checkpoint(self.generation, self.attempt_id)
@@ -207,6 +295,8 @@ class ServiceRuntime:
             config_path or ROOT / 'configs/robot_mujoco_plug.yaml')
         self.vlm_backend = vlm_backend
         self._session = MujocoSession(self.config, gui=False)
+        from core.sim.continuous_physics import configure_continuous_physics
+        self._contact_settings = configure_continuous_physics(self._session.model, self.config)
         self._session.model.vis.global_.offwidth = max(1920, 3 * (self._session.resolution + 32) - 32)
         self._session.model.vis.global_.offheight = max(1080, 3 * (self._session.resolution + 32) - 32)
         self.model = self._session.model
@@ -280,6 +370,10 @@ class ServiceRuntime:
             run_id = datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S.%fZ') + '-' + uuid4().hex[:8]
             directory = self._run_root / run_id
             self._run_artifacts = RunArtifacts(directory)
+            from core.sim.plug_sequence import PlugInsertionSequence
+            self._plug_sequence = (PlugInsertionSequence(self._run_artifacts,
+                                  empty_width_m=self.config.get('empty_width_m', .005))
+                                  if self.config.get('scene') == 'plug_insert' else None)
             eligible = [g for g in self._identities if g <= generation]
             identity = self._identities[max(eligible)] if eligible else {}
             self._run_info = {**identity, 'run_id': run_id, 'directory': str(directory), 'minimum_generation': generation,
@@ -292,6 +386,10 @@ class ServiceRuntime:
                 'show_harness_video': 'show-harness-video', 'robot_trajectory': 'robot-trajectory.jsonl',
                 'show_harness_vlm': 'show-harness-vlm', 'timing_mode': 'continuous',
                 'global_camera': 'lab_overview', 'global_resolution': [1920, 1080],
+                'continuous_physics': self._contact_settings,
+                'plug_insertion_process': ({'minimum_held_insertion_m': PLUG_MIN_INSERTION_M,
+                    'audit': 'plug-insertion-sequence.jsonl', 'ground_truth_used_for': 'evaluation_only'}
+                    if self._plug_sequence is not None else None),
                 'trajectory_schema': {'tcp_frame': 'world', 'tcp_pose': ['x_m', 'y_m', 'z_m', 'qx', 'qy', 'qz', 'qw'],
                     'arm_joint_order': [f'joint{i}' for i in range(1, 8)], 'arm_qpos_units': 'radians',
                     'gripper_position_units': 'metres'}})
@@ -712,6 +810,9 @@ class ServiceRuntime:
                                                  'observation': session.audit_context.get('observation', session.observation_identity)},
                                 check=lambda: self.check_execution(generation, attempt))
         log_root = session.artifacts.directory / 'show-harness-logs'
+        if cfg.get('scene') == 'plug_insert':
+            from core.sim.release_guard import VisualReleaseGuard
+            session._release_guard = VisualReleaseGuard(guarded, artifacts, max_tokens=4096)
         logger = EpisodeLogger(log_root / attempt / f'generation_{generation}', task_id=0,
                                variant=cfg['vlm_backend'], video_fps=2,
                                record_video=False, primary_camera='front')

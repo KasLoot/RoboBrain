@@ -42,6 +42,8 @@ A camera pose can change while monitoring. Saved task configuration, dimensions,
 
 Only two simultaneous monitor views are supported initially. Both are runtime free cameras; neither needs to be predefined in XML. The controller's calibrated wrist/front/side cameras are separate and remain unchanged by monitor-camera controls.
 
+The current plug configuration requires at least 25 mm insertion while held before release. Its visual check uses registered RGB-D measurements and VLM confirmation; see [controlled insertion](controlled-half-insertion.md). Use the updated `configs/robot_mujoco_plug.yaml`, not a frozen configuration from an older recorded run. Recreating the MuJoCo starter updates progress wording; existing saved tasks are not overwritten.
+
 ## Task Builder and visual criteria
 
 In **Create with AI**, choose MuJoCo inputs, connect the virtual cameras, and capture scene images. Captured images become explicit saved assets with view/episode provenance. Select which images can be used as specialist references, then generate and review the draft. The builder can generate both outcome specialists and independent progress nodes.

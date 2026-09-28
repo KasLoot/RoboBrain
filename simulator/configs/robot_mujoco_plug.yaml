@@ -1,13 +1,18 @@
+# Modified in RoboBrain: controlled half insertion and continuous contact settings.
 # Same planner -> single VLM action -> physics -> observation workflow as pick/place.
+# Task/prompt wording guides actions; it is not an enforcement gate or object-state telemetry.
 defaults:
   - robot_mujoco.yaml
 scene: plug_insert
-task: Securely grasp the orange-handled plug on the gray stand, lift it upward by 50 mm (5 cm) before lateral transport with its pin clear of the tall blue socket, and insert its silver cylindrical pin fully into the black bore, then release it and retreat with open fingers until the TCP is more than {retreat_clearance_mm} mm above the plug's top (aim for {retreat_target_mm} mm), leaving the plug seated and undisturbed.
+task: Securely grasp the orange handle around its side-body center on the gray stand, lift the plug upward by 50 mm (5 cm) before lateral transport with its pin clear of the tall blue socket, and insert at least 25 mm of its 50 mm-long silver cylindrical pin into the actual black bore WHILE STILL HELD. After verifying this roughly half-inserted or deeper engagement, intentionally release the plug; the remaining insertion may settle under gravity. Verify that the plug becomes fully seated, then retreat with open fingers until the TCP is more than {retreat_clearance_mm} mm above the plug's top (aim for {retreat_target_mm} mm), leaving it seated and undisturbed.
 max_steps: 200
 log_dir: rollouts/mujoco_plug
 visual_history_steps: 1 # Previous RGB views + metric depth text + executed action and measured effect; 0 disables.
 wrist_depth: {representation: text, grid_rows: 32, grid_cols: 32, near_m: 0.0, far_m: 0.30}
 plug_success: {retreat_clearance_m: 0.05}
+# Service-only solver setting; the standalone baseline keeps its original solver.
+# Reduces soft-contact creep during VLM waits; does not change friction or attach the plug.
+continuous_physics: {cone: elliptic, impratio: 100, noslip_iterations: 0}
 fine_step_m: 0.002 # Legacy unsuffixed MV_* commands remain available at this distance.
 cartesian_motion:
   translation_steps_m: {small: 0.002, medium: 0.01, large: 0.05}
@@ -62,7 +67,7 @@ cartesian_observation_context: |
   the table. Depth and height can overlap visually; cross-check both external views
   and the wrist views. Orthographic depth does not change apparent size. Use the external views
   to bring an object outside Wrist into view and to check height.
-  The plug has a broad orange handle and a silver cylindrical pin, 20 mm in diameter.
+  The plug has a broad orange handle and a silver cylindrical pin, 50 mm long and 20 mm in diameter.
   The blue socket has an open BLACK cylindrical bore, nominally 26 mm wide and 50 mm
   deep. Black identifies the bore interior; the opening is not filled by a solid cap.
   The pin and bore are round, so no keyed yaw alignment is required. Z rotations
@@ -97,9 +102,13 @@ cartesian_observation_context: |
   make a SMALL correction when visually justified, otherwise STOP. Do not use DONE
   or new subgoals to escape an unresolved grasp. An empty close proves neither
   "too high" nor "overshot"; re-evaluate X, Y, and Z from fresh images.
-  Nonzero gripper width alone does not establish a centered, secure grasp. Edge
-  contact cannot satisfy grasp-stage DONE; visually verify secure contact around
-  the handle body before completing grasp or starting lift/transport.
+  GRASP DONE requires loaded contact by BOTH opposing fingertip pads against the broad
+  handle sidewalls near the side-body center, with the handle staying located between
+  the pads after closure and settling. Inspect CURRENT external views for pad/body
+  contact and any contact gap or slip. Closed fingers, nonzero gripper width, top-edge
+  pinching, or a small silhouette overlap alone do not establish this grasp. Use the
+  16 mm top-face-to-body-center relationship above to avoid a shallow edge grasp.
+  Recheck secure contact before completing grasp or starting lift/transport.
   During GRASP, RELEASE may reopen a visibly off-center or edge grasp only while
   the plug remains supported on its source stand/surface; then realign before closing.
   After a secure handle-body grasp, plan a separate LIFT milestone of 50 mm (5 cm)
@@ -137,15 +146,21 @@ cartesian_observation_context: |
   and before each downward step, recheck D plus Front and Right Side.
   Before entry, visible lateral offset or an unlocalized rim vetoes MV_DOWN and DONE
   for transport/alignment or insertion. With the tip above and clear of the rim, make
-  a justified SMALL lateral correction. If the hand or pin hides the rim, take a safe
-  SMALL upward clearance move to inspect, then realign. Earlier visible rim positions
+  a justified SMALL lateral correction. If neither CURRENT external view localizes
+  entry because the hand or pin hides it, take a justified SMALL upward clearance move
+  to inspect, then realign. D occlusion alone does not require an upward move when
+  Front and Right Side still support entry alignment. Earlier visible rim positions
   may help against CURRENT fixed-camera landmarks, but cannot overrule current offset
   or replace the final check. STOP only when neither correction nor clearance movement
   is justified; do not repeat STOP despite a safe way to inspect.
   Use SMALL translations and tilt corrections near contact, inspecting after each.
-  Once entry is visibly established, rim occlusion is expected. Use CURRENT external
-  views, measured pose, and actual motion to judge depth; occlusion alone does not
-  require repeated withdrawal. Commanded descent or silhouette overlap proves neither
+  When CURRENT Front and Right Side support entry alignment, make the next controlled
+  SMALL downward step; do not keep lifting and lowering to seek identical oblique
+  tip/rim pixels. Once entry is visibly established, continue SMALL downward steps
+  while those views show maintained alignment, actual plug descent, and secure pad/body
+  contact, until the held insertion reaches at least 25 mm. Rim occlusion is expected;
+  it alone is not a reason to withdraw and restart alignment. Use CURRENT external
+  views, measured pose, and actual plug motion to judge depth. Commanded descent or silhouette overlap proves neither
   entry nor seating. If insertion stalls, lateral offset appears, or contact blocks
   motion, lift clear before lateral correction; do not slide against the rim, keep
   pushing, or rotate inside the bore. Compare HISTORY and CURRENT pin-tip/rim positions
@@ -154,12 +169,18 @@ cartesian_observation_context: |
   the fingers, means blockage/slippage: stop descent, lift for clearance when safe,
   verify or re-establish secure handle contact, and realign. Do not respond with more
   downward steps or declare insertion from hand motion. Hovering or resting on the rim
-  is not insertion. At the socket, release only after the pin is seated at insertion
-  depth and the plug is supported by the socket. Confirm visible seating before RELEASE,
-  using external depth/seating cues when the rim is occluded; a pin tip still above
-  the rim is hovering. Do not
-  release expecting gravity to finish insertion.
-  Plan a distinct final RETREAT stage after seated release: withdraw the OPEN, empty
+  is not insertion. INSERT/PLACE DONE and intentional destination RELEASE require at
+  least 25 mm of the 50 mm pin already inside the actual bore WHILE STILL HELD: roughly
+  half the pin or deeper, with no more than 25 mm of silver shaft exposed above the rim.
+  Check the exposed length against the known pin/handle dimensions in CURRENT Front
+  and Right Side, using D when informative. The shaft must actually enter the bore;
+  a parallel shaft behind the housing, a hidden tip, or projected overlap is not entry.
+  Maintain secure opposing pad/body contact until this engagement is established.
+  Then intentionally RELEASE. The remaining depth may settle under gravity after this
+  controlled release; full seating while held is not required. Reobserve to verify
+  complete seating and rest before final DONE. Unclear engagement means inspect or
+  correct it, not release from above the opening or rely on a falling pin to find it.
+  Plan a distinct final RETREAT stage after controlled release: withdraw the OPEN, empty
   hand, not the plug. This is separate from the initial post-grasp LIFT. First choose
   one MV_UP_LARGE (50 mm by default), then reobserve. RETREAT completion must explicitly
   require open fingers, an undisturbed seated plug, and the TCP strictly MORE THAN
@@ -181,6 +202,6 @@ cartesian_observation_context: |
   with D. Distinguish observed plug motion from TCP motion; unsupported alignment calls
   for correction or inspection instead.
   Plan separate visual milestones for grasp, the explicit measured 50 mm lift with
-  transport clearance, transport/alignment, insertion, release,
+  transport clearance, transport/alignment, at least half insertion while held, controlled release/settling,
   and final RETREAT with its explicit TCP-to-plug-top clearance and undisturbed seating.
   DONE completes only the current stage when its visible goal is met.

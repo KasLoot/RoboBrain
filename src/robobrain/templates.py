@@ -1,4 +1,8 @@
-"""Editable simulation task starter; visual criteria require deployment calibration."""
+"""Editable visual task guidance, not control enforcement or ground-truth telemetry.
+
+The release milestone describes an intermediate arrangement. Final success stays a
+CURRENT-image judgment and does not require reconstructing the release history.
+"""
 import json
 from .monitor import HERE
 from .workspace import Task, new_id
@@ -9,7 +13,11 @@ def mujoco_plug_task(name='MuJoCo plug insertion', store=None):
     config.update(base_url='https://api.openai.com/v1', model='gpt-6-luna', reasoning_effort='low', max_tokens=1024, max_in_flight=24)
     context = ('Monitor a Franka Panda moving an orange-handled plug with a silver cylindrical pin '
                'from a gray stand into the black bore of a tall blue socket. The pin and bore are round; '
-               'yaw alone is not an insertion failure. Judge only CURRENT camera images. '
+               'yaw alone is not an insertion failure. The silver pin is 50 mm long and 20 mm wide. '
+               'The intended controller sequence inserts at least 25 mm into the actual bore while '
+               'the plug is still held, then intentionally releases it; the remainder may settle '
+               'under gravity. This explains intermediate arrangements, not an extra final-success '
+               'history requirement. Judge only CURRENT camera images. '
                'Camera views can be moved, so use physical relationships rather than fixed image coordinates. '
                'The COMPLETE reference has approximately 117 mm of TCP-to-handle-top clearance. That is a labeled reference example, NOT the minimum required gap; CURRENT needs only more than 50 mm (about 1.6 times the 32 mm handle height). A smaller gap than the reference can therefore still be successful. Never copy the reference measurement into CURRENT. The blue block is the DESTINATION SOCKET, never the source stand. The gray low base with a gray cylindrical peg is the SOURCE STAND. Its gray peg remains after the orange plug is lifted and is not the plug. Insertion fills the black bore, so the pin and opening may become hidden beneath the orange handle. If visibility is insufficient, abstain. No simulator success flags are provided.')
     specs = [
@@ -42,8 +50,9 @@ def mujoco_plug_task(name='MuJoCo plug insertion', store=None):
         ('GRASPED', 'Grasped', 'The plug remains at the source stand and opposing fingertip pads are visibly closed against both sides of the orange handle, with no visible contact gap. Merely surrounding or aligning with the handle is insufficient. If closure or contact is obscured, select UNKNOWN. This node describes a visible clamp, not proven grasp strength.'),
         ('LIFTED_CLEAR', 'Lifted clear', 'Plug is securely carried with its pin clear of the stand and blue socket top, but it is not yet aligned above the socket bore.'),
         ('ALIGNED_ABOVE_SOCKET', 'Aligned above socket', 'Held pin is visibly centered over the bore in both views with its tip above the bore rim; it has not entered.'),
-        ('INSERTING', 'Inserting', 'Pin has visibly entered the bore but the handle has not reached its fully seated supported position.'),
-        ('SEATED_HELD', 'Seated, still held', 'Pin is fully seated and the socket supports the handle, but fingers still touch or enclose the handle.'),
+        ('INSERTING', 'Entering the bore, still held', 'Closed fingertip pads still hold the handle and the pin has visibly entered the actual bore, but more than 25 mm of its 50 mm silver shaft remains above the rim. Projected overlap, a hidden tip, or a pin parallel behind the housing is not entry. Use UNKNOWN if engagement or exposed length cannot be judged.'),
+        # Preserve the saved node ID; its label/criteria now express the requested release milestone.
+        ('SEATED_HELD', 'Half inserted, still held', 'Opposing fingertip pads still hold the handle and at least 25 mm of the 50 mm pin is visibly inside the actual bore, with no more than 25 mm of silver shaft above the rim. Deeper or fully seated engagement while held also fits. Verify actual bore entry from the CURRENT external views, not a parallel shaft behind the housing or projected overlap. Use UNKNOWN if contact, engagement, or depth is unclear.'),
         ('RELEASED', 'Released', 'Plug remains seated; fingers are open and separated, but the TCP is not visibly more than 50 mm above handle top.'),
         ('RETREATED', 'Retreated', 'Plug remains seated and undisturbed; fingers are open and TCP is visibly more than 50 mm above the handle top.')]
     sources = []
@@ -57,7 +66,7 @@ def mujoco_plug_task(name='MuJoCo plug insertion', store=None):
                                 'simulation': {'base_url': 'http://127.0.0.1:8766', 'auto_stop': 'off', 'stale_after_s': 5.},
                                 'progress': {'enabled': True, 'name': 'Plug insertion progress', 'max_tokens': 1024,
                                              'nodes': [{'id': key, 'label': label, 'criteria': criterion} for key,label,criterion in nodes],
-                                             'blocks': [{'id': 'progress_context', 'type': 'text', 'text': context + '\nSelect UNKNOWN for ambiguous, occluded or dropped states. When the plug is on the stand, require visible opposing pad contact for GRASPED; open fingers surrounding the handle remain ON_STAND. Do not infer grasping from the expected task sequence or a grasp-ready pose. Nodes describe arrangements, not percentages.'},
+                                             'blocks': [{'id': 'progress_context', 'type': 'text', 'text': context + '\nSelect UNKNOWN for ambiguous, occluded or dropped states. When the plug is on the stand, require visible opposing pad contact for GRASPED; open fingers surrounding the handle remain ON_STAND. Do not infer grasping from the expected task sequence or a grasp-ready pose. INSERTING is held entry less than halfway; SEATED_HELD retains its saved ID but means at least half inserted while still held, including deeper held insertion. Estimate exposure using the known 50 mm pin and 32 mm handle; hidden silver alone is not proof of entry. Released settling can be UNKNOWN until seating is visible. Do not use an inferred release history as an outcome vote. Nodes describe arrangements, not percentages.'},
                                                         {'id': 'progress_view1', 'type': 'camera', 'source': 'camera1', 'alias': 'CURRENT overview'},
                                                         {'id': 'progress_view2', 'type': 'camera', 'source': 'camera2', 'alias': 'CURRENT inspection'}]}}).model_dump()
 

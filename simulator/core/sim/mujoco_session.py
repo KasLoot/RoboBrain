@@ -1,3 +1,4 @@
+# Modified in RoboBrain: expose robot-camera calibration for observed RGB-D checks.
 """MuJoCo Panda session implementing the existing Cartesian robot/session contract."""
 from pathlib import Path
 from collections.abc import Mapping
@@ -269,9 +270,16 @@ class MujocoSession:
             obs["extra_views"]["wrist_depth"] = frames["wrist_depth"]
             camera = self.data.camera("wrist")
             sightline = -camera.xmat.reshape(3, 3)[:, 2]
+            rotation = camera.xmat.reshape(3, 3)
+            obs["wrist_camera_axes"] = {
+                "image_right": rotation[:, 0].tolist(),
+                "image_down": (-rotation[:, 1]).tolist(),
+                "sightline": sightline.tolist(),
+            }
             obs["wrist_depth_calibration"] = {
                 "near_m": self.depth_near_m, "far_m": self.depth_far_m,
                 "tcp_depth_m": float(np.dot(self.data.site(self._tcp).xpos - camera.xpos, sightline)),
+                "vertical_fov_deg": float(self.model.camera('wrist').fovy[0]),
             }
             obs["wrist_depth_m"] = raw_depth
             if self.depth_representation == "text":

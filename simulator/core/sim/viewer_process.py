@@ -18,7 +18,7 @@ import time
 ROOT = Path(__file__).resolve().parents[2]
 MAX_PACKET_BYTES = 4 * 1024 * 1024
 MODEL_KEYS = ('scene', 'plug_success', 'wrist_depth', 'camera_resolution', 'motion_s',
-              'settle_s', 'ik_damping', 'reset_qpos', 'gripper_color')
+              'settle_s', 'ik_damping', 'reset_qpos', 'gripper_color', 'continuous_physics')
 
 
 def _packet(value):
@@ -205,6 +205,8 @@ def _child_main():
             raise ValueError('Native viewer requires its scene initialization packet')
         config = {key: initial['config'][key] for key in MODEL_KEYS if key in initial['config']}
         session = ViewOnlySession(config, gui=False)
+        from core.sim.continuous_physics import configure_continuous_physics
+        configure_continuous_physics(session.model, config)
         state_spec = mujoco.mjtState.mjSTATE_INTEGRATION
         state_size = mujoco.mj_stateSize(session.model, state_spec)
 

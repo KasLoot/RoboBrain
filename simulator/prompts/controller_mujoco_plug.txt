@@ -1,3 +1,4 @@
+# Modified in RoboBrain: controlled half-depth release and visual grasp guidance.
 TASK: {task}
 STAGE: {stage}
 TARGET: {target}
@@ -99,11 +100,16 @@ GRASP AND CONTACT:
   justified; otherwise STOP. Do not use DONE or new subgoals to escape an unresolved grasp.
 - An empty close establishes neither "too high" nor "overshot". Re-evaluate X, Y, and Z
   independently in fresh images before choosing the next correction.
-- Nonzero gripper width alone does not prove a centered, secure grasp. Edge contact cannot
-  satisfy grasp-stage DONE. Visually verify secure handle contact before lift/transport.
+- GRASP DONE requires loaded contact by BOTH opposing fingertip pads against the broad
+  handle sidewalls near the side-body center, with the handle staying located between
+  the pads after closure and settling. Inspect CURRENT external views for pad/body contact,
+  contact gaps, or slip. Closed fingers, nonzero width, a top-edge pinch, or small silhouette
+  overlap alone do not establish this grasp. Use the 16 mm top-face-to-body-center relation
+  above to avoid a shallow edge grasp. Recheck secure contact before lift/transport.
 - During GRASP, RELEASE may reopen a visibly off-center or edge grasp only while the
   plug remains supported on its source stand/surface; then realign before closing.
-  Otherwise RELEASE only when the plug is seated and supported at its destination.
+  At the destination, intentionally RELEASE only after the held pin has at least 25 mm
+  of real bore engagement, as defined below; full seating while held is not required.
 
 LIFT BEFORE TRANSPORT:
 - After a secure handle-body grasp, complete a separate 50 mm (5 cm) upward lift
@@ -125,7 +131,7 @@ LIFT BEFORE TRANSPORT:
   not an automatic lift or a multi-action response.
 
 PIN INSERTION:
-- The orange handle carries a silver cylindrical pin, 20 mm in diameter. The blue socket
+- The orange handle carries a silver cylindrical pin, 50 mm long and 20 mm in diameter. The blue socket
   contains an open black cylindrical bore, nominally 26 mm wide and 50 mm deep.
   The black region is the bore interior, not a solid cap or a surface to place the plug on.
 - Complete the 50 mm lift and verify transport clearance first. Align the actual silver pin axis/tip
@@ -149,16 +155,22 @@ PIN INSERTION:
   D plus Front/Right Side; an earlier coarse alignment may no longer be sufficient.
 - Before entry, visible lateral offset or an unlocalized rim vetoes MV_DOWN and DONE
   for transport/alignment or insertion. While the tip is clear above the rim, make a
-  SMALL lateral correction when its direction is justified. If the hand or pin hides
-  the rim, use a safe SMALL upward move to restore clearance and inspect, then realign.
-  A previously visible rim may help locate it against CURRENT fixed-camera landmarks;
+  SMALL lateral correction when its direction is justified. If neither CURRENT external
+  view localizes entry because the hand or pin hides it, use a justified SMALL upward
+  clearance move to inspect, then realign. D occlusion alone does not require lifting
+  when Front and Right Side still support entry alignment. A previously visible rim
+  may help locate it against CURRENT fixed-camera landmarks;
   it cannot override current offset or replace the final check. Use STOP only when no
   correction or clearance move is justified, rather than repeating it despite a safe lift.
 - Choose LARGE only for clear travel, MEDIUM for approach, and SMALL near the rim/contact.
   Correct translation and tilt in separate decisions, inspecting fresh images each time.
-  Once entry is visibly established, rim occlusion is expected: use current external
-  views, measured pose, and actual motion to judge insertion depth. Occlusion alone
-  does not require repeated withdrawal. A commanded descent or silhouette overlap is
+  When CURRENT Front and Right Side support entry alignment, make the next controlled
+  SMALL downward step. Do not repeatedly lift and lower to seek coincident oblique
+  tip/rim pixels. Once entry is visibly established, continue SMALL downward steps while
+  those views show maintained alignment, actual plug descent, and secure pad/body contact,
+  until at least 25 mm is engaged while held. Rim occlusion is expected; occlusion alone
+  does not justify withdrawing and restarting alignment. Use CURRENT external views,
+  measured pose, and actual plug motion to judge depth. A commanded descent or silhouette overlap is
   not evidence of entry or seating. If motion stalls, lateral offset appears, or contact
   blocks insertion, lift clear before lateral correction; do not slide against the rim,
   keep pushing, or rotate inside the bore.
@@ -168,12 +180,18 @@ PIN INSERTION:
   shifts upward between the fingers, the plug is blocked/slipping: stop descent, lift
   for clearance when safe, verify or re-establish secure handle contact, and realign.
   Do not compensate for slippage with more downward steps or claim insertion from hand motion.
-- A plug hovering over the opening or resting on its rim is not inserted. Complete insertion
-  only when the pin is seated at insertion depth and the plug is supported by the socket.
-  Confirm visible seating before RELEASE, using external depth/seating cues when the rim
-  is occluded. A pin tip still above the rim is hovering. Do not release in the expectation
-  that gravity will finish insertion.
-  Release at the destination only after seating, then complete the distinct RETREAT stage below.
+- INSERT/PLACE DONE and intentional destination RELEASE require at least 25 mm of the
+  50 mm pin already inside the actual black bore WHILE STILL HELD: roughly half the pin
+  or deeper, with no more than 25 mm of silver shaft exposed above the rim. Check this
+  exposed length against the known pin/handle dimensions in CURRENT Front and Right Side;
+  use D when informative. The shaft must actually enter the bore, not run parallel behind
+  the housing. A hidden tip, projected overlap, hovering, or resting on the rim is insufficient.
+  Maintain secure opposing pad/body contact until this engagement is established.
+- Once that held engagement is visible, intentionally RELEASE. The remaining insertion
+  may settle under gravity after this controlled release; full seating while held is not
+  required. Reobserve to verify complete seating and rest, then complete RETREAT below.
+  If engagement is unclear, inspect or correct it; do not release above the opening and
+  expect a falling pin to find the bore. The final task still requires full seating.
 
 RETREAT AFTER RELEASE:
 - RETREAT is the final withdrawal of the OPEN, empty hand from the seated plug. It is
@@ -196,6 +214,10 @@ RETREAT AFTER RELEASE:
 ATTENTION:
 {mem_text_rules}
 - DONE only when the current "DONE WHEN" condition is already visibly supported.
+- For INSERT/PLACE, the held-engagement milestone above defines readiness for controlled
+  release: at least 25 mm inside the actual bore. Do not require full seating while held
+  merely because a stage description says "insert" or "seat"; final task completion still
+  requires full seating after release and the open-hand retreat.
 - During RETREAT, the explicit TCP-to-plug-top clearance and open, undisturbed seating
   checks override vague stage goals such as "clear gap" or "hand withdrawn". Do not
   use the completed initial LIFT as evidence that final RETREAT is complete.

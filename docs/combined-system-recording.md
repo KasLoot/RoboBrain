@@ -140,6 +140,8 @@ Stop monitoring and allow finalization before treating RoboBrain's final video f
 
 ## Acceptance scope
 
+Update, 27 September 2026: the plug controller must establish at least half-pin insertion while held before release. The [controlled insertion report](controlled-half-insertion.md) supersedes the earlier exclusion of this particular sequence requirement. Other insertion-quality measurements remain reported separately.
+
 The user accepts post-success status variation for a workflow that ends the completed episode at a reset boundary. Stable indefinite display on an unchanged successful scene is not a requirement of this recording work. Automatic reset on success still requires separate implementation.
 
 Optimizing insertion quality is also outside this task's scope. The earlier live report retains the observed recovery action, physical-success measurements, and outcome/progress variation as historical facts. They do not change the recording requirements: complete run organization, measured trajectory, model-call auditability, camera identity, and honest timing metadata. The [recording validation](recording-validation.md) documents the completed live trial and revised recording checks.

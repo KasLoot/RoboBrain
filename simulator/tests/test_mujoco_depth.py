@@ -1,3 +1,4 @@
+# Modified in RoboBrain: test the camera calibration exposed with registered depth.
 """Metric wrist depth encoding and render-mode isolation, without graphics or API calls."""
 import importlib.util
 import json
@@ -157,7 +158,7 @@ class DepthRenderModeTests(unittest.TestCase):
         from core.sim.mujoco_session import MujocoSession
 
         self.session = object.__new__(MujocoSession)
-        self.session.model = object()
+        self.session.model = SimpleNamespace(camera=lambda name: SimpleNamespace(fovy=np.array([80.])))
         self.session.data = object()
         self.session._renderer = _Renderer()
         self.session.depth_near_m = 0.0

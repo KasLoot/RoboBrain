@@ -32,6 +32,8 @@ The original decision-synchronous baseline remains independently runnable:
 
 Add `--smoke-test` for scripted baseline camera/Cartesian/gripper checks without model requests. The baseline intentionally advances simulation only during actions. Continuous service mode changes physical behavior during cloud waits and requires supervised task-quality validation before relying on its results.
 
+The plug controller now requires at least **25 mm of the 50 mm pin inserted while held before release**. See [controlled insertion validation](../docs/controlled-half-insertion.md) for the release check, solver settings, and the new recorded demonstration.
+
 ## Runtime and API
 
 `core/sim/service_runtime.py` owns a single wall-clock-paced physics thread. Controllers use private coherent observation snapshots and submit generation-checked trajectories. A separate render thread produces atomic two-camera bundles from one copied state. Rendering, video encoding, VLM calls, GUI synchronization and IK never execute on the physics thread.

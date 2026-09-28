@@ -1,0 +1,196 @@
+{
+  "run_directory": "/home/yuxin/workspace/RoboBrain/runs/half-insertion-validation-20260927T182859Z/robobrain/runs/20260927T182900.645562Z-48a08b93",
+  "required_insertion_mm": 25.0,
+  "measured_insertion_before_open_mm": 29.01304363230932,
+  "held_by_both_pads_before_open": true,
+  "pad_normal_forces_n": {
+    "left_finger": 0.7999546047796086,
+    "right_finger": 0.7999810484593343
+  },
+  "gripper_width_before_open_mm": 31.998717326343574,
+  "release_control_id": "0fcc0f052066416191278ce4840589e3",
+  "gripper_width_after_open_mm": 76.61035227495493,
+  "release_sim_time_s": 998.935999990202,
+  "image_depth_check_at_request": {
+    "quality": "measured",
+    "qualified": true,
+    "reason": "Image-derived depth lower bound meets 25 mm",
+    "estimate_m": 0.029016038000583652,
+    "lower_bound_m": 0.026016038000583653,
+    "uncertainty_m": 0.003,
+    "camera_tilt_deg": 0.008939299768390134,
+    "top_gap_m": 0.05298396199941635,
+    "orange": {
+      "pixels": 74109,
+      "component_pixels": 76020,
+      "plane_fraction": 0.9749,
+      "depth_m": 0.03998178243637085,
+      "spread_m": 3.579631447792053e-05,
+      "q05_m": 0.03996388241648674,
+      "q95_m": 0.03999967873096466
+    },
+    "blue": {
+      "pixels": 4621,
+      "component_pixels": 4926,
+      "plane_fraction": 0.9381,
+      "depth_m": 0.0929657444357872,
+      "spread_m": 4.455447196960449e-06,
+      "q05_m": 0.09296351671218872,
+      "q95_m": 0.09296797215938568
+    }
+  },
+  "plane_normal_recheck_of_archived_rgbd": {
+    "quality": "measured",
+    "qualified": true,
+    "reason": "Image-derived depth lower bound meets 25 mm",
+    "estimate_m": 0.029016038000583652,
+    "lower_bound_m": 0.026016038000583653,
+    "uncertainty_m": 0.003,
+    "camera_tilt_deg": 0.008939299768390134,
+    "vertical_fov_deg": 80.0,
+    "top_gap_m": 0.05298396199941635,
+    "orange": {
+      "pixels": 74109,
+      "component_pixels": 76020,
+      "plane_fraction": 0.9749,
+      "depth_m": 0.03998178243637085,
+      "spread_m": 3.579631447792053e-05,
+      "q05_m": 0.03996388241648674,
+      "q95_m": 0.03999967873096466,
+      "normal_tilt_deg": 0.04748814090890362,
+      "plane_rms_m": 1.9437518967348665e-09
+    },
+    "blue": {
+      "pixels": 4621,
+      "component_pixels": 4926,
+      "plane_fraction": 0.9381,
+      "depth_m": 0.0929657444357872,
+      "spread_m": 4.455447196960449e-06,
+      "q05_m": 0.09296351671218872,
+      "q95_m": 0.09296797215938568,
+      "normal_tilt_deg": 0.008934999752149836,
+      "plane_rms_m": 4.0425521829126535e-09
+    }
+  },
+  "visual_verification": {
+    "audit_seq": 609,
+    "server_monotonic_ns": 4411081706249,
+    "event": "release_verification_finished",
+    "check_id": "f65d6e3ad1e04069ac4c25c1c3e96677",
+    "stage": "RELEASE",
+    "source": "vlm",
+    "carry_established": true,
+    "observation": {
+      "server_instance_id": "bb8861b0bc99499485c889efbcb53019",
+      "episode_id": "a34f198eb05546649699f38878b60d10",
+      "attempt_id": "0331dbe9f9864625b35a19dde7e38828",
+      "state_seq": 495654,
+      "sim_time_s": 992.3079999903588,
+      "captured_at_server_monotonic_ns": 4404454334982,
+      "execution_generation": 1
+    },
+    "measurement": {
+      "quality": "measured",
+      "qualified": true,
+      "reason": "Image-derived depth lower bound meets 25 mm",
+      "estimate_m": 0.029016038000583652,
+      "lower_bound_m": 0.026016038000583653,
+      "uncertainty_m": 0.003,
+      "camera_tilt_deg": 0.008939299768390134,
+      "top_gap_m": 0.05298396199941635,
+      "orange": {
+        "pixels": 74109,
+        "component_pixels": 76020,
+        "plane_fraction": 0.9749,
+        "depth_m": 0.03998178243637085,
+        "spread_m": 3.579631447792053e-05,
+        "q05_m": 0.03996388241648674,
+        "q95_m": 0.03999967873096466
+      },
+      "blue": {
+        "pixels": 4621,
+        "component_pixels": 4926,
+        "plane_fraction": 0.9381,
+        "depth_m": 0.0929657444357872,
+        "spread_m": 4.455447196960449e-06,
+        "q05_m": 0.09296351671218872,
+        "q95_m": 0.09296797215938568
+      }
+    },
+    "approved": true,
+    "verdict": "HALF_INSERTED_HELD",
+    "evidence": "The image-derived height check gives a 26.0 mm insertion lower bound. The Front, Right Side, and Angled Wrist views show the silver shaft entering the socket\u2019s black bore, while opposed finger pads remain on the orange handle."
+  },
+  "controller_steps": 100,
+  "controller_success_final_sample": false,
+  "controller_end_reason": "task_success",
+  "controller_failed_final_criteria": [
+    "angular_rest"
+  ],
+  "monitor_final_status": "ON_GOING",
+  "real_time_factor": 0.9999265216407085,
+  "recording_error": null,
+  "sequence_violations": 0,
+  "videos": {
+    "show-harness-video/wrist_insert.mp4": {
+      "frames": 14652,
+      "width": 512,
+      "height": 512
+    },
+    "show-harness-video/wrist.mp4": {
+      "frames": 14652,
+      "width": 512,
+      "height": 512
+    },
+    "show-harness-video/wrist_depth.mp4": {
+      "frames": 14652,
+      "width": 512,
+      "height": 512
+    },
+    "show-harness-video/global.mp4": {
+      "frames": 14652,
+      "width": 1920,
+      "height": 1080
+    },
+    "show-harness-video/combined.mp4": {
+      "frames": 14652,
+      "width": 2624,
+      "height": 1632
+    },
+    "show-harness-video/front.mp4": {
+      "frames": 14652,
+      "width": 512,
+      "height": 512
+    },
+    "show-harness-video/side.mp4": {
+      "frames": 14652,
+      "width": 512,
+      "height": 512
+    },
+    "robobrain-video/global.mp4": {
+      "frames": 31592,
+      "width": 1920,
+      "height": 1080
+    },
+    "robobrain-video/combined.mp4": {
+      "frames": 31592,
+      "width": 2640,
+      "height": 1080
+    },
+    "robobrain-video/view-camera2.mp4": {
+      "frames": 31592,
+      "width": 640,
+      "height": 480
+    },
+    "robobrain-video/view-camera1.mp4": {
+      "frames": 31592,
+      "width": 640,
+      "height": 480
+    }
+  },
+  "clip": "/home/yuxin/workspace/RoboBrain/runs/half-insertion-validation-20260927T182859Z/robobrain/runs/20260927T182900.645562Z-48a08b93/controlled-half-insertion.mp4",
+  "clip_frames": [
+    29724,
+    30388
+  ]
+}

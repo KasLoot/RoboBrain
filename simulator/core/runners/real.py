@@ -1,4 +1,4 @@
-# Modified: transport-free session typing and service resume without startup release.
+# Modified in RoboBrain: checkpoint resume, fresh-grasp checks and visual release qualification.
 """Real-robot VLM closed-loop rollout runner.
 
 This is the real-robot counterpart of :class:`core.subgoal_runner.EpisodeRunnerV0`.
@@ -63,6 +63,23 @@ RECENT_MOVES_MAX = 3
 # Move-memory label for a just-failed (empty) GRASP, so the controller's "after an empty
 # GRASP, do not GRASP in place again" rule has something to key on in the recent moves.
 EMPTY_GRASP_LABEL = "GRASP(empty)"
+
+
+class GraspLost(RuntimeError):
+    """Fresh robot telemetry contradicts a previously established plug carry.
+
+    This is an execution error, not a benign cancellation: service mode installs
+    hold and exposes ERROR. It does not certify object position or prevent a fall.
+    """
+    execution_cancelled = False
+
+    def __init__(self, *, token, stage, source, measured_width_m, empty_width_m):
+        self.details = {"token": token, "stage": stage, "source": source,
+                        "measured_width_m": measured_width_m, "empty_width_m": empty_width_m,
+                        "carry_established": True}
+        super().__init__(f"Grasp lost before {token} ({source}, stage={stage}): commanded-closed "
+                         f"gripper measured {measured_width_m:.6f}m <= empty threshold {empty_width_m:.6f}m; "
+                         "pending action rejected")
 
 
 class RealEpisodeRunner:
@@ -142,11 +159,48 @@ class RealEpisodeRunner:
         # Last MV_DOWN's (travelled, commanded) height in meters; None when the last
         # motion was not a descent. Read by _proprio for the next prompt.
         self._descend: Optional[tuple[float, float]] = None
+        self._carry_established = False
 
     def _audit_context(self, **fields):
         hook = getattr(self.session, "set_audit_context", None)
         if hook is not None:
             hook(**fields)
+
+    def _empty_gripper_width(self):
+        threshold = getattr(self.controller, "grasp_min_width_m", None)
+        if threshold is None:
+            threshold = getattr(getattr(self, "recovery_plugin", None), "empty_width_m", 0.005)
+        threshold = float(threshold)
+        if not np.isfinite(threshold) or threshold < 0:
+            raise ValueError("Empty gripper threshold must be finite and nonnegative")
+        return threshold
+
+    def _fresh_gripper_width(self):
+        read = getattr(self.session, "get_gripper_position", None)
+        if read is not None:
+            measured = np.asarray(read()).reshape(-1)
+            if measured.size != 1:
+                raise ValueError("Expected one measured gripper width")
+            return float(measured[0])
+        # Compatibility with observation-only session adapters; never reuse the
+        # observation captured before a potentially long provider request.
+        return float(self.session.get_observation()["gripper_width"])
+
+    def _check_carried_grasp(self, *, token, stage, source):
+        if getattr(self.session, "scene", None) != "plug_insert":
+            return
+        commanded_closed = bool(self.controller.gripper_closed)
+        if commanded_closed and str(stage).upper() not in (GRASP_TOKEN, "INITIALIZATION"):
+            self._carry_established = True
+        if not getattr(self, "_carry_established", False) or not commanded_closed:
+            return
+        width = self._fresh_gripper_width()
+        if not np.isfinite(width):
+            raise RuntimeError(f"Invalid measured gripper width before {token} ({source}, stage={stage})")
+        threshold = self._empty_gripper_width()
+        if width <= threshold:
+            raise GraspLost(token=token, stage=stage, source=source,
+                            measured_width_m=width, empty_width_m=threshold)
 
     def _control_step(self, token, *, step_idx, stage, source, execute=True, **kwargs):
         """Bracket every high-level token, including holds and exceptional exits."""
@@ -155,8 +209,21 @@ class RealEpisodeRunner:
         fields = dict(token=token, step_idx=step_idx, stage=stage, source=source)
         control_id = start(**fields) if start is not None else None
         try:
+            self._check_carried_grasp(token=token, stage=stage, source=source)
+            set_control_context = getattr(self.session, "set_control_context", None)
+            if set_control_context is not None:
+                set_control_context(stage=stage, source=source,
+                                    carry_established=bool(getattr(self, "_carry_established", False)))
+            authorize_release = getattr(self.session, "authorize_release", None)
+            if token == RELEASE_TOKEN and execute and authorize_release is not None:
+                authorize_release(stage=stage, source=source,
+                                  carry_established=bool(getattr(self, "_carry_established", False)))
+                # A held object can slip while the extra visual request is in flight.
+                self._check_carried_grasp(token=token, stage=stage, source=source)
             result = self.controller.step(token, **kwargs) if execute else None
         except BaseException as exc:
+            if isinstance(exc, GraspLost):
+                fields.update(guard="grasp_lost", guard_evidence=exc.details)
             if end is not None:
                 # A cancelled session cannot use its normal generation-checked reads;
                 # runtime hooks must snapshot current measured state independently.
@@ -194,6 +261,7 @@ class RealEpisodeRunner:
         steps = resume_step
         stage_anchor = checkpoint.get("stage_anchor") if checkpoint else None
         stage_marker = checkpoint.get("stage_marker") if checkpoint else None
+        self._carry_established = bool(checkpoint.get("carry_established", False)) if checkpoint else False
 
         def checkpoint_at(next_step):
             if save_checkpoint is not None:
@@ -201,6 +269,7 @@ class RealEpisodeRunner:
                                  "current_index": current_index, "next_step": next_step,
                                  "subgoal_start_step": subgoal_start_step,
                                  "stage_anchor": stage_anchor, "stage_marker": stage_marker,
+                                 "carry_established": self._carry_established,
                                  "recent_moves": recent_moves, "recovery_note": recovery_note})
         # Action-ablation blind review: the frame captured BEFORE the last executed
         # direction token, and that token. Valid for exactly one step; anything else
@@ -381,6 +450,41 @@ class RealEpisodeRunner:
                     n_subgoals=len(subgoals),
                 )
                 decision_task = self.task
+                if getattr(self.session, 'scene', None) == 'plug_insert' and subgoal.motion.upper() == 'GRASP':
+                    from core.sim.visual_insertion import estimate_insertion
+                    grasp_image = estimate_insertion(obs)
+                    top = grasp_image.get('orange')
+                    tcp_depth = (obs.get('wrist_depth_calibration') or {}).get('tcp_depth_m')
+                    if top and tcp_depth is not None and grasp_image.get('camera_tilt_deg', 180) <= 1:
+                        top_above_tcp = float(tcp_depth) - top['depth_m']
+                        decision_task += (
+                            '\nCURRENT IMAGE-DERIVED GRASP HEIGHT: orange top is '
+                            f'{top_above_tcp * 1000:.1f} mm ABOVE the TCP plane '
+                            '(negative means the TCP is above the handle top). '
+                            'For a centered side-body grasp of this 32 mm handle, target approximately +16 mm: '
+                            'after XY centering, lower the OPEN hand if this measured gap is too small. '
+                            'Do not close high on the top edge or call it a secure body grasp. '
+                            'This comes from the observed orange top depth and robot-camera TCP calibration, '
+                            'not an object pose; still confirm XY centering and actual opposing pad contact in A/B/C.'
+                        )
+                if getattr(self.session, 'scene', None) == 'plug_insert' and subgoal.motion.upper() in {'INSERT', 'RELEASE'}:
+                    from core.sim.visual_insertion import estimate_insertion
+                    measured = estimate_insertion(obs)
+                    decision_task += (
+                        '\nCURRENT IMAGE-DERIVED DEPTH CHECK (RGB color surfaces plus registered Wrist depth; '
+                        'not simulator object poses): ' + json.dumps(measured, sort_keys=True)
+                        + '\nThis is a relative-height estimate only. Visually confirm actual pin entry and continued '
+                        'grasp across Front, Side and Angled Wrist; depth alone cannot establish XY alignment or bore entry. '
+                        'RELEASE requires measured lower_bound_m >=0.025 as well as that visual evidence. '
+                        'Aim for about 28-30 mm measured insertion to cover depth uncertainty. If entry/alignment is '
+                        'supported and the bound is short, continue justified SMALL downward steps and reobserve; '
+                        'do not declare INSERT DONE or request RELEASE early. An unavailable Wrist depth check '
+                        'blocks RELEASE, not justified insertion motion. If Wrist is already vertical, the handle '
+                        'can naturally hide the blue top before sufficient insertion: use CURRENT Front/Side/D '
+                        'alignment and entry evidence to continue SMALL descent, and recheck. Do not repeatedly '
+                        'withdraw solely to expose a naturally occluded Wrist view. Restore a vertical wrist '
+                        'only when it is tilted and a correction is safe; never guess permission to release.'
+                    )
                 if save_checkpoint is not None:
                     marker = (current_index, subgoal_start_step, subgoal.id)
                     if stage_marker != marker or stage_anchor is None:
@@ -786,6 +890,8 @@ class RealEpisodeRunner:
                     recent_moves.clear()
                     chunk_queue = []
                     if self._is_grasp_stage(subgoal):
+                        if getattr(self.session, "scene", None) == "plug_insert" and self.controller.gripper_closed:
+                            self._carry_established = True
                         recovery_note = ""
 
                 checkpoint_at(step_idx + 1)
@@ -1024,7 +1130,7 @@ class RealEpisodeRunner:
             result=result,
             current_index=current_index,
             subgoals=subgoals,
-            measured_width_m=self._measured_width(obs),
+            measured_width_m=self._fresh_gripper_width(),
             subgoal_done=subgoal_done,
             gripper_closed=bool(result.gripper_closed),
         )
@@ -1045,8 +1151,18 @@ class RealEpisodeRunner:
         and the width/image -- by ~1-2 steps; reporting the commanded state would make the
         prompt say CLOSED while the image still shows the gripper open, which is exactly
         what derailed the controller into a premature DONE."""
+        try:
+            width = float(obs["gripper_width"])
+        except (KeyError, TypeError, ValueError):
+            return "UNKNOWN"
+        if not np.isfinite(width):
+            return "UNKNOWN"
+        if width <= self._empty_gripper_width():
+            return "EMPTY_CLOSED"
         thr = float(getattr(self.controller, "gripper_close_threshold_m", 0.07))
-        return "CLOSED" if self._measured_width(obs) < thr else "OPEN"
+        # Keep CLOSED for consumers of the established prompt protocol. It describes
+        # only the measured width band, never visual evidence of a secure grasp.
+        return "CLOSED" if width < thr else "OPEN"
 
     def _record(
         self,

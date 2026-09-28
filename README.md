@@ -18,6 +18,8 @@ The MuJoCo starter uses OpenAI `gpt-6-luna` with low reasoning and reviewed scen
 
 See the [combined-system runbook](docs/combined-system-runbook.md) for launch commands, camera setup, controls, and validation limits. The [recording guide](docs/combined-system-recording.md) covers one folder per scene run, both systems' videos, measured robot trajectories, and VLM audits. The original Show-Harness checkout is not required at runtime.
 
+The plug controller now requires at least **25 mm of the 50 mm pin inserted while held before release**. See [controlled insertion validation](docs/controlled-half-insertion.md) for the release check, solver settings, and the new recorded demonstration.
+
 ## Browser UI
 
 ```sh

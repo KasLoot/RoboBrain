@@ -35,7 +35,7 @@
     {
       "path": "configs/robot_mujoco_plug.yaml",
       "upstream_sha256": "bc917b570ccc7a0cf407195effb2e958a63a802ca5572856f152e066d2181a8f",
-      "adapted": false
+      "adapted": true
     },
     {
       "path": "core/__init__.py",
@@ -156,7 +156,7 @@
     {
       "path": "core/sim/mujoco_session.py",
       "upstream_sha256": "047efebb656f2f87f9e6529153648a0a198aa162d8f923abf850fa6b016ce379",
-      "adapted": false
+      "adapted": true
     },
     {
       "path": "core/sim/mujoco_socket.py",
@@ -166,7 +166,7 @@
     {
       "path": "core/sim/mujoco_success.py",
       "upstream_sha256": "c79898cb407adcde43a5533d4aa72aea9ecf32670fffe8994f0e67050840267c",
-      "adapted": false
+      "adapted": true
     },
     {
       "path": "core/ui/__init__.py",
@@ -481,7 +481,7 @@
     {
       "path": "prompts/controller_mujoco_plug.txt",
       "upstream_sha256": "4f182ce267027ef6f3471575074d551d1c7a182c11bda3189cf8cd19b54ae49c",
-      "adapted": false
+      "adapted": true
     },
     {
       "path": "scripts/mujoco/replay.py",
@@ -511,7 +511,7 @@
     {
       "path": "tests/test_mujoco_depth.py",
       "upstream_sha256": "2a84b146d21335c4997cbd6df1f8af2348861a7e2402ac28b2b0de00fdb785ae",
-      "adapted": false
+      "adapted": true
     },
     {
       "path": "tests/test_mujoco_plug_scene.py",
